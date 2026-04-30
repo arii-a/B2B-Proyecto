@@ -352,6 +352,7 @@ CREATE INDEX idx_catprov_categoria             ON cat_proveedor (id_categoria);
 -- producto
 CREATE INDEX idx_producto_categoria            ON producto (id_categoria);
 CREATE INDEX idx_producto_activo               ON producto (activo);
+CREATE INDEX idx_producto_nombre               ON producto (nombre);
 
 -- almacen
 CREATE INDEX idx_almacen_proveedor             ON almacen (id_proveedor);
@@ -364,7 +365,6 @@ CREATE INDEX idx_tarifaregla_proveedor         ON tarifa_regla (id_proveedor);
 
 -- tramo_tarifa
 CREATE INDEX idx_tramo_regla                   ON tramo_tarifa (id_regla);
--- consultas frecuentes: buscar tramo por cantidad
 CREATE INDEX idx_tramo_cantidades              ON tramo_tarifa (id_regla, cantidad_minima, cantidad_maxima);
 
 -- precio_base
