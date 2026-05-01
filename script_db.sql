@@ -1,4 +1,31 @@
 -- ------------------------------------------------------------
+-- DROP TABLES
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS detalle_factura;
+DROP TABLE IF EXISTS factura;
+DROP TABLE IF EXISTS comision;
+DROP TABLE IF EXISTS detalle_orden;
+DROP TABLE IF EXISTS orden_compra;
+DROP TABLE IF EXISTS contrato_empresa_detalle;
+DROP TABLE IF EXISTS contrato_empresa_tarifas;
+DROP TABLE IF EXISTS precio_base;
+DROP TABLE IF EXISTS tramo_tarifa;
+DROP TABLE IF EXISTS tarifa_regla;
+DROP TABLE IF EXISTS reglas_comision;
+DROP TABLE IF EXISTS producto_almacen;
+DROP TABLE IF EXISTS almacen;
+DROP TABLE IF EXISTS cat_proveedor;
+DROP TABLE IF EXISTS producto;
+DROP TABLE IF EXISTS proveedor;
+DROP TABLE IF EXISTS categoria;
+DROP TABLE IF EXISTS usuario;
+DROP TABLE IF EXISTS sucursal_empresa;
+DROP TABLE IF EXISTS contactos_empresa;
+DROP TABLE IF EXISTS cargo_empresa;
+DROP TABLE IF EXISTS empresa;
+DROP TABLE IF EXISTS rol_usuario;
+
+-- ------------------------------------------------------------
 -- ROL_USUARIO
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS rol_usuario (
@@ -189,11 +216,9 @@ CREATE TABLE IF NOT EXISTS precio_base (
                              vigente_hasta     TIMESTAMP,
                              id_proveedor      UUID           NOT NULL,
                              sku               VARCHAR(100)  NOT NULL,
-                             id_regla_comision UUID           NOT NULL,
 
                              CONSTRAINT fk_precio_proveedor FOREIGN KEY (id_proveedor)      REFERENCES proveedor (id_proveedor),
-                             CONSTRAINT fk_precio_producto  FOREIGN KEY (sku)               REFERENCES producto (sku),
-                             CONSTRAINT fk_precio_regla     FOREIGN KEY (id_regla_comision) REFERENCES tarifa_regla (id_tarifa)
+                             CONSTRAINT fk_precio_producto  FOREIGN KEY (sku)               REFERENCES producto (sku)
 );
 
 -- ------------------------------------------------------------
@@ -236,8 +261,6 @@ CREATE TABLE IF NOT EXISTS reglas_comision (
                                  id_proveedor UUID           NOT NULL,
                                  id_tipo      VARCHAR(20)   NOT NULL,
                                  valor        DECIMAL(14,2) NOT NULL,
-                                 minimo_venta DECIMAL(14,2),
-                                 maximo_venta DECIMAL(14,2),
                                  activa       BOOLEAN       NOT NULL DEFAULT TRUE,
                                  fecha_inicio TIMESTAMP,
                                  fecha_final  TIMESTAMP,
@@ -365,7 +388,6 @@ CREATE INDEX idx_tarifaregla_proveedor         ON tarifa_regla (id_proveedor);
 
 -- tramo_tarifa
 CREATE INDEX idx_tramo_regla                   ON tramo_tarifa (id_regla);
-CREATE INDEX idx_tramo_cantidades              ON tramo_tarifa (id_regla, cantidad_minima, cantidad_maxima);
 
 -- precio_base
 CREATE INDEX idx_precio_proveedor              ON precio_base (id_proveedor);
@@ -381,6 +403,7 @@ CREATE INDEX idx_contdetalle_sku               ON contrato_empresa_detalle (sku)
 
 -- reglas_comision
 CREATE INDEX idx_reglacomision_proveedor       ON reglas_comision (id_proveedor);
+CREATE INDEX idx_reglacomision_nombre          ON reglas_comision (nombre);
 
 -- orden_compra
 CREATE INDEX idx_orden_proveedor               ON orden_compra (id_proveedor);
