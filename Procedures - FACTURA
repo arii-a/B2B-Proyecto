@@ -39,7 +39,7 @@ CREATE OR REPLACE PROCEDURE SP_AGREGAR_FACTURA (
     end if;
 
     insert into FACTURA ( fecha, total, id_orden, id_estado)
-    VALUES (CURRENT_TIMESTAMP::TIMESTAMP, V_TOTAL_ORDEN, P_ID_ORDEN, 'pagado')
+    VALUES (CURRENT_TIMESTAMP::TIMESTAMP, V_TOTAL_ORDEN, P_ID_ORDEN, 'pendiente')
     RETURNING id_factura INTO V_ID_FACTURA_NUEVA;
 
 
