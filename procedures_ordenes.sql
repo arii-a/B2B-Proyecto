@@ -198,35 +198,35 @@ BEGIN
     RETURNING id_orden INTO V_ID_ORDEN_NUEVA;
 
     INSERT INTO detalle_orden (
-        cantidad,
-        precio_unitario,
-        subtotal,
-        id_orden,
-        sku,
-        id_almacen
-    )
+    cantidad,
+    precio_unitario,
+    subtotal,
+    id_orden,
+    sku,
+    id_almacen
+)
+SELECT
+    productos_pedidos.cantidad,
+    pb.precio_base,
+    productos_pedidos.cantidad * pb.precio_base,
+    V_ID_ORDEN_NUEVA,
+    productos_pedidos.sku,
+    V_ID_ALMACEN
+FROM (
     SELECT
-        productos_pedidos.cantidad,
-        pb.precio_base,
-        productos_pedidos.cantidad * pb.precio_base,
-        V_ID_ORDEN_NUEVA,
-        productos_pedidos.sku,
-        V_ID_SUCURSAL
-    FROM (
-             SELECT
-                 producto->>'sku' AS sku,
-                 SUM((producto->>'cantidad')::INT) AS cantidad
-             FROM jsonb_array_elements(P_PRODUCTOS_LISTA) AS producto
-             GROUP BY producto->>'sku'
-         ) productos_pedidos
-             INNER JOIN precio_base pb
-                        ON pb.sku = productos_pedidos.sku
-                            AND pb.id_proveedor = V_ID_PROVEEDOR
-                            AND pb.vigente_desde <= CURRENT_TIMESTAMP
-                            AND (
-                               pb.vigente_hasta IS NULL
-                                   OR pb.vigente_hasta >= CURRENT_TIMESTAMP
-                               );
+        producto->>'sku' AS sku,
+        SUM((producto->>'cantidad')::INT) AS cantidad
+    FROM jsonb_array_elements(P_PRODUCTOS_LISTA) AS producto
+    GROUP BY producto->>'sku'
+) productos_pedidos
+INNER JOIN precio_base pb
+    ON pb.sku = productos_pedidos.sku
+   AND pb.id_proveedor = V_ID_PROVEEDOR
+   AND pb.vigente_desde <= CURRENT_TIMESTAMP
+   AND (
+        pb.vigente_hasta IS NULL
+        OR pb.vigente_hasta >= CURRENT_TIMESTAMP
+   );
 
     UPDATE producto_almacen pa
     SET stock = pa.stock - productos_pedidos.cantidad
