@@ -105,25 +105,42 @@ EXECUTE FUNCTION fn_generar_factura();
 -- ============================================================
 -- T4: Sin cambios — ninguna procedure anula facturas.
 -- ============================================================
-CREATE OR REPLACE FUNCTION fn_anular_factura()
-    RETURNS TRIGGER LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION fn_anular_factura_por_cancelacion_orden()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
 BEGIN
-    IF NEW.id_estado = 'anulada' AND OLD.id_estado <> 'anulada' THEN
+    IF NEW.id_estado = 'cancelado'
+       AND OLD.id_estado <> 'cancelado' THEN
 
-        -- Cancelar la orden asociada
-        UPDATE orden_compra
-        SET    id_estado = 'cancelado'
-        WHERE  id_orden  = NEW.id_orden
-          AND  id_estado <> 'cancelado';
+        -- Si la factura ya está pagada, no debería poder cancelarse la orden
+        IF EXISTS (
+            SELECT 1
+            FROM factura
+            WHERE id_orden = NEW.id_orden
+              AND id_estado = 'pagada'
+        ) THEN
+            RAISE EXCEPTION 'No se puede cancelar la orden porque su factura ya está pagada.';
+        END IF;
+
+        -- Si tiene factura pendiente, se anula automáticamente
+        UPDATE factura
+        SET id_estado = 'anulada'
+        WHERE id_orden = NEW.id_orden
+          AND id_estado = 'pendiente';
 
     END IF;
+
     RETURN NEW;
 END;
 $$;
 
-CREATE OR REPLACE TRIGGER trg_anular_factura
-    AFTER UPDATE OF id_estado ON factura
-    FOR EACH ROW EXECUTE FUNCTION fn_anular_factura();
+DROP TRIGGER IF EXISTS trg_anular_factura_por_cancelacion_orden ON orden_compra;
+
+CREATE TRIGGER trg_anular_factura_por_cancelacion_orden
+BEFORE UPDATE OF id_estado ON orden_compra
+FOR EACH ROW
+EXECUTE FUNCTION fn_anular_factura_por_cancelacion_orden();
 
 
 -- ============================================================
@@ -178,3 +195,28 @@ $$;
 CREATE OR REPLACE TRIGGER trg_validar_tramo_tarifa
     BEFORE INSERT OR UPDATE ON tramo_tarifa
     FOR EACH ROW EXECUTE FUNCTION fn_validar_tramo_tarifa();
+
+
+
+--------------------
+--no dejar que cancelado cambie
+-------------------
+CREATE OR REPLACE FUNCTION fn_bloquear_cambio_orden_cancelada()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF OLD.id_estado = 'cancelado' AND NEW.id_estado <> 'cancelado' THEN
+        RAISE EXCEPTION 'No se puede cambiar una orden cancelada.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_bloquear_cambio_orden_cancelada ON orden_compra;
+
+CREATE TRIGGER trg_bloquear_cambio_orden_cancelada
+BEFORE UPDATE OF id_estado ON orden_compra
+FOR EACH ROW
+EXECUTE FUNCTION fn_bloquear_cambio_orden_cancelada();
