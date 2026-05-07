@@ -3,26 +3,32 @@
 --     ese flujo solo ocurre por UPDATE directo al estado.
 -- ============================================================
 CREATE OR REPLACE FUNCTION fn_revertir_stock_por_orden()
-    RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
 BEGIN
-    IF NEW.id_estado = 'cancelado' AND OLD.id_estado <> 'cancelado' THEN
+    IF NEW.id_estado = 'cancelado'
+       AND OLD.id_estado <> 'cancelado' THEN
 
         UPDATE producto_almacen pa
-        SET    stock = pa.stock + dord.cantidad
-        FROM   detalle_orden dord
-                   JOIN   almacen a ON a.id_proveedor = NEW.id_proveedor
-        WHERE  dord.id_orden  = NEW.id_orden
-          AND  pa.id_almacen  = a.id_almacen
-          AND  pa.sku         = dord.sku;
+        SET stock = pa.stock + dord.cantidad
+        FROM detalle_orden dord
+        WHERE dord.id_orden = NEW.id_orden
+          AND pa.id_almacen = dord.id_almacen
+          AND pa.sku = dord.sku;
 
     END IF;
+
     RETURN NEW;
 END;
 $$;
 
-CREATE OR REPLACE TRIGGER trg_revertir_stock_orden
-    AFTER UPDATE OF id_estado ON orden_compra
-    FOR EACH ROW EXECUTE FUNCTION fn_revertir_stock_por_orden();
+DROP TRIGGER IF EXISTS trg_revertir_stock_orden ON orden_compra;
+
+CREATE TRIGGER trg_revertir_stock_orden
+AFTER UPDATE OF id_estado ON orden_compra
+FOR EACH ROW
+EXECUTE FUNCTION fn_revertir_stock_por_orden();
 
 -- ============================================================
 -- T3: Sin cambios — ninguna procedure aprueba órdenes.
