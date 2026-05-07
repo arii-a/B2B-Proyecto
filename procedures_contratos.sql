@@ -1,4 +1,3 @@
---- añadir un contrato con una empresa y el detalle del contrato -> verificar contratos activos con la empresa
 CREATE OR REPLACE PROCEDURE SP_AGREGAR_CONTRATO_EMPRESA_DETALLE(
     P_NOMBRE_EMPRESA VARCHAR,
     P_NOMBRE_PROVEEDOR VARCHAR,
@@ -13,14 +12,14 @@ DECLARE
     V_ID_EMPRESA_PROVEEDORA UUID;
     V_ID_PROVEEDOR UUID;
     V_ID_REGLA UUID;
-    V_ID_CONTRATO_ACTIVO UUID;
     V_ID_CONTRATO_NUEVO UUID;
-    V_CONTRATO_ACTIVO BOOLEAN := FALSE;
     V_DETALLES JSONB;
+    V_TIENE_NULL_GLOBAL BOOLEAN := FALSE;
+    V_NUEVO_ES_NULL BOOLEAN := FALSE;
 BEGIN
-    -- verificar proveedor
+    -- verificar empresa compradora
     SELECT id_empresa
-    INTO V_ID_EMPRESA_PROVEEDORA
+    INTO V_ID_EMPRESA
     FROM empresa
     WHERE LOWER(nombre) = LOWER(P_NOMBRE_EMPRESA);
 
@@ -28,11 +27,11 @@ BEGIN
         RAISE EXCEPTION 'La empresa % no existe', P_NOMBRE_EMPRESA;
     END IF;
 
+    -- verificar proveedor
     SELECT p.id_proveedor
     INTO V_ID_PROVEEDOR
     FROM proveedor p
-             JOIN empresa e
-    ON e.id_empresa = p.id_empresa
+             JOIN empresa e ON e.id_empresa = p.id_empresa
     WHERE LOWER(e.nombre) = LOWER(P_NOMBRE_PROVEEDOR);
 
     IF NOT FOUND THEN
@@ -52,60 +51,17 @@ BEGIN
             P_NOMBRE_PROVEEDOR;
     END IF;
 
-    -- verificar que no hayan contratos activos
-    SELECT cet.id_contrato
-    INTO V_ID_CONTRATO_ACTIVO
-    FROM contrato_empresa_tarifas cet
-    WHERE cet.id_empresa = V_ID_EMPRESA
-      AND cet.id_proveedor = V_ID_PROVEEDOR
-      AND cet.activo = TRUE
-      AND (
-        cet.vigente_hasta IS NULL
-            OR cet.vigente_hasta >= CURRENT_TIMESTAMP
-        )
-    LIMIT 1;
-
-    IF V_ID_CONTRATO_ACTIVO IS NOT NULL THEN
-        RAISE WARNING 'Ya existe un contrato activo para la empresa % con el proveedor %. Contrato activo: %',
-            P_NOMBRE_EMPRESA,
-            P_NOMBRE_PROVEEDOR,
-            V_ID_CONTRATO_ACTIVO;
-        V_CONTRATO_ACTIVO = TRUE;
+    -- verificar vigencias
+    IF P_VIGENTE_HASTA IS NOT NULL
+        AND P_VIGENTE_HASTA <= P_VIGENTE_DESDE THEN
+        RAISE EXCEPTION 'La fecha vigente_hasta debe ser mayor que vigente_desde';
     END IF;
 
-    -- verificar que no haya un detalle con ese sku
-    FOR V_DETALLES IN SELECT * FROM JSONB_array_elements(P_DETALLES)
-        LOOP
-            IF V_CONTRATO_ACTIVO = TRUE THEN
-                IF EXISTS (
-                    SELECT 1
-                    FROM contrato_empresa_detalle ced
-                    INNER JOIN contrato_empresa_tarifas cet2
-                        ON ced.id_contrato = cet2.id_contrato
-                    WHERE cet2.id_contrato = V_ID_CONTRATO_ACTIVO
-                        AND cet2.id_proveedor = V_ID_PROVEEDOR
-                        AND cet2.id_empresa = V_ID_EMPRESA
-                        AND (ced.sku IS NULL
-                            OR (V_DETALLES->>'sku') = ced.sku)
-                ) THEN
-                    RAISE EXCEPTION 'Ya existe un detalle del contrato que incluye el producto %.', (V_DETALLES->>'sku');
-                END IF;
-            END IF;
-    END LOOP;
-
-    -- verificar vigencias del contrato
-    IF V_CONTRATO_ACTIVO != TRUE THEN
-        IF P_VIGENTE_HASTA IS NOT NULL
-            AND P_VIGENTE_HASTA <= P_VIGENTE_DESDE THEN
-            RAISE EXCEPTION 'La fecha vigente_hasta debe ser mayor que vigente_desde';
-        END IF;
-
-        IF P_DETALLES IS NULL OR jsonb_array_length(P_DETALLES) = 0 THEN
-            RAISE EXCEPTION 'Debe enviar al menos un detalle para el contrato';
-        END IF;
+    IF P_DETALLES IS NULL OR jsonb_array_length(P_DETALLES) = 0 THEN
+        RAISE EXCEPTION 'Debe enviar al menos un detalle para el contrato';
     END IF;
 
-    -- verificar los porcentajes
+    -- verificar porcentajes
     IF EXISTS (
         SELECT 1
         FROM jsonb_array_elements(P_DETALLES) AS detalle
@@ -115,12 +71,11 @@ BEGIN
         RAISE EXCEPTION 'El porcentaje de descuento no puede ser negativo o mayor a 100';
     END IF;
 
-    -- verificar que existan o no los productos
+    -- verificar que los productos existan
     IF EXISTS (
         SELECT 1
         FROM jsonb_array_elements(P_DETALLES) AS detalle
-                 LEFT JOIN producto p
-                           ON p.sku = detalle->>'sku'
+            LEFT JOIN producto p ON p.sku = detalle->>'sku'
         WHERE (detalle->>'sku') IS NOT NULL
           AND (detalle->>'sku') <> ''
           AND p.sku IS NULL
@@ -128,27 +83,80 @@ BEGIN
         RAISE EXCEPTION 'Uno o más productos del detalle no existen';
     END IF;
 
-    -- insertar contrato
-    IF V_CONTRATO_ACTIVO != TRUE THEN
-        INSERT INTO contrato_empresa_tarifas (id_empresa, id_proveedor, id_regla, vigente_desde,
-                                              vigente_hasta, activo
-        ) VALUES (V_ID_EMPRESA, V_ID_PROVEEDOR, V_ID_REGLA, P_VIGENTE_DESDE,
-               P_VIGENTE_HASTA,TRUE
-        )
-        RETURNING id_contrato INTO V_ID_CONTRATO_ACTIVO;
+    -- detectar si el nuevo contrato trae sku null (aplica a todos)
+    SELECT EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(P_DETALLES) AS detalle
+        WHERE (detalle->>'sku') IS NULL OR (detalle->>'sku') = ''
+    ) INTO V_NUEVO_ES_NULL;
+
+    -- detectar si ya existe algún contrato activo con sku null para esta empresa+proveedor
+    SELECT EXISTS (
+        SELECT 1
+        FROM contrato_empresa_tarifas cet
+        JOIN contrato_empresa_detalle ced ON ced.id_contrato = cet.id_contrato
+        WHERE cet.id_empresa   = V_ID_EMPRESA
+          AND cet.id_proveedor = V_ID_PROVEEDOR
+          AND cet.activo       = TRUE
+          AND (cet.vigente_hasta IS NULL OR cet.vigente_hasta >= CURRENT_TIMESTAMP)
+          AND ced.sku IS NULL
+    ) INTO V_TIENE_NULL_GLOBAL;
+
+    -- si ya existe un contrato con null, no se puede agregar ninguno más
+    IF V_TIENE_NULL_GLOBAL THEN
+        RAISE EXCEPTION 'Ya existe un contrato activo que aplica a todos los productos (SKU null). No se puede agregar otro contrato.';
     END IF;
 
-    -- insertar detalle del contrato
-    INSERT INTO contrato_empresa_detalle (
-            porcentaje_descuento,
-            sku,
-            id_contrato
-        )
-        SELECT
-            (detalles->>'porcentaje_descuento')::DECIMAL(14,2),
-             detalles->>'sku',
-            V_ID_CONTRATO_ACTIVO
-        FROM jsonb_array_elements(P_DETALLES) AS detalles;
-        RAISE INFO 'Contrato creado correctamente. ID contrato: %', V_ID_CONTRATO_ACTIVO;
+    -- si el nuevo es null, no puede existir ningún otro contrato activo
+    IF V_NUEVO_ES_NULL THEN
+        IF EXISTS (
+            SELECT 1
+            FROM contrato_empresa_tarifas cet
+            WHERE cet.id_empresa   = V_ID_EMPRESA
+              AND cet.id_proveedor = V_ID_PROVEEDOR
+              AND cet.activo       = TRUE
+              AND (cet.vigente_hasta IS NULL OR cet.vigente_hasta >= CURRENT_TIMESTAMP)
+        ) THEN
+            RAISE EXCEPTION 'Ya existen contratos activos con productos específicos. No se puede agregar un contrato que aplique a todos (SKU null).';
+        END IF;
+    END IF;
+
+    -- verificar que ningún SKU del nuevo contrato ya esté en un contrato activo
+    IF NOT V_NUEVO_ES_NULL THEN
+        FOR V_DETALLES IN SELECT * FROM jsonb_array_elements(P_DETALLES) LOOP
+            IF EXISTS (
+                SELECT 1
+                FROM contrato_empresa_tarifas cet
+                JOIN contrato_empresa_detalle ced ON ced.id_contrato = cet.id_contrato
+                WHERE cet.id_empresa   = V_ID_EMPRESA
+                  AND cet.id_proveedor = V_ID_PROVEEDOR
+                  AND cet.activo       = TRUE
+                  AND (cet.vigente_hasta IS NULL OR cet.vigente_hasta >= CURRENT_TIMESTAMP)
+                  AND ced.sku = (V_DETALLES->>'sku')
+            ) THEN
+                RAISE EXCEPTION 'El producto % ya existe en un contrato activo.', (V_DETALLES->>'sku');
+            END IF;
+        END LOOP;
+    END IF;
+
+    -- insertar contrato
+    INSERT INTO contrato_empresa_tarifas (
+        id_empresa, id_proveedor, id_regla,
+        vigente_desde, vigente_hasta, activo
+    ) VALUES (
+        V_ID_EMPRESA, V_ID_PROVEEDOR, V_ID_REGLA,
+        P_VIGENTE_DESDE, P_VIGENTE_HASTA, TRUE
+    )
+    RETURNING id_contrato INTO V_ID_CONTRATO_NUEVO;
+
+    -- insertar detalles
+    INSERT INTO contrato_empresa_detalle (porcentaje_descuento, sku, id_contrato)
+    SELECT
+        (detalle->>'porcentaje_descuento')::DECIMAL(14,2),
+        NULLIF(detalle->>'sku', ''),
+        V_ID_CONTRATO_NUEVO
+    FROM jsonb_array_elements(P_DETALLES) AS detalle;
+
+    RAISE INFO 'Contrato creado correctamente. ID contrato: %', V_ID_CONTRATO_NUEVO;
 END;
 $$ LANGUAGE plpgsql;
