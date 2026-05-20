@@ -14,7 +14,7 @@ public class B2BProyectApplication implements CommandLineRunner {
 	public static void main(String[] args) {
 		SpringApplication.run(B2BProyectApplication.class, args);
 
-//		System.out.println("Hola mundo");
+		System.out.println("Hola mundo");
 	}
 
 	@Override
