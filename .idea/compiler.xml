@@ -12,19 +12,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="data" />
         <module name="core" />
         <module name="B2B-api" />
-        <module name="data" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="B2BProyect" target="21" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="B2B-api" options="-parameters" />
-      <module name="B2BProyect" options="-parameters" />
+      <module name="B2BProyect" options="" />
       <module name="core" options="-parameters" />
       <module name="data" options="-parameters" />
     </option>
