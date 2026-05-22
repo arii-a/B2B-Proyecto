@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.geo.Point;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -46,10 +47,7 @@ public class Almacen {
     @OneToMany(mappedBy = "almacen")
     private Set<ProductoAlmacen> productoAlmacens = new LinkedHashSet<>();
 
-/*
- TODO [Reverse Engineering] create field to map the 'coordenadas' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
     @Column(name = "coordenadas", columnDefinition = "point")
-    private Object coordenadas;
-*/
+    private Point coordenadas;
+
 }
