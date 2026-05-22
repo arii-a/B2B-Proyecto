@@ -14,17 +14,18 @@ import java.util.UUID;
 
 public interface ProveedorRepository extends JpaRepository<Proveedor, UUID> {
     @Query("SELECT new " +
-            "com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa) " +
+            "com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa.nombre) " +
             "FROM Proveedor p WHERE p.idEmpresa.nombre = :pNombre")
     Optional<ProveedorDTO> findByNameDTO(@Param("pNombre") String pNombre);
 
+    // mando solo el nombre de la empresa para que al listar todos los proveedores no salga información extra
     @Query("SELECT new" +
-            " com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa)" +
+            " com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa.nombre)" +
             " FROM Proveedor p")
     List<ProveedorDTO> findAllDTO();
 
     @Query("SELECT new " +
-            "com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa)" +
+            "com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa.nombre)" +
             " FROM Proveedor p WHERE p.id=:pId")
     Optional<ProveedorDTO> findByIdDTO(@Param("pId") UUID pId);
 }

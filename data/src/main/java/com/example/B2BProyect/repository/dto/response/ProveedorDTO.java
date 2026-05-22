@@ -11,6 +11,7 @@ import java.util.UUID;
 public class ProveedorDTO {
     private UUID id;
     private Boolean activo = false;
+    private String nombreEmpresa;
     private EmpresaDTO idEmpresa;
 
     public ProveedorDTO(Proveedor proveedor) {
@@ -23,6 +24,12 @@ public class ProveedorDTO {
         this.id = id;
         this.activo = activo;
         this.idEmpresa = idEmpresa;
+    }
+
+    public ProveedorDTO(UUID id, Boolean activo, String nombreEmpresa) {
+        this.id = id;
+        this.activo = activo;
+        this.nombreEmpresa = nombreEmpresa;
     }
 
     public ProveedorDTO(UUID id, Boolean activo, Empresa idEmpresa) {
