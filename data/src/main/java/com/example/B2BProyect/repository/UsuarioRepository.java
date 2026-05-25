@@ -24,6 +24,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
             "FROM Usuario u WHERE u.nombre = :pNombre")
     Optional<UsuarioDTO> findByNombrelDTO(@Param("pNombre") String pNombre);
 
+    @Query("SELECT u FROM Usuario u WHERE u.nombre = :pNombre")
+    Optional<Usuario> findByNombre(@Param("pNombre") String pNombre);
+
+    @Query("SELECT u FROM Usuario u WHERE u.email = :pEmail")
+    Optional<Usuario> findByEmail(@Param("pEmail") String pEmail);
+
     @Query("SELECT new" +
             " com.example.B2BProyect.repository.dto.response.UsuarioDTO(" +
             "u.id, u.nombre, u.email, u.activo, u.idEmpresa.nombre, u.idSucursal.nombre, u.idRol.nombre)" +
@@ -39,4 +45,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     // proyección para autenticación y sesión
     @Query("SELECT u.id AS id, u.nombre AS nombre, u.email AS email, u.activo AS activo FROM Usuario u")
     List<UsuarioProjection> findResumenUsuarios();
+
+    @Query("SELECT u FROM Usuario u WHERE  u.email=:pEmail")
+    Optional<Usuario> findByUserEmailToValidateSession(@Param("pEmail") String pEmail);
 }

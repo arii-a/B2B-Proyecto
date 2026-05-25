@@ -1,6 +1,10 @@
 package com.example.B2BProyect.service;
 
+import com.example.B2BProyect.repository.EmpresaRepository;
+import com.example.B2BProyect.repository.RolUsuarioRepository;
+import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.UsuarioRepository;
+import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
 import com.example.B2BProyect.repository.entity.Usuario;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,5 +32,29 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Optional<Usuario> findById(UUID id) {
         return usuarioRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Usuario> findByEmailIdToValidateSession(String email) {
+        return usuarioRepository.findByUserEmailToValidateSession(email);
+    }
+
+    @Transactional
+    public Optional<Usuario> update(UUID id, UsuarioRequest dto,
+                                    EmpresaRepository empresaRepository,
+                                    SucursalEmpresaRepository sucursalRepository,
+                                    RolUsuarioRepository rolRepository) {
+        return usuarioRepository.findById(id).map(usuario -> {
+            if (dto.getNombre() != null)   usuario.setNombre(dto.getNombre());
+            if (dto.getEmail() != null)    usuario.setEmail(dto.getEmail());
+            if (dto.getActivo() != null)   usuario.setActivo(dto.getActivo());
+            if (dto.getIdEmpresa() != null)
+                empresaRepository.findById(dto.getIdEmpresa()).ifPresent(usuario::setIdEmpresa);
+            if (dto.getIdSucursal() != null)
+                sucursalRepository.findById(dto.getIdSucursal()).ifPresent(usuario::setIdSucursal);
+            if (dto.getIdRol() != null)
+                rolRepository.findById(dto.getIdRol()).ifPresent(usuario::setIdRol);
+            return usuarioRepository.save(usuario);
+        });
     }
 }

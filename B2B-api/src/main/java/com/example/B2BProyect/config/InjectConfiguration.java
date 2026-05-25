@@ -1,5 +1,6 @@
 package com.example.B2BProyect.config;
 
+import com.example.B2BProyect.repository.entity.Usuario;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +26,12 @@ public class InjectConfiguration {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || !authentication.isAuthenticated()) {
-                return Optional.of("ADMIN");
+                Usuario user = (Usuario) authentication.getPrincipal();
+                return Optional.of(user.getUsername());
             }
             if(authentication.getPrincipal()==null || authentication.getPrincipal() instanceof String) {
-                return Optional.of("ADMIN");
+                Usuario user = (Usuario) authentication.getPrincipal();
+                return Optional.of(user.getUsername());
             }
 
             //User user = (User) authentication.getPrincipal();
