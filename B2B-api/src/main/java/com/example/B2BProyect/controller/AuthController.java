@@ -55,7 +55,7 @@ public class AuthController {
         log.info("Getting user email: {}", email);
         Usuario user;
         try {
-            Optional<Usuario> userOptional = userService.findByEmailIdToValidateSession(email);
+            Optional<Usuario> userOptional = userService.findByEmailToValidateSession(email);
             if (userOptional.isEmpty()) {
                 throw new BadCredentialsException("Email o contraseña son incorrectos");
             }
@@ -68,7 +68,8 @@ public class AuthController {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(data.email(), data.passwordHash()));
             log.info("Autenticado correctamente");
-            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities()));
+            SecurityContextHolder.getContext().
+                    setAuthentication(new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities()));
             return jwtTokenProvider.createToken(user);
         } catch (BadCredentialsException e) {
             log.error("BadCredentialsException. Causa:{} ", e.getMessage());

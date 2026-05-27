@@ -7,6 +7,7 @@ import com.example.B2BProyect.repository.UsuarioRepository;
 import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
 import com.example.B2BProyect.repository.entity.Usuario;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
@@ -35,8 +37,8 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<Usuario> findByEmailIdToValidateSession(String email) {
-        return usuarioRepository.findByUserEmailToValidateSession(email);
+    public Optional<Usuario> findByEmailToValidateSession(String email) {
+        return this.usuarioRepository.findByUserEmailToValidateSession(email);
     }
 
     @Transactional

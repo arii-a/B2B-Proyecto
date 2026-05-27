@@ -79,7 +79,7 @@ public class JwtTokenProvider implements Serializable {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .getId();
+                .getSubject();
     }
 
     public String resolveToken(String bearerToken) {
@@ -102,7 +102,8 @@ public class JwtTokenProvider implements Serializable {
                     .build()
                     .parseSignedClaims(token);
             if (claims.getBody().getExpiration().after(new Date())) {
-                Usuario authUser = this.userService.findByEmailIdToValidateSession(getId(token)).orElseThrow(() -> new UsernameNotFoundException("Autenticación incorrecta"));
+                Usuario authUser = this.userService.findByEmailToValidateSession(getId(token)).orElseThrow(() -> new UsernameNotFoundException("Autenticación incorrecta"));
+                log.info(authUser.toString());
                 return Optional.of(new UsernamePasswordAuthenticationToken(authUser, "", authUser.getAuthorities()));
             }
             return Optional.empty();

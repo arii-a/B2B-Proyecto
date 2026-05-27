@@ -46,6 +46,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     @Query("SELECT u.id AS id, u.nombre AS nombre, u.email AS email, u.activo AS activo FROM Usuario u")
     List<UsuarioProjection> findResumenUsuarios();
 
-    @Query("SELECT u FROM Usuario u WHERE  u.email=:pEmail")
+    @Query("SELECT u FROM Usuario u WHERE u.email=:pEmail")
     Optional<Usuario> findByUserEmailToValidateSession(@Param("pEmail") String pEmail);
 }

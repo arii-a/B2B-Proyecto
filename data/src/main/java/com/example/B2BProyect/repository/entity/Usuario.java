@@ -55,7 +55,7 @@ public class Usuario extends AuditableEntity implements UserDetails {
     private SucursalEmpresa idSucursal;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "id_rol", nullable = false)
     private RolUsuario idRol;
 
