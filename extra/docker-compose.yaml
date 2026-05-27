@@ -1,0 +1,15 @@
+services:
+  db:
+    build: .
+    environment:
+      POSTGRES_DB: b2b_proyecto
+      POSTGRES_USER: "owner"
+      POSTGRES_PASSWORD: "123456"
+    volumes:
+      - pg_data:/var/lib/postgresql
+      - ./start-scripts/db_schema.sql:/docker-entrypoint-initdb.d/db_schema.sql
+    container_name: b2b_database
+    ports:
+      - "5432:5432"
+volumes:
+  pg_data:
