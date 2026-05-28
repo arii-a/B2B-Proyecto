@@ -5,7 +5,6 @@ import com.example.B2BProyect.repository.entity.SucursalEmpresa;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -14,7 +13,7 @@ public class SucursalEmpresaDTO {
     private UUID id;
     private String nombre;
     private String direccion;
-    private BigDecimal coordenadas;
+    private String coordenadas;
     private boolean activo;
     private String nombreEmpresa;
     private EmpresaDTO idEmpresa;
@@ -28,7 +27,7 @@ public class SucursalEmpresaDTO {
         this.idEmpresa = new EmpresaDTO(sucursal.getIdEmpresa());
     }
 
-    public SucursalEmpresaDTO(UUID id, String nombre, String direccion, BigDecimal coordenadas,
+    public SucursalEmpresaDTO(UUID id, String nombre, String direccion, String coordenadas,
                                Boolean activo, String nombreEmpresa) {
         this.id = id;
         this.nombre = nombre;
@@ -38,7 +37,7 @@ public class SucursalEmpresaDTO {
         this.nombreEmpresa = nombreEmpresa;
     }
 
-    public SucursalEmpresaDTO(UUID id, String nombre, String direccion, BigDecimal coordenadas,
+    public SucursalEmpresaDTO(UUID id, String nombre, String direccion, String coordenadas,
                                Boolean activo, Empresa idEmpresa) {
         this.id = id;
         this.nombre = nombre;

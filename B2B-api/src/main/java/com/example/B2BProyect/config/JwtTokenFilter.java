@@ -63,7 +63,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
         } catch (Exception e) {
             log.error("Se genero una exepción generica al validar el JWT", e);
             servletResponse.setContentType(MediaType.APPLICATION_JSON.getType());
-            servletResponse.getWriter().write(new tools.jackson.databind.ObjectMapper().writeValueAsString(HttpStatus.INTERNAL_SERVER_ERROR));
+            servletResponse.getWriter().write(new ObjectMapper().writeValueAsString(HttpStatus.INTERNAL_SERVER_ERROR));
             servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }

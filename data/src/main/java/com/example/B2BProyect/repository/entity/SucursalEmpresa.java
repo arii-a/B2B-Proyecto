@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.math.BigDecimal;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -30,8 +29,8 @@ public class SucursalEmpresa {
     @Column(name = "direccion")
     private String direccion;
 
-    @Column(name = "coordenadas", precision = 14, scale = 5)
-    private BigDecimal coordenadas;
+    @Column(name = "coordenadas", columnDefinition = "varchar(100)")
+    private String coordenadas;
 
     @ColumnDefault("true")
     @Column(name = "activo", nullable = false)
