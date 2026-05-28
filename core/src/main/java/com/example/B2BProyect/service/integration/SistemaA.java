@@ -74,7 +74,9 @@ public class SistemaA {
             throw new Exception("GET failed on Sistema1: " + path);
         }
 
-        return response.getBody();
+        List<T> body = response.getBody();
+        log.info("Sistema1 GET {} response: {}", path, body);
+        return body;
     }
 
 
@@ -87,6 +89,7 @@ public class SistemaA {
     private String fetchToken() throws Exception {
         Sistema1AuthRequest req = new Sistema1AuthRequest(authEmail, authPassword);
         Sistema1AuthResponse res = auth(req);
+        log.info("Sistema1 JWT obtained: {}", res.getAccessToken());
         return res.getAccessToken();
     }
 

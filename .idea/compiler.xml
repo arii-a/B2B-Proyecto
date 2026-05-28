@@ -17,6 +17,9 @@
         <module name="B2B-api" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="examen-api" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
