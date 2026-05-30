@@ -65,7 +65,7 @@ public class Usuario extends AuditableEntity implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(idRol.getNombre()));
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + idRol.getNombre()));
         return authorities;
     }
 
