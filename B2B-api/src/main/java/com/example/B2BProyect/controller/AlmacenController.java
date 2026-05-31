@@ -1,16 +1,14 @@
 package com.example.B2BProyect.controller;
 
-import com.example.B2BProyect.repository.entity.Almacen;
+import com.example.B2BProyect.repository.dto.request.AlmacenRequest;
+import com.example.B2BProyect.repository.dto.response.AlmacenDTO;
 import com.example.B2BProyect.service.AlmacenService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class AlmacenController {
     private final AlmacenService almacenService;
 
     @GetMapping
-    public ResponseEntity<List<Almacen>> findAll() {
+    public ResponseEntity<List<AlmacenDTO>> findAll() {
         try {
             return ResponseEntity.ok(almacenService.findAll());
         } catch (Exception e) {
@@ -32,7 +30,7 @@ public class AlmacenController {
     }
 
     @PostMapping
-    public ResponseEntity<Almacen> save(@RequestBody Almacen almacen) {
+    public ResponseEntity<Void> save(@RequestBody AlmacenRequest almacen) {
         try {
             almacenService.save(almacen);
             return ResponseEntity.status(HttpStatus.CREATED).build();

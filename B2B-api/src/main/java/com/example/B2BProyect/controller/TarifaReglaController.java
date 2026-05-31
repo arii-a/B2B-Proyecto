@@ -1,16 +1,14 @@
 package com.example.B2BProyect.controller;
 
-import com.example.B2BProyect.repository.entity.TarifaRegla;
+import com.example.B2BProyect.repository.dto.request.TarifaReglaRequest;
+import com.example.B2BProyect.repository.dto.response.TarifaReglaDTO;
 import com.example.B2BProyect.service.TarifaReglaService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class TarifaReglaController {
     private final TarifaReglaService tarifaReglaService;
 
     @GetMapping
-    public ResponseEntity<List<TarifaRegla>> findAll() {
+    public ResponseEntity<List<TarifaReglaDTO>> findAll() {
         try {
             return ResponseEntity.ok(tarifaReglaService.findAll());
         } catch (Exception e) {
@@ -32,7 +30,7 @@ public class TarifaReglaController {
     }
 
     @PostMapping
-    public ResponseEntity<TarifaRegla> save(@RequestBody TarifaRegla tarifaRegla) {
+    public ResponseEntity<Void> save(@RequestBody TarifaReglaRequest tarifaRegla) {
         try {
             tarifaReglaService.save(tarifaRegla);
             return ResponseEntity.status(HttpStatus.CREATED).build();

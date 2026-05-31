@@ -5,6 +5,7 @@ import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.UsuarioRepository;
 import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
+import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
 import com.example.B2BProyect.repository.entity.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +23,26 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
     @Transactional
-    public void save(Usuario usuario) {
+    public void save(UsuarioRequest dto,
+                     EmpresaRepository empresaRepository,
+                     SucursalEmpresaRepository sucursalRepository,
+                     RolUsuarioRepository rolRepository) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(dto.getNombre());
+        usuario.setEmail(dto.getEmail());
+        if (dto.getActivo() != null) usuario.setActivo(dto.getActivo());
+        if (dto.getIdEmpresa() != null)
+            empresaRepository.findById(dto.getIdEmpresa()).ifPresent(usuario::setIdEmpresa);
+        if (dto.getIdSucursal() != null)
+            sucursalRepository.findById(dto.getIdSucursal()).ifPresent(usuario::setIdSucursal);
+        if (dto.getIdRol() != null)
+            rolRepository.findById(dto.getIdRol()).ifPresent(usuario::setIdRol);
         usuarioRepository.save(usuario);
     }
 
     @Transactional(readOnly = true)
-    public List<Usuario> findAll() {
-        return usuarioRepository.findAll();
+    public List<UsuarioDTO> findAll() {
+        return usuarioRepository.findAll().stream().map(UsuarioDTO::new).toList();
     }
 
     @Transactional(readOnly = true)
@@ -42,10 +56,10 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Optional<Usuario> update(UUID id, UsuarioRequest dto,
-                                    EmpresaRepository empresaRepository,
-                                    SucursalEmpresaRepository sucursalRepository,
-                                    RolUsuarioRepository rolRepository) {
+    public Optional<UsuarioDTO> update(UUID id, UsuarioRequest dto,
+                                       EmpresaRepository empresaRepository,
+                                       SucursalEmpresaRepository sucursalRepository,
+                                       RolUsuarioRepository rolRepository) {
         return usuarioRepository.findById(id).map(usuario -> {
             if (dto.getNombre() != null)   usuario.setNombre(dto.getNombre());
             if (dto.getEmail() != null)    usuario.setEmail(dto.getEmail());
@@ -56,7 +70,7 @@ public class UsuarioService {
                 sucursalRepository.findById(dto.getIdSucursal()).ifPresent(usuario::setIdSucursal);
             if (dto.getIdRol() != null)
                 rolRepository.findById(dto.getIdRol()).ifPresent(usuario::setIdRol);
-            return usuarioRepository.save(usuario);
+            return new UsuarioDTO(usuarioRepository.save(usuario));
         });
     }
 }

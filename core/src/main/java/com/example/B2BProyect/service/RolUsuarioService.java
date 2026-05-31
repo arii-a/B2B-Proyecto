@@ -1,6 +1,8 @@
 package com.example.B2BProyect.service;
 
 import com.example.B2BProyect.repository.RolUsuarioRepository;
+import com.example.B2BProyect.repository.dto.request.RolUsuarioRequest;
+import com.example.B2BProyect.repository.dto.response.RolUsuarioDTO;
 import com.example.B2BProyect.repository.entity.RolUsuario;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,13 +18,16 @@ public class RolUsuarioService {
     private final RolUsuarioRepository rolUsuarioRepository;
 
     @Transactional
-    public void save(RolUsuario rolUsuario) {
+    public void save(RolUsuarioRequest request) {
+        RolUsuario rolUsuario = new RolUsuario();
+        rolUsuario.setNombre(request.getNombre());
+        rolUsuario.setDescripcion(request.getDescripcion());
         rolUsuarioRepository.save(rolUsuario);
     }
 
     @Transactional(readOnly = true)
-    public List<RolUsuario> findAll() {
-        return rolUsuarioRepository.findAll();
+    public List<RolUsuarioDTO> findAll() {
+        return rolUsuarioRepository.findAll().stream().map(RolUsuarioDTO::new).toList();
     }
 
     @Transactional(readOnly = true)

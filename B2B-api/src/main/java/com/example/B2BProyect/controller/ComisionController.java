@@ -1,16 +1,14 @@
 package com.example.B2BProyect.controller;
 
-import com.example.B2BProyect.repository.entity.Comision;
+import com.example.B2BProyect.repository.dto.request.ComisionRequest;
+import com.example.B2BProyect.repository.dto.response.ComisionDTO;
 import com.example.B2BProyect.service.ComisionService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class ComisionController {
     private final ComisionService comisionService;
 
     @GetMapping
-    public ResponseEntity<List<Comision>> findAll() {
+    public ResponseEntity<List<ComisionDTO>> findAll() {
         try {
             return ResponseEntity.ok(comisionService.findAll());
         } catch (Exception e) {
@@ -32,7 +30,7 @@ public class ComisionController {
     }
 
     @PostMapping
-    public ResponseEntity<Comision> save(@RequestBody Comision comision) {
+    public ResponseEntity<Void> save(@RequestBody ComisionRequest comision) {
         try {
             comisionService.save(comision);
             return ResponseEntity.status(HttpStatus.CREATED).build();

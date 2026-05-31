@@ -1,9 +1,11 @@
 package com.example.B2BProyect.controller;
 
-import com.example.B2BProyect.repository.entity.Proveedor;
+import com.example.B2BProyect.repository.dto.request.ProveedorRequest;
+import com.example.B2BProyect.repository.dto.response.ProveedorDTO;
 import com.example.B2BProyect.service.ProveedorService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -19,21 +21,21 @@ public class ProveedorController {
     private final ProveedorService proveedorService;
 
     @GetMapping
-    public ResponseEntity<List<Proveedor>> findAll() {
+    public ResponseEntity<List<ProveedorDTO>> findAll() {
         try {
             return ResponseEntity.ok(proveedorService.findAll());
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("Error llamando a los proveedores: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     @PostMapping("/{id_empresa}")
-    public ResponseEntity<Proveedor> save(@PathVariable("id_empresa") UUID id_empresa,
-                                          @RequestBody Proveedor proveedor) {
+    public ResponseEntity<Void> save(@PathVariable("id_empresa") UUID idEmpresa,
+                                     @RequestBody ProveedorRequest proveedor) {
         try {
-            this.proveedorService.save(id_empresa, proveedor);
-            return ResponseEntity.ok(proveedor);
+            proveedorService.save(idEmpresa, proveedor);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
             log.error("No se ha podido crear el nuevo proveedor: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

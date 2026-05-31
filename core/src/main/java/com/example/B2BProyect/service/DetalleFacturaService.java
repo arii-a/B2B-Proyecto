@@ -1,6 +1,8 @@
 package com.example.B2BProyect.service;
 
 import com.example.B2BProyect.repository.DetalleFacturaRepository;
+import com.example.B2BProyect.repository.dto.request.DetalleFacturaRequest;
+import com.example.B2BProyect.repository.dto.response.DetalleFacturaDTO;
 import com.example.B2BProyect.repository.entity.DetalleFactura;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,15 +16,27 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DetalleFacturaService {
     private final DetalleFacturaRepository detalleFacturaRepository;
+    private final FacturaService facturaService;
+    private final ProductoService productoService;
 
     @Transactional
-    public void save(DetalleFactura detalleFactura) {
-        detalleFacturaRepository.save(detalleFactura);
+    public void save(DetalleFacturaRequest request) {
+        DetalleFactura detalle = new DetalleFactura();
+        detalle.setCantidad(request.getCantidad());
+        detalle.setPrecioUnitario(request.getPrecioUnitario());
+        detalle.setSubtotal(request.getSubtotal());
+        if (request.getIdFactura() != null) {
+            facturaService.findById(request.getIdFactura()).ifPresent(detalle::setIdFactura);
+        }
+        if (request.getIdProducto() != null) {
+            productoService.findById(request.getIdProducto()).ifPresent(detalle::setIdProducto);
+        }
+        detalleFacturaRepository.save(detalle);
     }
 
     @Transactional(readOnly = true)
-    public List<DetalleFactura> findAll() {
-        return detalleFacturaRepository.findAll();
+    public List<DetalleFacturaDTO> findAll() {
+        return detalleFacturaRepository.findAll().stream().map(DetalleFacturaDTO::new).toList();
     }
 
     @Transactional(readOnly = true)

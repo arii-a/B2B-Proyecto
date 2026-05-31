@@ -5,7 +5,6 @@ import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
 import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
-import com.example.B2BProyect.repository.entity.Usuario;
 import com.example.B2BProyect.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,7 @@ public class UsuarioController {
     private final RolUsuarioRepository rolRepository;
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> findAll() {
+    public ResponseEntity<List<UsuarioDTO>> findAll() {
         try {
             return ResponseEntity.ok(usuarioService.findAll());
         } catch (Exception e) {
@@ -38,9 +37,9 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> save(@RequestBody Usuario usuario) {
+    public ResponseEntity<Void> save(@RequestBody UsuarioRequest dto) {
         try {
-            usuarioService.save(usuario);
+            usuarioService.save(dto, empresaRepository, sucursalRepository, rolRepository);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
             log.error("Error creando nuevo usuario: {}", e.getMessage());
@@ -54,7 +53,7 @@ public class UsuarioController {
         try {
             return usuarioService.update(id, dto,
                             empresaRepository, sucursalRepository, rolRepository)
-                    .map(u -> ResponseEntity.ok(new UsuarioDTO(u)))
+                    .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             log.error("Error actualizando usuario: {}", e.getMessage());

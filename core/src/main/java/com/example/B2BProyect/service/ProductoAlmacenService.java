@@ -1,6 +1,8 @@
 package com.example.B2BProyect.service;
 
 import com.example.B2BProyect.repository.ProductoAlmacenRepository;
+import com.example.B2BProyect.repository.dto.request.ProductoAlmacenRequest;
+import com.example.B2BProyect.repository.dto.response.ProductoAlmacenDTO;
 import com.example.B2BProyect.repository.entity.ProductoAlmacen;
 import com.example.B2BProyect.repository.entity.ProductoAlmacenId;
 import lombok.AllArgsConstructor;
@@ -14,15 +16,28 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ProductoAlmacenService {
     private final ProductoAlmacenRepository productoAlmacenRepository;
+    private final AlmacenService almacenService;
+    private final ProductoService productoService;
 
     @Transactional
-    public void save(ProductoAlmacen productoAlmacen) {
+    public void save(ProductoAlmacenRequest request) {
+        ProductoAlmacen productoAlmacen = new ProductoAlmacen();
+        ProductoAlmacenId id = new ProductoAlmacenId();
+        id.setIdAlmacen(request.getIdAlmacen());
+        id.setIdProducto(request.getIdProducto());
+        productoAlmacen.setId(id);
+        productoAlmacen.setStock(request.getStock());
+        productoAlmacen.setMax(request.getMax());
+        productoAlmacen.setMin(request.getMin());
+        productoAlmacen.setActivo(request.getActivo());
+        almacenService.findById(request.getIdAlmacen()).ifPresent(productoAlmacen::setAlmacen);
+        productoService.findById(request.getIdProducto()).ifPresent(productoAlmacen::setProducto);
         productoAlmacenRepository.save(productoAlmacen);
     }
 
     @Transactional(readOnly = true)
-    public List<ProductoAlmacen> findAll() {
-        return productoAlmacenRepository.findAll();
+    public List<ProductoAlmacenDTO> findAll() {
+        return productoAlmacenRepository.findAll().stream().map(ProductoAlmacenDTO::new).toList();
     }
 
     @Transactional(readOnly = true)

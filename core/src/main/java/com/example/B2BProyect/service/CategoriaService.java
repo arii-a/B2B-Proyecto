@@ -1,6 +1,8 @@
 package com.example.B2BProyect.service;
 
 import com.example.B2BProyect.repository.CategoriaRepository;
+import com.example.B2BProyect.repository.dto.request.CategoriaRequest;
+import com.example.B2BProyect.repository.dto.response.CategoriaDTO;
 import com.example.B2BProyect.repository.entity.Categoria;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,13 +18,16 @@ public class CategoriaService {
     private final CategoriaRepository categoriaRepository;
 
     @Transactional
-    public void save(Categoria categoria) {
+    public void save(CategoriaRequest request) {
+        Categoria categoria = new Categoria();
+        categoria.setNombre(request.getNombre());
+        categoria.setDescripcion(request.getDescripcion());
         categoriaRepository.save(categoria);
     }
 
     @Transactional(readOnly = true)
-    public List<Categoria> findAll() {
-        return categoriaRepository.findAll();
+    public List<CategoriaDTO> findAll() {
+        return categoriaRepository.findAll().stream().map(CategoriaDTO::new).toList();
     }
 
     @Transactional(readOnly = true)

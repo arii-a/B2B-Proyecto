@@ -1,16 +1,14 @@
 package com.example.B2BProyect.controller;
 
-import com.example.B2BProyect.repository.entity.OrdenCompra;
+import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
+import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
 import com.example.B2BProyect.service.OrdenCompraService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class OrdenCompraController {
     private final OrdenCompraService ordenCompraService;
 
     @GetMapping
-    public ResponseEntity<List<OrdenCompra>> findAll() {
+    public ResponseEntity<List<OrdenCompraDTO>> findAll() {
         try {
             return ResponseEntity.ok(ordenCompraService.findAll());
         } catch (Exception e) {
@@ -32,9 +30,9 @@ public class OrdenCompraController {
     }
 
     @PostMapping
-    public ResponseEntity<OrdenCompra> save(@RequestBody OrdenCompra ordenCompra) {
+    public ResponseEntity<Void> save(@RequestBody OrdenCompraRequest orden) {
         try {
-            ordenCompraService.save(ordenCompra);
+            ordenCompraService.save(orden);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
             log.error("Error creando nueva orden de compra: {}", e.getMessage());

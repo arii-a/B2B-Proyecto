@@ -1,9 +1,8 @@
 package com.example.B2BProyect.service;
 
-import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.ProveedorRepository;
+import com.example.B2BProyect.repository.dto.request.ProveedorRequest;
 import com.example.B2BProyect.repository.dto.response.ProveedorDTO;
-import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.repository.entity.Proveedor;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,24 +19,16 @@ public class ProveedorService {
     private final EmpresaService empresaService;
 
     @Transactional
-    public void save(UUID empresaId, Proveedor proveedor) {
-        Optional<Empresa> optionalEmpresa = this.empresaService.findById(empresaId);
-        Empresa empresa = null;
-        if(optionalEmpresa.isPresent()) {
-            empresa = optionalEmpresa.get();
-        }
-        proveedor.setIdEmpresa(empresa);
+    public void save(UUID empresaId, ProveedorRequest request) {
+        Proveedor proveedor = new Proveedor();
+        proveedor.setActivo(request.getActivo());
+        empresaService.findById(empresaId).ifPresent(proveedor::setIdEmpresa);
         proveedorRepository.save(proveedor);
     }
 
     @Transactional(readOnly = true)
-    public List<Proveedor> findAll() {
-        return proveedorRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public List<ProveedorDTO> findAllDTO() {
-        return proveedorRepository.findAllDTO();
+    public List<ProveedorDTO> findAll() {
+        return proveedorRepository.findAll().stream().map(ProveedorDTO::new).toList();
     }
 
     @Transactional(readOnly = true)

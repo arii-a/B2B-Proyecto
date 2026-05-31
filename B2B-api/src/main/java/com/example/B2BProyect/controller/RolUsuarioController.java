@@ -1,16 +1,14 @@
 package com.example.B2BProyect.controller;
 
-import com.example.B2BProyect.repository.entity.RolUsuario;
+import com.example.B2BProyect.repository.dto.request.RolUsuarioRequest;
+import com.example.B2BProyect.repository.dto.response.RolUsuarioDTO;
 import com.example.B2BProyect.service.RolUsuarioService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class RolUsuarioController {
     private final RolUsuarioService rolUsuarioService;
 
     @GetMapping
-    public ResponseEntity<List<RolUsuario>> findAll() {
+    public ResponseEntity<List<RolUsuarioDTO>> findAll() {
         try {
             return ResponseEntity.ok(rolUsuarioService.findAll());
         } catch (Exception e) {
@@ -32,7 +30,7 @@ public class RolUsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<RolUsuario> save(@RequestBody RolUsuario rolUsuario) {
+    public ResponseEntity<Void> save(@RequestBody RolUsuarioRequest rolUsuario) {
         try {
             rolUsuarioService.save(rolUsuario);
             return ResponseEntity.status(HttpStatus.CREATED).build();
