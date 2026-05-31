@@ -22,6 +22,14 @@ public class B2BProyectApplication implements CommandLineRunner {
 				"/api/v1/sucursales-empresa",
 				new ParameterizedTypeReference<>() {}
 		);
+		sistemaA.getAll(
+				"/api/v1/usuarios",
+				new ParameterizedTypeReference<>() {}
+		);
+		sistemaA.getAll(
+				"/api/v1/roles-usuario",
+				new ParameterizedTypeReference<>() {}
+		);
 	}
 
 
