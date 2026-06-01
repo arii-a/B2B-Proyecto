@@ -11,7 +11,7 @@ import lombok.*;
 @ToString
 public class Customer {
     private String name;
-    private String lastName;
+    private String lastname;
     @JsonProperty("document_number")
     private String documentNumber;
 }

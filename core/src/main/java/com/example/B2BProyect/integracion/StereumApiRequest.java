@@ -17,5 +17,5 @@ public class StereumApiRequest {
     private String chargeReason;
     @JsonProperty("reservation_validity_time")
     private String reservationValidityTime;
-    private Customer costumer;
+    private Customer customer;
 }
