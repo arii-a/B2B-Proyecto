@@ -27,9 +27,8 @@ public class ReglasComisionService {
         regla.setActiva(request.getActiva());
         regla.setFechaInicio(request.getFechaInicio());
         regla.setFechaFinal(request.getFechaFinal());
-        if (request.getIdProveedor() != null) {
+        if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(regla::setIdProveedor);
-        }
         reglasComisionRepository.save(regla);
     }
 
@@ -41,5 +40,27 @@ public class ReglasComisionService {
     @Transactional(readOnly = true)
     public Optional<ReglasComision> findById(UUID id) {
         return reglasComisionRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<ReglasComisionDTO> update(UUID id, ReglasComisionRequest dto) {
+        return reglasComisionRepository.findById(id).map(regla -> {
+            if (dto.getNombre() != null)      regla.setNombre(dto.getNombre());
+            if (dto.getIdTipo() != null)      regla.setIdTipo(dto.getIdTipo());
+            if (dto.getValor() != null)       regla.setValor(dto.getValor());
+            if (dto.getActiva() != null)      regla.setActiva(dto.getActiva());
+            if (dto.getFechaInicio() != null) regla.setFechaInicio(dto.getFechaInicio());
+            if (dto.getFechaFinal() != null)  regla.setFechaFinal(dto.getFechaFinal());
+            if (dto.getIdProveedor() != null)
+                proveedorService.findById(dto.getIdProveedor()).ifPresent(regla::setIdProveedor);
+            return new ReglasComisionDTO(reglasComisionRepository.save(regla));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!reglasComisionRepository.existsById(id)) return false;
+        reglasComisionRepository.deleteById(id);
+        return true;
     }
 }

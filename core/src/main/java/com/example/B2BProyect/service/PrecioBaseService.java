@@ -25,12 +25,10 @@ public class PrecioBaseService {
         precioBase.setPrecioBase(request.getPrecioBase());
         precioBase.setVigenteDesde(request.getVigenteDesde());
         precioBase.setVigenteHasta(request.getVigenteHasta());
-        if (request.getIdProveedor() != null) {
+        if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(precioBase::setIdProveedor);
-        }
-        if (request.getIdProducto() != null) {
+        if (request.getIdProducto() != null)
             productoService.findById(request.getIdProducto()).ifPresent(precioBase::setIdProducto);
-        }
         precioBaseRepository.save(precioBase);
     }
 
@@ -42,5 +40,26 @@ public class PrecioBaseService {
     @Transactional(readOnly = true)
     public Optional<PrecioBase> findById(UUID id) {
         return precioBaseRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<PrecioBaseDTO> update(UUID id, PrecioBaseRequest dto) {
+        return precioBaseRepository.findById(id).map(precio -> {
+            if (dto.getPrecioBase() != null)    precio.setPrecioBase(dto.getPrecioBase());
+            if (dto.getVigenteDesde() != null)  precio.setVigenteDesde(dto.getVigenteDesde());
+            if (dto.getVigenteHasta() != null)  precio.setVigenteHasta(dto.getVigenteHasta());
+            if (dto.getIdProveedor() != null)
+                proveedorService.findById(dto.getIdProveedor()).ifPresent(precio::setIdProveedor);
+            if (dto.getIdProducto() != null)
+                productoService.findById(dto.getIdProducto()).ifPresent(precio::setIdProducto);
+            return new PrecioBaseDTO(precioBaseRepository.save(precio));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!precioBaseRepository.existsById(id)) return false;
+        precioBaseRepository.deleteById(id);
+        return true;
     }
 }

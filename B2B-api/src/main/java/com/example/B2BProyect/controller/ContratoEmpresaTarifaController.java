@@ -11,11 +11,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
 @Controller
-@RequestMapping("/api/v1/contratos-empresa-tarifa")
+@RequestMapping("/api/v1/contratos-tarifa")
 public class ContratoEmpresaTarifaController {
     private final ContratoEmpresaTarifaService contratoEmpresaTarifaService;
 
@@ -24,18 +25,43 @@ public class ContratoEmpresaTarifaController {
         try {
             return ResponseEntity.ok(contratoEmpresaTarifaService.findAll());
         } catch (Exception e) {
-            log.error("Error llamando a los contratos de empresa tarifa: {}", e.getMessage());
+            log.error("Error listando contratos tarifa: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody ContratoEmpresaTarifaRequest contrato) {
+    public ResponseEntity<Void> save(@RequestBody ContratoEmpresaTarifaRequest dto) {
         try {
-            contratoEmpresaTarifaService.save(contrato);
+            contratoEmpresaTarifaService.save(dto);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
-            log.error("Error creando nuevo contrato de empresa tarifa: {}", e.getMessage());
+            log.error("Error creando contrato tarifa: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ContratoEmpresaTarifasDTO> update(@PathVariable UUID id,
+                                                             @RequestBody ContratoEmpresaTarifaRequest dto) {
+        try {
+            return contratoEmpresaTarifaService.update(id, dto)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("Error actualizando contrato tarifa: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        try {
+            return contratoEmpresaTarifaService.delete(id)
+                    ? ResponseEntity.noContent().build()
+                    : ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error eliminando contrato tarifa: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

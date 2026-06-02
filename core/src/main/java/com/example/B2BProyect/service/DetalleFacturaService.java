@@ -25,12 +25,10 @@ public class DetalleFacturaService {
         detalle.setCantidad(request.getCantidad());
         detalle.setPrecioUnitario(request.getPrecioUnitario());
         detalle.setSubtotal(request.getSubtotal());
-        if (request.getIdFactura() != null) {
+        if (request.getIdFactura() != null)
             facturaService.findById(request.getIdFactura()).ifPresent(detalle::setIdFactura);
-        }
-        if (request.getIdProducto() != null) {
+        if (request.getIdProducto() != null)
             productoService.findById(request.getIdProducto()).ifPresent(detalle::setIdProducto);
-        }
         detalleFacturaRepository.save(detalle);
     }
 
@@ -42,5 +40,26 @@ public class DetalleFacturaService {
     @Transactional(readOnly = true)
     public Optional<DetalleFactura> findById(UUID id) {
         return detalleFacturaRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<DetalleFacturaDTO> update(UUID id, DetalleFacturaRequest dto) {
+        return detalleFacturaRepository.findById(id).map(detalle -> {
+            if (dto.getCantidad() != null)       detalle.setCantidad(dto.getCantidad());
+            if (dto.getPrecioUnitario() != null) detalle.setPrecioUnitario(dto.getPrecioUnitario());
+            if (dto.getSubtotal() != null)       detalle.setSubtotal(dto.getSubtotal());
+            if (dto.getIdFactura() != null)
+                facturaService.findById(dto.getIdFactura()).ifPresent(detalle::setIdFactura);
+            if (dto.getIdProducto() != null)
+                productoService.findById(dto.getIdProducto()).ifPresent(detalle::setIdProducto);
+            return new DetalleFacturaDTO(detalleFacturaRepository.save(detalle));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!detalleFacturaRepository.existsById(id)) return false;
+        detalleFacturaRepository.deleteById(id);
+        return true;
     }
 }

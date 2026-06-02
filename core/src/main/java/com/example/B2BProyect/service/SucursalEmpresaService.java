@@ -25,9 +25,8 @@ public class SucursalEmpresaService {
         sucursal.setDireccion(request.getDireccion());
         sucursal.setCoordenadas(request.getCoordenadas());
         sucursal.setActivo(request.getActivo());
-        if (request.getIdEmpresa() != null) {
+        if (request.getIdEmpresa() != null)
             empresaService.findById(request.getIdEmpresa()).ifPresent(sucursal::setIdEmpresa);
-        }
         sucursalEmpresaRepository.save(sucursal);
     }
 
@@ -39,5 +38,25 @@ public class SucursalEmpresaService {
     @Transactional(readOnly = true)
     public Optional<SucursalEmpresa> findById(UUID id) {
         return sucursalEmpresaRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<SucursalEmpresaDTO> update(UUID id, SucursalEmpresaRequest dto) {
+        return sucursalEmpresaRepository.findById(id).map(sucursal -> {
+            if (dto.getNombre() != null)      sucursal.setNombre(dto.getNombre());
+            if (dto.getDireccion() != null)   sucursal.setDireccion(dto.getDireccion());
+            if (dto.getCoordenadas() != null) sucursal.setCoordenadas(dto.getCoordenadas());
+            if (dto.getActivo() != null)      sucursal.setActivo(dto.getActivo());
+            if (dto.getIdEmpresa() != null)
+                empresaService.findById(dto.getIdEmpresa()).ifPresent(sucursal::setIdEmpresa);
+            return new SucursalEmpresaDTO(sucursalEmpresaRepository.save(sucursal));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!sucursalEmpresaRepository.existsById(id)) return false;
+        sucursalEmpresaRepository.deleteById(id);
+        return true;
     }
 }

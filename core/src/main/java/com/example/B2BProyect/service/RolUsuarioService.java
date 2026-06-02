@@ -34,4 +34,20 @@ public class RolUsuarioService {
     public Optional<RolUsuario> findById(UUID id) {
         return rolUsuarioRepository.findById(id);
     }
+
+    @Transactional
+    public Optional<RolUsuarioDTO> update(UUID id, RolUsuarioRequest dto) {
+        return rolUsuarioRepository.findById(id).map(rol -> {
+            if (dto.getNombre() != null)      rol.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null) rol.setDescripcion(dto.getDescripcion());
+            return new RolUsuarioDTO(rolUsuarioRepository.save(rol));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!rolUsuarioRepository.existsById(id)) return false;
+        rolUsuarioRepository.deleteById(id);
+        return true;
+    }
 }

@@ -27,12 +27,10 @@ public class ProductoService {
         producto.setDescripcion(request.getDescripcion());
         producto.setUnidadMedida(request.getUnidadMedida());
         producto.setActivo(request.getActivo());
-        if (request.getIdCategoria() != null) {
+        if (request.getIdCategoria() != null)
             categoriaService.findById(request.getIdCategoria()).ifPresent(producto::setIdCategoria);
-        }
-        if (request.getIdProveedor() != null) {
+        if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(producto::setIdProveedor);
-        }
         productoRepository.save(producto);
     }
 
@@ -44,5 +42,28 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public Optional<Producto> findById(UUID id) {
         return productoRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<ProductoDTO> update(UUID id, ProductoRequest dto) {
+        return productoRepository.findById(id).map(producto -> {
+            if (dto.getSku() != null)          producto.setSku(dto.getSku());
+            if (dto.getNombre() != null)       producto.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null)  producto.setDescripcion(dto.getDescripcion());
+            if (dto.getUnidadMedida() != null) producto.setUnidadMedida(dto.getUnidadMedida());
+            if (dto.getActivo() != null)       producto.setActivo(dto.getActivo());
+            if (dto.getIdCategoria() != null)
+                categoriaService.findById(dto.getIdCategoria()).ifPresent(producto::setIdCategoria);
+            if (dto.getIdProveedor() != null)
+                proveedorService.findById(dto.getIdProveedor()).ifPresent(producto::setIdProveedor);
+            return new ProductoDTO(productoRepository.save(producto));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!productoRepository.existsById(id)) return false;
+        productoRepository.deleteById(id);
+        return true;
     }
 }

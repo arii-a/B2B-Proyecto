@@ -1,0 +1,297 @@
+2026-05-12T21:42:49.534Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-05-12T21:42:49.539Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "precheckCompleted",
+  "phase": "precheck",
+  "status": "succeeded",
+  "details": {
+    "baseJdkVersion": "17",
+    "targetVersion": "Java 21"
+  },
+  "message": "Detected Maven Spring Boot project with current java.version 17 and target latest LTS Java 21."
+}}).
+2026-05-12T21:42:49.543Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:42:49.548Z [INFO] Project c:\upb\septimo-semestre\tercer-modulo\SpringBoot\B2BProyect is a maven project, try to get java version from pom.xml
+2026-05-12T21:42:49.552Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'precheckCompleted' reported!\nSession ID: 20260512214249,\nSession Dir: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249"
+}}).
+2026-05-12T21:42:49.554Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-05-12T21:42:49.559Z [INFO] Project java version: 17
+2026-05-12T21:42:49.563Z [INFO] Maven project detected.
+2026-05-12T21:42:49.566Z [INFO] Build tool type: mvnw
+2026-05-12T21:42:49.854Z [INFO] JDK: undefined
+2026-05-12T21:42:49.855Z [ERROR] Failed to detect or resolve JDK for the project at c:\upb\septimo-semestre\tercer-modulo\SpringBoot\B2BProyect.
+2026-05-12T21:42:49.857Z [WARN] [ReportEventTool] Full project info unavailable, attempting lightweight fallback: UserError: Failed to detect or resolve JDK for the project at c:\upb\septimo-semestre\tercer-modulo\SpringBoot\B2BProyect. Please ensure JDK 17 is installed and properly configured on the machine.
+2026-05-12T21:42:49.859Z [INFO] Maven project detected.
+2026-05-12T21:42:49.861Z [INFO] Project c:\upb\septimo-semestre\tercer-modulo\SpringBoot\B2BProyect is a maven project, try to get java version from pom.xml
+2026-05-12T21:42:54.102Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-05-12T21:42:54.104Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "planGenerationStarted",
+  "phase": "plan",
+  "status": "succeeded"
+}}).
+2026-05-12T21:42:54.106Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:42:54.108Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-05-12T21:42:54.109Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-05-12T21:42:54.280Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-05-12T21:42:54.281Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "planGenerationStarted",
+  "phase": "plan",
+  "status": "succeeded"
+}}).
+2026-05-12T21:42:54.282Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:42:54.283Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'planGenerationStarted' reported!\nSession ID: 20260512214249,\nSession Dir: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249"
+}}).
+2026-05-12T21:42:54.285Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-05-12T21:43:04.895Z [INFO] ---------------------prepare appmod-list-jdks----------------------
+2026-05-12T21:43:04.898Z [INFO] [Tool.prepareInvocation]({name: appmod-list-jdks, input: {
+  "sessionId": "20260512214249"
+}}).
+2026-05-12T21:43:04.902Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:43:04.905Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "List jdks"
+}}).
+2026-05-12T21:43:04.908Z [INFO] ----------------------prepared appmod-list-jdks----------------------
+2026-05-12T21:43:05.304Z [INFO] ----------------------invoke appmod-list-jdks----------------------
+2026-05-12T21:43:05.306Z [INFO] [Tool.invoke]({name: appmod-list-jdks, modelId: auto, input: {
+  "sessionId": "20260512214249"
+}}).
+2026-05-12T21:43:05.307Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:43:05.358Z [INFO] [Tool.invoke]({result: {
+  "message": "We found following jdks in your system:\n\n1. Java 20\n   📁 Path: C:\\Users\\Ariana\\.jdks\\openjdk-20\\bin\n   🏷️ Source: others\n\n2. Java 21.0.5\n   📁 Path: C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.5.11-hotspot\\bin\n   🏷️ Source: PATH,JAVA_HOME\n\n3. Java 22.0.1\n   📁 Path: C:\\Users\\Ariana\\.jdks\\openjdk-22.0.1\\bin\n   🏷️ Source: others\n\nTotal: 3 JDK installation(s) found"
+}}).
+2026-05-12T21:43:05.359Z [INFO] ----------------------invoked appmod-list-jdks----------------------
+2026-05-12T21:43:05.370Z [INFO] ---------------------prepare appmod-list-mavens----------------------
+2026-05-12T21:43:05.371Z [INFO] [Tool.prepareInvocation]({name: appmod-list-mavens, input: {
+  "sessionId": "20260512214249"
+}}).
+2026-05-12T21:43:05.373Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:43:05.375Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "List mavens"
+}}).
+2026-05-12T21:43:05.376Z [INFO] ----------------------prepared appmod-list-mavens----------------------
+2026-05-12T21:43:05.630Z [INFO] ----------------------invoke appmod-list-mavens----------------------
+2026-05-12T21:43:05.631Z [INFO] [Tool.invoke]({name: appmod-list-mavens, modelId: auto, input: {
+  "sessionId": "20260512214249"
+}}).
+2026-05-12T21:43:05.633Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:43:05.641Z [INFO] [Tool.invoke]({result: {
+  "message": "We found following maven installations in your system:\n\n1. 📁 Path: C:\\apache-maven\\bin\n   🏷️ Source: PATH\n\nTotal: 1 Maven installation(s) found"
+}}).
+2026-05-12T21:43:05.642Z [INFO] ----------------------invoked appmod-list-mavens----------------------
+2026-05-12T21:44:20.595Z [INFO] ---------------------prepare appmod-confirm-upgrade-plan----------------------
+2026-05-12T21:44:20.597Z [INFO] [Tool.prepareInvocation]({name: appmod-confirm-upgrade-plan, input: {
+  "sessionId": "20260512214249"
+}}).
+2026-05-12T21:44:20.598Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:44:20.600Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Review [upgrade plan](file:///c:/upb/septimo-semestre/tercer-modulo/SpringBoot/B2BProyect/.github/java-upgrade/20260512214249/plan.md)",
+  "confirmationMessages": {
+    "title": "Plan generated",
+    "message": "Please review the generated plan and make any necessary adjustments before proceeding. You can modify the generated [`plan.md`](file:///c:/upb/septimo-semestre/tercer-modulo/SpringBoot/B2BProyect/.github/java-upgrade/20260512214249/plan.md) directly."
+  }
+}}).
+2026-05-12T21:44:20.601Z [INFO] ----------------------prepared appmod-confirm-upgrade-plan----------------------
+2026-05-12T21:44:24.427Z [INFO] ----------------------invoke appmod-confirm-upgrade-plan----------------------
+2026-05-12T21:44:24.428Z [INFO] [Tool.invoke]({name: appmod-confirm-upgrade-plan, modelId: auto, input: {
+  "sessionId": "20260512214249"
+}}).
+2026-05-12T21:44:24.429Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:44:24.430Z [INFO] Upgrade plan confirmed successfully.
+2026-05-12T21:44:24.434Z [INFO] [Tool.invoke]({result: {
+  "message": "Generated plan is reviewed and confirmed by the user! the upgrade process will start now and be tracked in markdown file: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249\\progress.md."
+}}).
+2026-05-12T21:44:24.434Z [INFO] ----------------------invoked appmod-confirm-upgrade-plan----------------------
+2026-05-12T21:44:48.619Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-05-12T21:44:48.620Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "planExecutionStarted",
+  "phase": "execute",
+  "status": "succeeded"
+}}).
+2026-05-12T21:44:48.622Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:44:48.623Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-05-12T21:44:48.624Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-05-12T21:44:49.033Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-05-12T21:44:49.035Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "planExecutionStarted",
+  "phase": "execute",
+  "status": "succeeded"
+}}).
+2026-05-12T21:44:49.038Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:44:49.643Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'planExecutionStarted' reported!\nSession ID: 20260512214249,\nSession Dir: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249"
+}}).
+2026-05-12T21:44:49.645Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-05-12T21:46:13.409Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-05-12T21:46:13.412Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "environmentSetup",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "jdkPath": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.5.11-hotspot\\bin",
+    "buildToolPath": "."
+  }
+}}).
+2026-05-12T21:46:13.416Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:46:13.419Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-05-12T21:46:13.423Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-05-12T21:46:13.758Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-05-12T21:46:13.760Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "environmentSetup",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "jdkPath": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.5.11-hotspot\\bin",
+    "buildToolPath": "."
+  }
+}}).
+2026-05-12T21:46:13.761Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:46:13.763Z [INFO] Project c:\upb\septimo-semestre\tercer-modulo\SpringBoot\B2BProyect is a maven project, try to get java version from pom.xml
+2026-05-12T21:46:13.765Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'environmentSetup' reported!\nSession ID: 20260512214249,\nSession Dir: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249"
+}}).
+2026-05-12T21:46:13.766Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-05-12T21:46:13.768Z [INFO] Project java version: 17
+2026-05-12T21:46:13.770Z [INFO] Maven project detected.
+2026-05-12T21:46:13.772Z [INFO] Build tool type: mvnw
+2026-05-12T21:46:13.774Z [INFO] JDK: {
+  "name": "java",
+  "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.5.11-hotspot\\bin",
+  "version": "17"
+}
+2026-05-12T21:46:13.775Z [INFO] Build tool: {
+  "name": "mvnw",
+  "path": ".",
+  "version": ""
+}
+2026-05-12T21:46:13.777Z [INFO] Project config: {
+  "buildTool": {
+    "path": ".",
+    "name": "mvnw",
+    "version": ""
+  },
+  "jdk": {
+    "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.5.11-hotspot\\bin",
+    "name": "java",
+    "version": "17"
+  },
+  "name": "B2BProyect",
+  "dir": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect"
+}
+2026-05-12T21:46:21.887Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-05-12T21:46:21.889Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "baselineSetup",
+  "phase": "execute",
+  "status": "skipped",
+  "message": "Java 17 is not installed on this machine, so baseline run is skipped."
+}}).
+2026-05-12T21:46:21.891Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:46:21.893Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-05-12T21:46:21.895Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-05-12T21:46:22.114Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-05-12T21:46:22.116Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "baselineSetup",
+  "phase": "execute",
+  "status": "skipped",
+  "message": "Java 17 is not installed on this machine, so baseline run is skipped."
+}}).
+2026-05-12T21:46:22.118Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:46:22.121Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'baselineSetup' reported!\nSession ID: 20260512214249,\nSession Dir: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249"
+}}).
+2026-05-12T21:46:22.123Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-05-12T21:47:14.690Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-05-12T21:47:14.691Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "upgradeStepStarted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java target version"
+  }
+}}).
+2026-05-12T21:47:14.693Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:47:14.694Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-05-12T21:47:14.696Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-05-12T21:47:14.792Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-05-12T21:47:14.793Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "upgradeStepStarted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java target version"
+  }
+}}).
+2026-05-12T21:47:14.795Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:47:14.797Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'upgradeStepStarted' reported!\nSession ID: 20260512214249,\nSession Dir: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249"
+}}).
+2026-05-12T21:47:14.798Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-05-12T21:47:27.104Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-05-12T21:47:27.105Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "upgradeStepCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java target version",
+    "commitId": "N/A"
+  }
+}}).
+2026-05-12T21:47:27.106Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-05-12T21:47:27.108Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-05-12T21:47:27.109Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-05-12T21:47:27.222Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-05-12T21:47:27.224Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260512214249",
+  "projectPath": "c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect",
+  "event": "upgradeStepCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java target version",
+    "commitId": "N/A"
+  }
+}}).
+2026-05-12T21:47:27.225Z [INFO] [Tool.invoke] do invoke.
+2026-05-12T21:47:27.227Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'upgradeStepCompleted' reported!\nSession ID: 20260512214249,\nSession Dir: c:\\upb\\septimo-semestre\\tercer-modulo\\SpringBoot\\B2BProyect\\.github\\java-upgrade\\20260512214249"
+}}).
+2026-05-12T21:47:27.228Z [INFO] ----------------------invoked appmod-report-event----------------------

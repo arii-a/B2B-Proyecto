@@ -24,12 +24,10 @@ public class ContactosEmpresaService {
         ContactosEmpresa contacto = new ContactosEmpresa();
         contacto.setNombres(request.getNombres());
         contacto.setApellidos(request.getApellidos());
-        if (request.getIdCargoEmpresa() != null) {
+        if (request.getIdCargoEmpresa() != null)
             cargoEmpresaService.findById(request.getIdCargoEmpresa()).ifPresent(contacto::setIdCargoEmpresa);
-        }
-        if (request.getIdEmpresa() != null) {
+        if (request.getIdEmpresa() != null)
             empresaService.findById(request.getIdEmpresa()).ifPresent(contacto::setIdEmpresa);
-        }
         contactosEmpresaRepository.save(contacto);
     }
 
@@ -41,5 +39,25 @@ public class ContactosEmpresaService {
     @Transactional(readOnly = true)
     public Optional<ContactosEmpresa> findById(UUID id) {
         return contactosEmpresaRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<ContactosEmpresaDTO> update(UUID id, ContactosEmpresaRequest dto) {
+        return contactosEmpresaRepository.findById(id).map(contacto -> {
+            if (dto.getNombres() != null)    contacto.setNombres(dto.getNombres());
+            if (dto.getApellidos() != null)  contacto.setApellidos(dto.getApellidos());
+            if (dto.getIdCargoEmpresa() != null)
+                cargoEmpresaService.findById(dto.getIdCargoEmpresa()).ifPresent(contacto::setIdCargoEmpresa);
+            if (dto.getIdEmpresa() != null)
+                empresaService.findById(dto.getIdEmpresa()).ifPresent(contacto::setIdEmpresa);
+            return new ContactosEmpresaDTO(contactosEmpresaRepository.save(contacto));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!contactosEmpresaRepository.existsById(id)) return false;
+        contactosEmpresaRepository.deleteById(id);
+        return true;
     }
 }

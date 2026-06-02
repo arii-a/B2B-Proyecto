@@ -24,9 +24,8 @@ public class TarifaReglaService {
         tarifaRegla.setNombre(request.getNombre());
         tarifaRegla.setDescripcion(request.getDescripcion());
         tarifaRegla.setActivo(request.getActivo());
-        if (request.getIdProveedor() != null) {
+        if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(tarifaRegla::setIdProveedor);
-        }
         tarifaReglaRepository.save(tarifaRegla);
     }
 
@@ -38,5 +37,24 @@ public class TarifaReglaService {
     @Transactional(readOnly = true)
     public Optional<TarifaRegla> findById(UUID id) {
         return tarifaReglaRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<TarifaReglaDTO> update(UUID id, TarifaReglaRequest dto) {
+        return tarifaReglaRepository.findById(id).map(tarifa -> {
+            if (dto.getNombre() != null)      tarifa.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null) tarifa.setDescripcion(dto.getDescripcion());
+            if (dto.getActivo() != null)      tarifa.setActivo(dto.getActivo());
+            if (dto.getIdProveedor() != null)
+                proveedorService.findById(dto.getIdProveedor()).ifPresent(tarifa::setIdProveedor);
+            return new TarifaReglaDTO(tarifaReglaRepository.save(tarifa));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!tarifaReglaRepository.existsById(id)) return false;
+        tarifaReglaRepository.deleteById(id);
+        return true;
     }
 }

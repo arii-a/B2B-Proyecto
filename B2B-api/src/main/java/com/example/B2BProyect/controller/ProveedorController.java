@@ -41,4 +41,28 @@ public class ProveedorController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProveedorDTO> update(@PathVariable UUID id, @RequestBody ProveedorRequest dto) {
+        try {
+            return proveedorService.update(id, dto)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("Error actualizando proveedor: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        try {
+            return proveedorService.delete(id)
+                    ? ResponseEntity.noContent().build()
+                    : ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error eliminando proveedor: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

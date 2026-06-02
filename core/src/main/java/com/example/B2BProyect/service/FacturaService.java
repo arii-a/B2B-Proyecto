@@ -24,9 +24,8 @@ public class FacturaService {
         factura.setFecha(request.getFecha());
         factura.setTotal(request.getTotal());
         factura.setIdEstado(request.getIdEstado());
-        if (request.getIdOrden() != null) {
+        if (request.getIdOrden() != null)
             ordenCompraService.findById(request.getIdOrden()).ifPresent(factura::setIdOrden);
-        }
         facturaRepository.save(factura);
     }
 
@@ -38,5 +37,24 @@ public class FacturaService {
     @Transactional(readOnly = true)
     public Optional<Factura> findById(UUID id) {
         return facturaRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<FacturaDTO> update(UUID id, FacturaRequest dto) {
+        return facturaRepository.findById(id).map(factura -> {
+            if (dto.getFecha() != null)    factura.setFecha(dto.getFecha());
+            if (dto.getTotal() != null)    factura.setTotal(dto.getTotal());
+            if (dto.getIdEstado() != null) factura.setIdEstado(dto.getIdEstado());
+            if (dto.getIdOrden() != null)
+                ordenCompraService.findById(dto.getIdOrden()).ifPresent(factura::setIdOrden);
+            return new FacturaDTO(facturaRepository.save(factura));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!facturaRepository.existsById(id)) return false;
+        facturaRepository.deleteById(id);
+        return true;
     }
 }

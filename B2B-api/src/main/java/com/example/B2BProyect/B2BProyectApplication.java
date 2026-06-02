@@ -20,7 +20,7 @@ public class B2BProyectApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		try {
+		/*try {
 			Customer customer = new Customer();
 			customer.setName("Ricardo");
 			customer.setLastname("Laredo");
@@ -37,9 +37,9 @@ public class B2BProyectApplication implements CommandLineRunner {
 
 			StereuemApiResponse response1 = sistemaB2B.callStereum(request1);
 			// System.out.println(response1); <- No es necesario imprimir con la configuracion actual
-			System.out.println(sistemaB2B.listBanks("BO"));
+			//System.out.println(sistemaB2B.listBanks("BO"));
 		} catch (Exception e) {
 			log.error("Integration call failed on startup: {}", e.getMessage());
-		}
+		}*/
 	}
 }

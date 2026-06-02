@@ -1,0 +1,49 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+**/src/main/resources/application.properties
+
+### Parcial 1 ###
+examen-api/
+core/src/main/java/com/example/B2BProyect/service/EstudianteService.java
+core/src/main/java/com/example/B2BProyect/service/MateriaService.java
+data/src/main/java/com/example/B2BProyect/repository/EstudianteRepository.java
+data/src/main/java/com/example/B2BProyect/repository/MateriaRepository.java
+data/src/main/java/com/example/B2BProyect/repository/dto/request/EstudianteRequest.java
+data/src/main/java/com/example/B2BProyect/repository/dto/response/EstudianteDTO.java
+data/src/main/java/com/example/B2BProyect/repository/entity/Estudiante.java
+data/src/main/java/com/example/B2BProyect/repository/entity/Materia.java
+
+### ENV
+B2B-api/src/main/resources/.env

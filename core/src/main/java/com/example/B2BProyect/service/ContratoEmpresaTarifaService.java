@@ -26,15 +26,12 @@ public class ContratoEmpresaTarifaService {
         contrato.setVigenteDesde(request.getVigenteDesde());
         contrato.setVigenteHasta(request.getVigenteHasta());
         contrato.setActivo(request.getActivo());
-        if (request.getIdEmpresa() != null) {
+        if (request.getIdEmpresa() != null)
             empresaService.findById(request.getIdEmpresa()).ifPresent(contrato::setIdEmpresa);
-        }
-        if (request.getIdProveedor() != null) {
+        if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(contrato::setIdProveedor);
-        }
-        if (request.getIdRegla() != null) {
+        if (request.getIdRegla() != null)
             tarifaReglaService.findById(request.getIdRegla()).ifPresent(contrato::setIdRegla);
-        }
         contratoEmpresaTarifaRepository.save(contrato);
     }
 
@@ -46,5 +43,28 @@ public class ContratoEmpresaTarifaService {
     @Transactional(readOnly = true)
     public Optional<ContratoEmpresaTarifa> findById(UUID id) {
         return contratoEmpresaTarifaRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<ContratoEmpresaTarifasDTO> update(UUID id, ContratoEmpresaTarifaRequest dto) {
+        return contratoEmpresaTarifaRepository.findById(id).map(contrato -> {
+            if (dto.getVigenteDesde() != null) contrato.setVigenteDesde(dto.getVigenteDesde());
+            if (dto.getVigenteHasta() != null) contrato.setVigenteHasta(dto.getVigenteHasta());
+            if (dto.getActivo() != null)       contrato.setActivo(dto.getActivo());
+            if (dto.getIdEmpresa() != null)
+                empresaService.findById(dto.getIdEmpresa()).ifPresent(contrato::setIdEmpresa);
+            if (dto.getIdProveedor() != null)
+                proveedorService.findById(dto.getIdProveedor()).ifPresent(contrato::setIdProveedor);
+            if (dto.getIdRegla() != null)
+                tarifaReglaService.findById(dto.getIdRegla()).ifPresent(contrato::setIdRegla);
+            return new ContratoEmpresaTarifasDTO(contratoEmpresaTarifaRepository.save(contrato));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!contratoEmpresaTarifaRepository.existsById(id)) return false;
+        contratoEmpresaTarifaRepository.deleteById(id);
+        return true;
     }
 }

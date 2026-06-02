@@ -24,9 +24,8 @@ public class AlmacenService {
         almacen.setNombre(request.getNombre());
         almacen.setDireccion(request.getDireccion());
         almacen.setActivo(request.getActivo());
-        if (request.getIdProveedor() != null) {
+        if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(almacen::setIdProveedor);
-        }
         almacenRepository.save(almacen);
     }
 
@@ -38,5 +37,24 @@ public class AlmacenService {
     @Transactional(readOnly = true)
     public Optional<Almacen> findById(UUID id) {
         return almacenRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<AlmacenDTO> update(UUID id, AlmacenRequest dto) {
+        return almacenRepository.findById(id).map(almacen -> {
+            if (dto.getNombre() != null)    almacen.setNombre(dto.getNombre());
+            if (dto.getDireccion() != null) almacen.setDireccion(dto.getDireccion());
+            if (dto.getActivo() != null)    almacen.setActivo(dto.getActivo());
+            if (dto.getIdProveedor() != null)
+                proveedorService.findById(dto.getIdProveedor()).ifPresent(almacen::setIdProveedor);
+            return new AlmacenDTO(almacenRepository.save(almacen));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!almacenRepository.existsById(id)) return false;
+        almacenRepository.deleteById(id);
+        return true;
     }
 }

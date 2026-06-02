@@ -40,4 +40,19 @@ public class ProveedorService {
     public Optional<ProveedorDTO> findByIdDTO(UUID id) {
         return proveedorRepository.findByIdDTO(id);
     }
+
+    @Transactional
+    public Optional<ProveedorDTO> update(UUID id, ProveedorRequest dto) {
+        return proveedorRepository.findById(id).map(proveedor -> {
+            if (dto.getActivo() != null) proveedor.setActivo(dto.getActivo());
+            return new ProveedorDTO(proveedorRepository.save(proveedor));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!proveedorRepository.existsById(id)) return false;
+        proveedorRepository.deleteById(id);
+        return true;
+    }
 }

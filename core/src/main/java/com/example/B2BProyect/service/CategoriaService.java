@@ -34,4 +34,20 @@ public class CategoriaService {
     public Optional<Categoria> findById(UUID id) {
         return categoriaRepository.findById(id);
     }
+
+    @Transactional
+    public Optional<CategoriaDTO> update(UUID id, CategoriaRequest dto) {
+        return categoriaRepository.findById(id).map(categoria -> {
+            if (dto.getNombre() != null)      categoria.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null) categoria.setDescripcion(dto.getDescripcion());
+            return new CategoriaDTO(categoriaRepository.save(categoria));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!categoriaRepository.existsById(id)) return false;
+        categoriaRepository.deleteById(id);
+        return true;
+    }
 }

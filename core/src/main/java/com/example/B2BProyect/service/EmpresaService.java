@@ -47,4 +47,22 @@ public class EmpresaService {
     public Optional<EmpresaDTO> findByName(String nombre) {
         return empresaRepository.findByNameDTO(nombre);
     }
+
+    @Transactional
+    public Optional<EmpresaDTO> update(UUID id, EmpresaRequest dto) {
+        return empresaRepository.findById(id).map(empresa -> {
+            if (dto.getNombre() != null)      empresa.setNombre(dto.getNombre());
+            if (dto.getDominio() != null)     empresa.setDominio(dto.getDominio());
+            if (dto.getNit() != null)         empresa.setNit(dto.getNit());
+            if (dto.getRazonSocial() != null) empresa.setRazonSocial(dto.getRazonSocial());
+            return new EmpresaDTO(empresaRepository.save(empresa));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!empresaRepository.existsById(id)) return false;
+        empresaRepository.deleteById(id);
+        return true;
+    }
 }

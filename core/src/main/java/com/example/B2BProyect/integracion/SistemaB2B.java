@@ -16,19 +16,19 @@ import java.util.List;
 @Service
 public class SistemaB2B {
 
-    @Value("${b2b.url-base}")
+    @Value("${sistemaB2B.url-base}")
     private String urlBase;
 
-    @Value("${stereum.url-base}")
+    @Value("${stereum.api.url}")
     private String stereumUrl;
 
-    @Value("${b2b.connect-timeout:10000}")
+    @Value("${sistemaB2B.connect-timeout:10000}")
     private int connectTimeout;
 
-    @Value("${b2b.read-timeout:40000}")
+    @Value("${bsistemaB2B2b.read-timeout:40000}")
     private int readTimeout;
 
-    @Value("${stereum.api-key}")
+    @Value("${stereum.api.key}")
     private String stereumToken;
 
     private String token;
@@ -119,7 +119,7 @@ public class SistemaB2B {
         }
     }
 
-    public StereumQuoteResponse createQuote(StereumQuoteRequest request) throws Exception {
+    /*public StereumQuoteResponse createQuote(StereumQuoteRequest request) throws Exception {
         RestClient restClient = create();
 
         ResponseEntity<StereumQuoteResponse> response;
@@ -161,7 +161,7 @@ public class SistemaB2B {
             log.error("Error calling Stereum listBanks. ", e);
             throw e;
         }
-    }
+    }*/
 
     private RestClient create() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();

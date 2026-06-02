@@ -23,12 +23,10 @@ public class ContratoEmpresaDetalleService {
     public void save(ContratoEmpresaDetalleRequest request) {
         ContratoEmpresaDetalle detalle = new ContratoEmpresaDetalle();
         detalle.setPorcentajeDescuento(request.getPorcentajeDescuento());
-        if (request.getIdProducto() != null) {
+        if (request.getIdProducto() != null)
             productoService.findById(request.getIdProducto()).ifPresent(detalle::setIdProducto);
-        }
-        if (request.getIdContrato() != null) {
+        if (request.getIdContrato() != null)
             contratoEmpresaTarifaService.findById(request.getIdContrato()).ifPresent(detalle::setIdContrato);
-        }
         contratoEmpresaDetalleRepository.save(detalle);
     }
 
@@ -40,5 +38,24 @@ public class ContratoEmpresaDetalleService {
     @Transactional(readOnly = true)
     public Optional<ContratoEmpresaDetalle> findById(UUID id) {
         return contratoEmpresaDetalleRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<ContratoEmpresaDetalleDTO> update(UUID id, ContratoEmpresaDetalleRequest dto) {
+        return contratoEmpresaDetalleRepository.findById(id).map(detalle -> {
+            if (dto.getPorcentajeDescuento() != null) detalle.setPorcentajeDescuento(dto.getPorcentajeDescuento());
+            if (dto.getIdProducto() != null)
+                productoService.findById(dto.getIdProducto()).ifPresent(detalle::setIdProducto);
+            if (dto.getIdContrato() != null)
+                contratoEmpresaTarifaService.findById(dto.getIdContrato()).ifPresent(detalle::setIdContrato);
+            return new ContratoEmpresaDetalleDTO(contratoEmpresaDetalleRepository.save(detalle));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!contratoEmpresaDetalleRepository.existsById(id)) return false;
+        contratoEmpresaDetalleRepository.deleteById(id);
+        return true;
     }
 }

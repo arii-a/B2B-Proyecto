@@ -25,9 +25,8 @@ public class TramoTarifaService {
         tramo.setCantidadMinima(request.getCantidadMinima());
         tramo.setCantidadMaxima(request.getCantidadMaxima());
         tramo.setPorcentajeDesc(request.getPorcentajeDesc());
-        if (request.getIdRegla() != null) {
+        if (request.getIdRegla() != null)
             tarifaReglaService.findById(request.getIdRegla()).ifPresent(tramo::setIdRegla);
-        }
         tramoTarifaRepository.save(tramo);
     }
 
@@ -39,5 +38,25 @@ public class TramoTarifaService {
     @Transactional(readOnly = true)
     public Optional<TramoTarifa> findById(UUID id) {
         return tramoTarifaRepository.findById(id);
+    }
+
+    @Transactional
+    public Optional<TramoTarifaDTO> update(UUID id, TramoTarifaRequest dto) {
+        return tramoTarifaRepository.findById(id).map(tramo -> {
+            if (dto.getTipo() != null)            tramo.setTipo(dto.getTipo());
+            if (dto.getCantidadMinima() != null)  tramo.setCantidadMinima(dto.getCantidadMinima());
+            if (dto.getCantidadMaxima() != null)  tramo.setCantidadMaxima(dto.getCantidadMaxima());
+            if (dto.getPorcentajeDesc() != null)  tramo.setPorcentajeDesc(dto.getPorcentajeDesc());
+            if (dto.getIdRegla() != null)
+                tarifaReglaService.findById(dto.getIdRegla()).ifPresent(tramo::setIdRegla);
+            return new TramoTarifaDTO(tramoTarifaRepository.save(tramo));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!tramoTarifaRepository.existsById(id)) return false;
+        tramoTarifaRepository.deleteById(id);
+        return true;
     }
 }

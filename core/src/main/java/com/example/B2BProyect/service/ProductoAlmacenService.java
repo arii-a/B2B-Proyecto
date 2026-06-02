@@ -44,4 +44,22 @@ public class ProductoAlmacenService {
     public Optional<ProductoAlmacen> findById(ProductoAlmacenId id) {
         return productoAlmacenRepository.findById(id);
     }
+
+    @Transactional
+    public Optional<ProductoAlmacenDTO> update(ProductoAlmacenId id, ProductoAlmacenRequest dto) {
+        return productoAlmacenRepository.findById(id).map(pa -> {
+            if (dto.getStock() != null)  pa.setStock(dto.getStock());
+            if (dto.getMax() != null)    pa.setMax(dto.getMax());
+            if (dto.getMin() != null)    pa.setMin(dto.getMin());
+            if (dto.getActivo() != null) pa.setActivo(dto.getActivo());
+            return new ProductoAlmacenDTO(productoAlmacenRepository.save(pa));
+        });
+    }
+
+    @Transactional
+    public boolean delete(ProductoAlmacenId id) {
+        if (!productoAlmacenRepository.existsById(id)) return false;
+        productoAlmacenRepository.deleteById(id);
+        return true;
+    }
 }

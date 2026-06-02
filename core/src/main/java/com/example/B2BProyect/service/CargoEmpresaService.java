@@ -33,4 +33,19 @@ public class CargoEmpresaService {
     public Optional<CargoEmpresa> findById(UUID id) {
         return cargoEmpresaRepository.findById(id);
     }
+
+    @Transactional
+    public Optional<CargoEmpresaDTO> update(UUID id, CargoEmpresaRequest dto) {
+        return cargoEmpresaRepository.findById(id).map(cargo -> {
+            if (dto.getNombre() != null) cargo.setNombre(dto.getNombre());
+            return new CargoEmpresaDTO(cargoEmpresaRepository.save(cargo));
+        });
+    }
+
+    @Transactional
+    public boolean delete(UUID id) {
+        if (!cargoEmpresaRepository.existsById(id)) return false;
+        cargoEmpresaRepository.deleteById(id);
+        return true;
+    }
 }

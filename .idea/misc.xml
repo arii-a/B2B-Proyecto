@@ -7,11 +7,13 @@
         <option value="$PROJECT_DIR$/B2BProyect/pom.xml" />
         <option value="$PROJECT_DIR$/data/pom.xml" />
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/examen-api/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
       <set>
         <option value="$PROJECT_DIR$/B2BProyect/pom.xml" />
+        <option value="$PROJECT_DIR$/examen-api/pom.xml" />
       </set>
     </option>
   </component>

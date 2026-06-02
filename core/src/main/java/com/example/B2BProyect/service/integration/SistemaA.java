@@ -16,13 +16,13 @@ import java.util.List;
 @Service
 public class SistemaA {
 
-    @Value("${sistema1.url-base}")
+    @Value("${sistemaB2B.url-base}")
     private String urlBase;
 
-    @Value("${sistema1.connect-timeout:10000}")
+    @Value("${sistemaB2B.connect-timeout:10000}")
     private int connectTimeout;
 
-    @Value("${sistema1.read-timeout:40000}")
+    @Value("${sistemaB2B.read-timeout:40000}")
     private int readTimeout;
 
 
