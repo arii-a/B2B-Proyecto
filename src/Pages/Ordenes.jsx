@@ -1,32 +1,40 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { api } from '../api/client'
 
 export default function Ordenes() {
   const [ordenes, setOrdenes] = useState([])
+  const [rawOrdenes, setRawOrdenes] = useState([])
   const [msg, setMsg] = useState('')
 
   const fetchOrdenes = async () => {
-    const { data } = await supabase
-      .from('orden_compra')
-      .select('id_orden, id_estado, total, fecha')
-      .order('fecha', { ascending: false })
-      .limit(30)
-    setOrdenes(data || [])
+    try {
+      const data = await api.get('/api/v1/ordenes-compra')
+      setRawOrdenes(data || [])
+      setOrdenes(data || [])
+    } catch (e) {
+      setMsg(`Error: ${e.message}`)
+    }
   }
 
   useEffect(() => { fetchOrdenes() }, [])
 
-  const cambiarEstado = async (id, nuevoEstado) => {
+  const cambiarEstado = async (orden, nuevoEstado) => {
     setMsg('')
-    const { error } = await supabase
-      .from('orden_compra')
-      .update({ id_estado: nuevoEstado })
-      .eq('id_orden', id)
-
-    if (error) setMsg(`❌ Error: ${error.message}`)
-    else {
-      setMsg(`✅ Orden actualizada a "${nuevoEstado}". Trigger ejecutado.`)
+    try {
+      await api.put(`/api/v1/ordenes-compra/${orden.id}`, {
+        total: orden.total,
+        fecha: orden.fecha,
+        fechaOrden: orden.fechaOrden,
+        idEstado: nuevoEstado,
+        idProveedor: orden.idProveedor?.id,
+        idEmpresaCompradora: orden.idEmpresaCompradora?.id,
+        idSucursal: orden.idSucursal?.id,
+        idUsuario: orden.idUsuario?.id,
+      })
+      setMsg(`Orden actualizada a "${nuevoEstado}". Trigger ejecutado.`)
       fetchOrdenes()
+    } catch (e) {
+      setMsg(`Error: ${e.message}`)
     }
   }
 
@@ -49,25 +57,25 @@ export default function Ordenes() {
         </thead>
         <tbody>
           {ordenes.map((o, i) => (
-            <tr key={o.id_orden} style={{ background: i % 2 === 0 ? '#f8fafc' : '#fff' }}>
-              <td style={{ padding: '6px 8px', fontSize: '0.75rem', color: '#888' }}>{o.id_orden}</td>
-              <td style={{ padding: '6px 8px' }}>{o.total}</td>
+            <tr key={o.id} style={{ background: i % 2 === 0 ? '#f8fafc' : '#fff' }}>
+              <td style={{ padding: '6px 8px', fontSize: '0.75rem', color: '#888' }}>{o.id}</td>
+              <td style={{ padding: '6px 8px' }}>{Number(o.total || 0).toLocaleString('es-BO', { style: 'currency', currency: 'BOB' })}</td>
               <td style={{ padding: '6px 8px' }}>
                 <span style={{
-                  background: { pendiente: '#fef9c3', aprobado: '#dcfce7', cancelado: '#fee2e2', rechazado: '#e2e8f0' }[o.id_estado],
+                  background: { pendiente: '#fef9c3', aprobado: '#dcfce7', cancelado: '#fee2e2', rechazado: '#e2e8f0' }[o.idEstado],
                   padding: '2px 8px', borderRadius: '999px', fontSize: '0.8rem'
-                }}>{o.id_estado}</span>
+                }}>{o.idEstado}</span>
               </td>
               <td style={{ padding: '6px 8px', display: 'flex', gap: '0.4rem' }}>
-                <button onClick={() => cambiarEstado(o.id_orden, 'aprobado')}
+                <button onClick={() => cambiarEstado(o, 'aprobado')}
                   style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}>
                   Aprobar
                 </button>
-                <button onClick={() => cambiarEstado(o.id_orden, 'cancelado')}
+                <button onClick={() => cambiarEstado(o, 'cancelado')}
                   style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}>
                   Cancelar
                 </button>
-                <button onClick={() => cambiarEstado(o.id_orden, 'rechazado')}
+                <button onClick={() => cambiarEstado(o, 'rechazado')}
                   style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}>
                   Rechazar
                 </button>
