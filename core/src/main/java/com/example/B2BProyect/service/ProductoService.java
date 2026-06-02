@@ -60,6 +60,12 @@ public class ProductoService {
         });
     }
 
+    @Transactional(readOnly = true)
+    public List<ProductoDTO> findByProveedor(UUID idProveedor) {
+        return productoRepository.findByIdProveedorId(idProveedor)
+                .stream().map(ProductoDTO::new).toList();
+    }
+
     @Transactional
     public boolean delete(UUID id) {
         if (!productoRepository.existsById(id)) return false;

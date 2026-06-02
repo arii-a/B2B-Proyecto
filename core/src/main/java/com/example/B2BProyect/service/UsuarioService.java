@@ -5,10 +5,13 @@ import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.UsuarioRepository;
 import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
+import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
+import com.example.B2BProyect.repository.dto.response.SucursalEmpresaDTO;
 import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
 import com.example.B2BProyect.repository.entity.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,7 @@ import java.util.UUID;
 @Slf4j
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void save(UsuarioRequest dto,
@@ -30,6 +34,8 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNombre(dto.getNombre());
         usuario.setEmail(dto.getEmail());
+        usuario.setPasswordHash(passwordEncoder.encode(
+                dto.getPassword() != null ? dto.getPassword() : "changeme"));
         if (dto.getActivo() != null) usuario.setActivo(dto.getActivo());
         if (dto.getIdEmpresa() != null)
             empresaRepository.findById(dto.getIdEmpresa()).ifPresent(usuario::setIdEmpresa);
@@ -42,7 +48,16 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public List<UsuarioDTO> findAll() {
-        return usuarioRepository.findAll().stream().map(UsuarioDTO::new).toList();
+        return usuarioRepository.findAll().stream()
+                .map(u -> {
+                    UsuarioDTO dto = new UsuarioDTO(u);
+                    if (u.getIdEmpresa() != null)
+                        dto.setIdEmpresa(new EmpresaDTO(u.getIdEmpresa()));
+                    if (u.getIdSucursal() != null)
+                        dto.setIdSucursal(new SucursalEmpresaDTO(u.getIdSucursal()));
+                    return dto;
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)

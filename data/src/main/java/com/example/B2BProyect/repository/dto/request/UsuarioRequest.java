@@ -10,6 +10,7 @@ import java.util.UUID;
 public class UsuarioRequest {
     private String nombre;
     private String email;
+    private String password;
     private Boolean activo;
     private UUID idEmpresa;
     private UUID idSucursal;

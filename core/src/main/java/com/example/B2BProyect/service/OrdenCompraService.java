@@ -22,12 +22,12 @@ public class OrdenCompraService {
     private final UsuarioService usuarioService;
 
     @Transactional
-    public void save(OrdenCompraRequest request) {
+    public OrdenCompraDTO save(OrdenCompraRequest request) {
         OrdenCompra orden = new OrdenCompra();
         orden.setTotal(request.getTotal());
         orden.setFecha(request.getFecha());
         orden.setFechaOrden(request.getFechaOrden());
-        orden.setIdEstado(request.getIdEstado());
+        orden.setIdEstado(request.getIdEstado() != null ? request.getIdEstado() : "pendiente");
         if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(orden::setIdProveedor);
         if (request.getIdEmpresaCompradora() != null)
@@ -36,7 +36,7 @@ public class OrdenCompraService {
             sucursalEmpresaService.findById(request.getIdSucursal()).ifPresent(orden::setIdSucursal);
         if (request.getIdUsuario() != null)
             usuarioService.findById(request.getIdUsuario()).ifPresent(orden::setIdUsuario);
-        ordenCompraRepository.save(orden);
+        return new OrdenCompraDTO(ordenCompraRepository.save(orden));
     }
 
     @Transactional(readOnly = true)

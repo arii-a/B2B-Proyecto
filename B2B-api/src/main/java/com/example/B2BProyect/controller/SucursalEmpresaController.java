@@ -31,10 +31,10 @@ public class SucursalEmpresaController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody SucursalEmpresaRequest sucursalEmpresa) {
+    public ResponseEntity<SucursalEmpresaDTO> save(@RequestBody SucursalEmpresaRequest sucursalEmpresa) {
         try {
-            sucursalEmpresaService.save(sucursalEmpresa);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            SucursalEmpresaDTO created = sucursalEmpresaService.save(sucursalEmpresa);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (Exception e) {
             log.error("Error creando nueva sucursal de empresa: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

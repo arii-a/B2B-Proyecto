@@ -18,14 +18,14 @@ public class EmpresaService {
     private final EmpresaRepository empresaRepository;
 
     @Transactional
-    public void save(EmpresaRequest empresaDTO) {
+    public EmpresaDTO save(EmpresaRequest empresaDTO) {
         Empresa empresa = new Empresa();
         empresa.setNombre(empresaDTO.getNombre());
         empresa.setDominio(empresaDTO.getDominio());
         empresa.setActivo(true);
         empresa.setNit(empresaDTO.getNit());
         empresa.setRazonSocial(empresaDTO.getRazonSocial());
-        this.empresaRepository.save(empresa);
+        return new EmpresaDTO(this.empresaRepository.save(empresa));
     }
 
     @Transactional(readOnly = true)

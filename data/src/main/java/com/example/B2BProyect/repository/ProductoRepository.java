@@ -37,4 +37,6 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID> {
     @Query("SELECT p.id AS id, p.sku AS sku, p.nombre AS nombre, p.activo AS activo FROM Producto p")
     List<ProductoProjection> findResumenProductos();
 
+    List<Producto> findByIdProveedorId(UUID idProveedor);
+
 }

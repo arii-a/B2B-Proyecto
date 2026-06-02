@@ -23,7 +23,6 @@ import java.util.UUID;
 public class EmpresaController {
     private final EmpresaService empresaService;
 
-    @Secured({"ROLE_ADMIN"})
     @GetMapping
     public ResponseEntity<List<EmpresaDTO>> findAll() {
         Usuario user = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -37,10 +36,10 @@ public class EmpresaController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody EmpresaRequest empresa) {
+    public ResponseEntity<EmpresaDTO> save(@RequestBody EmpresaRequest empresa) {
         try {
-            this.empresaService.save(empresa);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            EmpresaDTO created = this.empresaService.save(empresa);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (Exception e) {
             log.error("Error creando nueva empresa: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

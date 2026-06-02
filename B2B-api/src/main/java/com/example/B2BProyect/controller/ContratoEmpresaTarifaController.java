@@ -31,10 +31,10 @@ public class ContratoEmpresaTarifaController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody ContratoEmpresaTarifaRequest dto) {
+    public ResponseEntity<ContratoEmpresaTarifasDTO> save(@RequestBody ContratoEmpresaTarifaRequest dto) {
         try {
-            contratoEmpresaTarifaService.save(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            ContratoEmpresaTarifasDTO created = contratoEmpresaTarifaService.save(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (Exception e) {
             log.error("Error creando contrato tarifa: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

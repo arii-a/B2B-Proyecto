@@ -32,10 +32,10 @@ public class TarifaReglaController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody TarifaReglaRequest dto) {
+    public ResponseEntity<TarifaReglaDTO> save(@RequestBody TarifaReglaRequest dto) {
         try {
-            tarifaReglaService.save(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            TarifaReglaDTO created = tarifaReglaService.save(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (Exception e) {
             log.error("Error creando tarifa regla: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

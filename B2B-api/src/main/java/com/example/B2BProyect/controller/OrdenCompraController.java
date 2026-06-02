@@ -32,10 +32,10 @@ public class OrdenCompraController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody OrdenCompraRequest dto) {
+    public ResponseEntity<OrdenCompraDTO> save(@RequestBody OrdenCompraRequest dto) {
         try {
-            ordenCompraService.save(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            OrdenCompraDTO created = ordenCompraService.save(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (Exception e) {
             log.error("Error creando orden compra: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

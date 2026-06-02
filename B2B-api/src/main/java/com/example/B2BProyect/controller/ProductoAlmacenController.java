@@ -31,6 +31,16 @@ public class ProductoAlmacenController {
         }
     }
 
+    @GetMapping("/almacen/{idAlmacen}")
+    public ResponseEntity<List<ProductoAlmacenDTO>> findByAlmacen(@PathVariable UUID idAlmacen) {
+        try {
+            return ResponseEntity.ok(productoAlmacenService.findByAlmacen(idAlmacen));
+        } catch (Exception e) {
+            log.error("Error listando producto-almacén por almacén: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PostMapping
     public ResponseEntity<Void> save(@RequestBody ProductoAlmacenRequest dto) {
         try {

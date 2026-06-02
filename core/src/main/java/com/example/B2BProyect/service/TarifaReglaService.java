@@ -19,14 +19,14 @@ public class TarifaReglaService {
     private final ProveedorService proveedorService;
 
     @Transactional
-    public void save(TarifaReglaRequest request) {
+    public TarifaReglaDTO save(TarifaReglaRequest request) {
         TarifaRegla tarifaRegla = new TarifaRegla();
         tarifaRegla.setNombre(request.getNombre());
         tarifaRegla.setDescripcion(request.getDescripcion());
-        tarifaRegla.setActivo(request.getActivo());
+        tarifaRegla.setActivo(request.getActivo() != null ? request.getActivo() : true);
         if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(tarifaRegla::setIdProveedor);
-        tarifaReglaRepository.save(tarifaRegla);
+        return new TarifaReglaDTO(tarifaReglaRepository.save(tarifaRegla));
     }
 
     @Transactional(readOnly = true)
