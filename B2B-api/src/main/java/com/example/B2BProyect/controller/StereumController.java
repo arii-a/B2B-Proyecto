@@ -28,7 +28,7 @@ public class StereumController {
             Customer customer = new Customer("Ricardo", "Laredo", "76887344");
             StereumApiRequest req = new StereumApiRequest(
                     "BO",
-                    "100",
+                    String.valueOf(request.getAmount()),
                     "USDT",
                     "POLYGON",
                     "Compra de prueba",
