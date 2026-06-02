@@ -47,7 +47,7 @@ public class Almacen {
     @OneToMany(mappedBy = "almacen")
     private Set<ProductoAlmacen> productoAlmacens = new LinkedHashSet<>();
 
-    @Column(name = "coordenadas", columnDefinition = "point")
+    @Column(name = "coordenadas", columnDefinition = "point", insertable = false, updatable = false)
     private Point coordenadas;
 
 }
