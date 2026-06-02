@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -38,6 +39,11 @@ public class ProductoAlmacenService {
     @Transactional(readOnly = true)
     public List<ProductoAlmacenDTO> findAll() {
         return productoAlmacenRepository.findAll().stream().map(ProductoAlmacenDTO::new).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductoAlmacenDTO> findByAlmacen(UUID idAlmacen) {
+        return productoAlmacenRepository.findByAlmacenDTO(idAlmacen);
     }
 
     @Transactional(readOnly = true)

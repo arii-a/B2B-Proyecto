@@ -30,6 +30,16 @@ public class ProductoController {
         }
     }
 
+    @GetMapping("/proveedor/{idProveedor}")
+    public ResponseEntity<List<ProductoDTO>> findByProveedor(@PathVariable UUID idProveedor) {
+        try {
+            return ResponseEntity.ok(productoService.findByProveedor(idProveedor));
+        } catch (Exception e) {
+            log.error("Error listando productos por proveedor: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PostMapping
     public ResponseEntity<Void> save(@RequestBody ProductoRequest producto) {
         try {

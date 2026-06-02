@@ -19,15 +19,15 @@ public class SucursalEmpresaService {
     private final EmpresaService empresaService;
 
     @Transactional
-    public void save(SucursalEmpresaRequest request) {
+    public SucursalEmpresaDTO save(SucursalEmpresaRequest request) {
         SucursalEmpresa sucursal = new SucursalEmpresa();
         sucursal.setNombre(request.getNombre());
         sucursal.setDireccion(request.getDireccion());
         sucursal.setCoordenadas(request.getCoordenadas());
-        sucursal.setActivo(request.getActivo());
+        sucursal.setActivo(request.getActivo() != null ? request.getActivo() : true);
         if (request.getIdEmpresa() != null)
             empresaService.findById(request.getIdEmpresa()).ifPresent(sucursal::setIdEmpresa);
-        sucursalEmpresaRepository.save(sucursal);
+        return new SucursalEmpresaDTO(sucursalEmpresaRepository.save(sucursal));
     }
 
     @Transactional(readOnly = true)

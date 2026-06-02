@@ -21,18 +21,18 @@ public class ContratoEmpresaTarifaService {
     private final TarifaReglaService tarifaReglaService;
 
     @Transactional
-    public void save(ContratoEmpresaTarifaRequest request) {
+    public ContratoEmpresaTarifasDTO save(ContratoEmpresaTarifaRequest request) {
         ContratoEmpresaTarifa contrato = new ContratoEmpresaTarifa();
         contrato.setVigenteDesde(request.getVigenteDesde());
         contrato.setVigenteHasta(request.getVigenteHasta());
-        contrato.setActivo(request.getActivo());
+        contrato.setActivo(request.getActivo() != null ? request.getActivo() : true);
         if (request.getIdEmpresa() != null)
             empresaService.findById(request.getIdEmpresa()).ifPresent(contrato::setIdEmpresa);
         if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(contrato::setIdProveedor);
         if (request.getIdRegla() != null)
             tarifaReglaService.findById(request.getIdRegla()).ifPresent(contrato::setIdRegla);
-        contratoEmpresaTarifaRepository.save(contrato);
+        return new ContratoEmpresaTarifasDTO(contratoEmpresaTarifaRepository.save(contrato));
     }
 
     @Transactional(readOnly = true)
