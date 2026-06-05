@@ -5,6 +5,7 @@ import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class OrdenCompraService {
@@ -22,11 +24,13 @@ public class OrdenCompraService {
     private final UsuarioService usuarioService;
 
     @Transactional
-    public OrdenCompraDTO save(OrdenCompraRequest request) {
+    public OrdenCompraDTO save(OrdenCompraRequest request, UUID idempotency) {
         OrdenCompra orden = new OrdenCompra();
         orden.setTotal(request.getTotal());
         orden.setFecha(request.getFecha());
         orden.setFechaOrden(request.getFechaOrden());
+        orden.setId(idempotency);
+        log.info("ORDEN A GUARDAR: " + orden.getId());
         orden.setIdEstado(request.getIdEstado() != null ? request.getIdEstado() : "pendiente");
         if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(orden::setIdProveedor);

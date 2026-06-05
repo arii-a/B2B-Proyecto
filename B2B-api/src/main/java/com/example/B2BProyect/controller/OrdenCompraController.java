@@ -1,13 +1,19 @@
 package com.example.B2BProyect.controller;
 
+import com.example.B2BProyect.integracion.*;
 import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
-import com.example.B2BProyect.service.OrdenCompraService;
+import com.example.B2BProyect.repository.entity.Empresa;
+import com.example.B2BProyect.repository.entity.Proveedor;
+import com.example.B2BProyect.repository.entity.Usuario;
+import com.example.B2BProyect.service.*;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,10 +37,19 @@ public class OrdenCompraController {
         }
     }
 
+    private final StereumService stereumService;
+    private final SistemaB2B sistemaB2B;
+    private final UsuarioService usuarioService;
+    private final ProveedorService proveedorService;
+    private final EmpresaService empresaService;
+    @Autowired
+    private SimpMessagingTemplate template;
+
     @PostMapping
     public ResponseEntity<OrdenCompraDTO> save(@RequestBody OrdenCompraRequest dto) {
+        UUID idempotency = UUID.randomUUID();
         try {
-            OrdenCompraDTO created = ordenCompraService.save(dto);
+            OrdenCompraDTO created = ordenCompraService.save(dto, idempotency);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (Exception e) {
             log.error("Error creando orden compra: {}", e.getMessage());

@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void init() {
-        if (userRepository.count() == 0) {
+        if (userRepository.count() == 0 ) {
             RolUsuario rolAdmin = rolUsuarioRepository.findAll()
                     .stream()
                     .filter(r -> r.getNombre().equals("ADMIN"))

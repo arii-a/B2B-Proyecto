@@ -16,51 +16,51 @@ import java.util.List;
 @Service
 public class SistemaB2B {
 
-    @Value("${sistemaB2B.url-base}")
-    private String urlBase;
+//    @Value("${sistemaB2B.url-base}")
+//    private String urlBase;
 
-    @Value("${stereum.api.url}")
+    @Value("${stereum.url-base}")
     private String stereumUrl;
 
-    @Value("${sistemaB2B.connect-timeout:10000}")
-    private int connectTimeout;
+//    @Value("${sistemaB2B.connect-timeout:10000}")
+//    private int connectTimeout;
+//
+//    @Value("${bsistemaB2B2b.read-timeout:40000}")
+//    private int readTimeout;
 
-    @Value("${bsistemaB2B2b.read-timeout:40000}")
-    private int readTimeout;
-
-    @Value("${stereum.api.key}")
+    @Value("${stereum.api_key}")
     private String stereumToken;
 
     private String token;
 
 
-    public B2BAuthResponse auth(B2BAuthRequest request) throws Exception {
-        RestClient restClient = create();
-
-        ResponseEntity<B2BAuthResponse> response;
-        try {
-            response = restClient.post()
-                    .uri(urlBase + "/api/v1/auth")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .body(request)
-                    .retrieve()
-                    .toEntity(B2BAuthResponse.class);
-        } catch (Exception e) {
-            log.error("Error calling B2B auth. ", e);
-            throw e;
-        }
-
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            log.error("B2B auth failed with status: {}", response.getStatusCode().value());
-            throw new Exception("B2B auth failed");
-        }
-
-        assert response.getBody() != null;
-        token = response.getBody().getAccessToken();
-        log.info("B2B JWT obtained: {}", token);
-        return response.getBody();
-    }
+//    public B2BAuthResponse auth(B2BAuthRequest request) throws Exception {
+//        RestClient restClient = create();
+//
+//        ResponseEntity<B2BAuthResponse> response;
+//        try {
+//            response = restClient.post()
+//                    .uri(urlBase + "/api/v1/auth")
+//                    .contentType(MediaType.APPLICATION_JSON)
+//                    .accept(MediaType.APPLICATION_JSON)
+//                    .body(request)
+//                    .retrieve()
+//                    .toEntity(B2BAuthResponse.class);
+//        } catch (Exception e) {
+//            log.error("Error calling B2B auth. ", e);
+//            throw e;
+//        }
+//
+//        if (!response.getStatusCode().is2xxSuccessful()) {
+//            log.error("B2B auth failed with status: {}", response.getStatusCode().value());
+//            throw new Exception("B2B auth failed");
+//        }
+//
+//        assert response.getBody() != null;
+//        token = response.getBody().getAccessToken();
+//        log.info("B2B JWT obtained: {}", token);
+//        return response.getBody();
+//    }
 
     public StereuemApiResponse callStereum(StereumApiRequest request) throws Exception {
         RestClient restClient = create();
@@ -89,35 +89,35 @@ public class SistemaB2B {
         return response.getBody();
     }
 
-    public List<B2BEmpresasResponse> listCategorias() throws Exception {
-        RestClient restClient = create();
-        try {
-            return restClient.get()
-                    .uri(urlBase + "/api/v1/empresas")
-                    .accept(MediaType.APPLICATION_JSON)
-                    .header("Authorization", "Bearer " + token)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
-        } catch (Exception e) {
-            log.error("Error calling B2B /empresas. ", e);
-            throw e;
-        }
-    }
-
-    public UsersMeResponse list2() throws Exception {
-        RestClient restClient = create();
-        try {
-            return restClient.get()
-                    .uri(urlBase + "/api/v1/users/me")
-                    .accept(MediaType.APPLICATION_JSON)
-                    .header("Authorization", "Bearer " + token)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
-        } catch (Exception e) {
-            log.error("Error calling B2B /users/me. ", e);
-            throw e;
-        }
-    }
+//    public List<B2BEmpresasResponse> listCategorias() throws Exception {
+//        RestClient restClient = create();
+//        try {
+//            return restClient.get()
+//                    .uri(urlBase + "/api/v1/empresas")
+//                    .accept(MediaType.APPLICATION_JSON)
+//                    .header("Authorization", "Bearer " + token)
+//                    .retrieve()
+//                    .body(new ParameterizedTypeReference<>() {});
+//        } catch (Exception e) {
+//            log.error("Error calling B2B /empresas. ", e);
+//            throw e;
+//        }
+//    }
+//
+//    public UsersMeResponse list2() throws Exception {
+//        RestClient restClient = create();
+//        try {
+//            return restClient.get()
+//                    .uri(urlBase + "/api/v1/users/me")
+//                    .accept(MediaType.APPLICATION_JSON)
+//                    .header("Authorization", "Bearer " + token)
+//                    .retrieve()
+//                    .body(new ParameterizedTypeReference<>() {});
+//        } catch (Exception e) {
+//            log.error("Error calling B2B /users/me. ", e);
+//            throw e;
+//        }
+//    }
 
     /*public StereumQuoteResponse createQuote(StereumQuoteRequest request) throws Exception {
         RestClient restClient = create();
@@ -165,8 +165,8 @@ public class SistemaB2B {
 
     private RestClient create() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(Duration.ofMillis(connectTimeout));
-        factory.setReadTimeout(Duration.ofMillis(readTimeout));
+//        factory.setConnectTimeout(Duration.ofMillis(connectTimeout));
+//        factory.setReadTimeout(Duration.ofMillis(readTimeout));
         return RestClient.builder().requestFactory(factory).build();
     }
 }

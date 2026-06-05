@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B2B Order + Stereum Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(16, 24, 48, 0.86);
+      --panel-border: rgba(148, 163, 184, 0.16);
+      --text: #e5eefc;
+      --muted: #9fb0d0;
+      --accent: #6ee7ff;
+      --accent-2: #8b5cf6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.25), transparent 28%),
+        radial-gradient(circle at top right, rgba(110, 231, 255, 0.18), transparent 24%),
+        linear-gradient(180deg, #08101f 0%, #0b1020 50%, #050816 100%);
+    }
+
+    .wrap {
+      width: min(1320px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: end;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 900px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      padding: 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(110, 231, 255, 0.7);
+      box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.14);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.87rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      cursor: pointer;
+      color: white;
+      font-weight: 700;
+      transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      box-shadow: 0 12px 28px rgba(139, 92, 246, 0.28);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+    }
+
+    .success {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+
+    .danger {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .box {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 14px;
+    }
+
+    .box-title {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .tag.pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .tag.success { background: rgba(34, 197, 94, 0.15); color: #86efac; }
+    .tag.error { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+    .tag.info { background: rgba(110, 231, 255, 0.14); color: #7dd3fc; }
+
+    .qr-wrap {
+      display: grid;
+      place-items: center;
+      min-height: 300px;
+      border: 1px dashed rgba(148, 163, 184, 0.28);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+      padding: 18px;
+    }
+
+    .qr-wrap img {
+      max-width: 100%;
+      height: auto;
+      display: none;
+      border-radius: 12px;
+      background: white;
+      padding: 12px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .log {
+      max-height: 220px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .hr {
+      height: 1px;
+      background: rgba(148, 163, 184, 0.12);
+      margin: 14px 0;
+    }
+
+    @media (max-width: 1024px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .form-grid, .mini-grid { grid-template-columns: 1fr; }
+      .wrap { width: min(100% - 20px, 1320px); }
+      .card { padding: 16px; border-radius: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Testing de Orden de Compra + Stereum</h1>
+        <p class="subtitle">
+          Crea una orden, llama al endpoint de cobro con esa misma orden, renderiza el QR y escucha el websocket para ver cambios de estado.
+        </p>
+      </div>
+      <div class="status-pill">
+        <span class="status-dot" id="connectionDot"></span>
+        <span id="connectionLabel">WebSocket desconectado</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Datos de prueba</h2>
+
+        <div class="form-grid">
+          <div class="field full">
+            <label for="backendUrl">Backend URL</label>
+            <input id="backendUrl" type="text" value="http://localhost:8080" placeholder="http://localhost:8080" />
+          </div>
+
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="correo@empresa.com" />
+          </div>
+
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" placeholder="Tu password" />
+          </div>
+
+          <div class="field full">
+            <label for="authToken">Access token</label>
+            <input id="authToken" type="text" placeholder="Se completa al hacer login" readonly />
+          </div>
+
+          <div class="field full">
+            <label for="total">Total</label>
+            <input id="total" type="number" step="0.01" value="200.00" />
+          </div>
+
+          <div class="field">
+            <label for="idEstado">Estado inicial</label>
+            <select id="idEstado">
+              <option value="pendiente" selected>pendiente</option>
+              <option value="aprobado">aprobado</option>
+              <option value="cancelado">cancelado</option>
+              <option value="rechazado">rechazado</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="fecha">Fecha</label>
+            <input id="fecha" type="datetime-local" />
+          </div>
+
+          <div class="field">
+            <label for="fechaOrden">Fecha orden</label>
+            <input id="fechaOrden" type="date" />
+          </div>
+
+          <div class="field">
+            <label for="idUsuario">ID usuario</label>
+            <input id="idUsuario" type="text" placeholder="UUID del usuario" />
+          </div>
+
+          <div class="field">
+            <label for="idProveedor">ID proveedor</label>
+            <input id="idProveedor" type="text" placeholder="UUID del proveedor" />
+          </div>
+
+          <div class="field">
+            <label for="idEmpresaCompradora">ID empresa compradora</label>
+            <input id="idEmpresaCompradora" type="text" placeholder="UUID de la empresa" />
+          </div>
+
+          <div class="field">
+            <label for="idSucursal">ID sucursal</label>
+            <input id="idSucursal" type="text" placeholder="UUID de la sucursal" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="secondary" id="btnLogin">Login</button>
+          <button class="primary" id="btnCreatePay">Crear orden y pagar</button>
+          <button class="secondary" id="btnConnect">Conectar websocket</button>
+          <button class="secondary" id="btnDisconnect">Desconectar websocket</button>
+          <button class="success" id="btnWsTest">Enviar test STOMP</button>
+          <button class="danger" id="btnClear">Limpiar</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="stack">
+          <div class="box">
+            <div class="box-title">
+              <span>Orden creada</span>
+              <span class="tag info" id="orderTag">sin crear</span>
+            </div>
+            <textarea id="orderResult" readonly></textarea>
+          </div>
+
+          <div class="box">
+            <div class="box-title">
+              <span>Respuesta de Stereum</span>
+              <span class="tag info" id="chargeTag">sin cobrar</span>
+            </div>
+            <textarea id="chargeResult" readonly></textarea>
+          </div>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="card">
+          <h2>QR</h2>
+          <div class="qr-wrap">
+            <div id="qrPlaceholder" class="muted">Aquí se renderiza el QR cuando llegue desde Stereum.</div>
+            <img id="qrImage" alt="QR de pago" />
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Estado de pago</h2>
+          <div class="box">
+            <div class="box-title">
+              <span>Último mensaje websocket</span>
+              <span class="tag pending" id="paymentTag">esperando</span>
+            </div>
+            <div id="paymentState" class="muted">Sin eventos todavía.</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Log</h2>
+          <div class="box log" id="log"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const logBox = document.getElementById('log');
+    const connectionDot = document.getElementById('connectionDot');
+    const connectionLabel = document.getElementById('connectionLabel');
+    const paymentTag = document.getElementById('paymentTag');
+    const paymentState = document.getElementById('paymentState');
+    const orderTag = document.getElementById('orderTag');
+    const chargeTag = document.getElementById('chargeTag');
+    const orderResult = document.getElementById('orderResult');
+    const chargeResult = document.getElementById('chargeResult');
+    const qrImage = document.getElementById('qrImage');
+    const qrPlaceholder = document.getElementById('qrPlaceholder');
+
+    const inputs = {
+      backendUrl: document.getElementById('backendUrl'),
+      loginEmail: document.getElementById('loginEmail'),
+      loginPassword: document.getElementById('loginPassword'),
+      authToken: document.getElementById('authToken'),
+      total: document.getElementById('total'),
+      idEstado: document.getElementById('idEstado'),
+      fecha: document.getElementById('fecha'),
+      fechaOrden: document.getElementById('fechaOrden'),
+      idUsuario: document.getElementById('idUsuario'),
+      idProveedor: document.getElementById('idProveedor'),
+      idEmpresaCompradora: document.getElementById('idEmpresaCompradora'),
+      idSucursal: document.getElementById('idSucursal')
+    };
+
+    const buttons = {
+      login: document.getElementById('btnLogin'),
+      createPay: document.getElementById('btnCreatePay'),
+      connect: document.getElementById('btnConnect'),
+      disconnect: document.getElementById('btnDisconnect'),
+      wsTest: document.getElementById('btnWsTest'),
+      clear: document.getElementById('btnClear')
+    };
+
+    let stompClient = null;
+    let websocketConnected = false;
+
+    function nowLabel() {
+      return new Date().toLocaleTimeString();
+    }
+
+    function log(message, kind = 'info') {
+      const line = `[${nowLabel()}] ${message}`;
+      const div = document.createElement('div');
+      div.textContent = line;
+      div.style.color = kind === 'error' ? '#fca5a5' : kind === 'success' ? '#86efac' : '#c7d2fe';
+      logBox.prepend(div);
+      console.log(line);
+    }
+
+    function setConnectionState(connected) {
+      websocketConnected = connected;
+      connectionDot.style.background = connected ? 'var(--success)' : 'var(--warning)';
+      connectionDot.style.boxShadow = connected ? '0 0 0 4px rgba(34,197,94,0.18)' : '0 0 0 4px rgba(245,158,11,0.18)';
+      connectionLabel.textContent = connected ? 'WebSocket conectado' : 'WebSocket desconectado';
+    }
+
+    function setPaymentStatus(text, kind = 'pending') {
+      paymentState.textContent = text;
+      paymentTag.className = `tag ${kind}`;
+      paymentTag.textContent = kind === 'success' ? 'pagado' : kind === 'error' ? 'rechazado' : kind === 'info' ? 'informativo' : 'pendiente';
+    }
+
+    function setBoxTag(tagEl, text, kind) {
+      tagEl.className = `tag ${kind}`;
+      tagEl.textContent = text;
+    }
+
+    function renderJson(target, value) {
+      target.value = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    }
+
+    function toIsoDatetimeLocal(value) {
+      const d = new Date(value);
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function initializeDates() {
+      const now = new Date();
+      inputs.fecha.value = toIsoDatetimeLocal(now);
+      inputs.fechaOrden.value = now.toISOString().slice(0, 10);
+    }
+
+    function currentAuthHeaders(extra = {}) {
+      const token = inputs.authToken.value.trim();
+      const headers = {
+        'Content-Type': 'application/json',
+        ...extra
+      };
+
+      if (token) {
+        headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      }
+
+      return headers;
+    }
+
+    function getBackendUrl() {
+      return inputs.backendUrl.value.trim().replace(/\/+$/, '');
+    }
+
+    function getBearerToken() {
+      const token = inputs.authToken.value.trim();
+      if (!token) return '';
+      return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    }
+
+    function normalizeSocketPayload(body) {
+      if (typeof body !== 'string') {
+        return body;
+      }
+
+      try {
+        return JSON.parse(body);
+      } catch (e) {
+        return body;
+      }
+    }
+
+    function looksLikeBase64Image(value) {
+      return typeof value === 'string' && /^[A-Za-z0-9+/=\r\n]+$/.test(value) && value.length > 80;
+    }
+
+    function renderQr(value) {
+      let src = null;
+
+      if (value && typeof value === 'object' && value.qrBase64) {
+        src = value.qrBase64;
+      } else if (typeof value === 'string') {
+        src = value;
+      }
+
+      if (!src) return;
+
+      if (!src.startsWith('data:image')) {
+        src = `data:image/png;base64,${src.replace(/\s/g, '')}`;
+      }
+
+      qrImage.src = src;
+      qrImage.style.display = 'block';
+      qrPlaceholder.style.display = 'none';
+    }
+
+    function interpretPaymentMessage(message) {
+      const raw = typeof message === 'string' ? message : JSON.stringify(message);
+      const normalized = raw.toLowerCase();
+
+      if (normalized.includes('paid') || normalized.includes('pagad') || normalized.includes('aprob') || normalized.includes('confirmed')) {
+        setPaymentStatus(`Pago confirmado: ${raw}`, 'success');
+        return;
+      }
+
+      if (normalized.includes('pend') || normalized.includes('waiting') || normalized.includes('processing')) {
+        setPaymentStatus(`Estado intermedio: ${raw}`, 'pending');
+        return;
+      }
+
+      if (normalized.includes('reject') || normalized.includes('fail') || normalized.includes('anul')) {
+        setPaymentStatus(`Pago rechazado: ${raw}`, 'error');
+        return;
+      }
+
+      setPaymentStatus(`Mensaje recibido: ${raw}`, 'info');
+    }
+
+    function handleSocketMessage(source, payload) {
+      const value = normalizeSocketPayload(payload);
+      log(`WS ${source}: ${typeof value === 'string' ? value : JSON.stringify(value)}`, 'success');
+
+      if (value && typeof value === 'object') {
+        if (value.qrBase64) {
+          renderQr(value);
+        }
+
+        if (value.transactionStatus) {
+          interpretPaymentMessage(value.transactionStatus);
+        } else if (value.status) {
+          interpretPaymentMessage(value.status);
+        } else if (value.message) {
+          interpretPaymentMessage(value.message);
+        }
+        return;
+      }
+
+      if (looksLikeBase64Image(value)) {
+        renderQr(value);
+        return;
+      }
+
+      interpretPaymentMessage(value);
+    }
+
+    async function connectWebSocket() {
+      if (stompClient && stompClient.active) {
+        log('El websocket ya estaba conectado.', 'info');
+        return;
+      }
+
+      const wsUrl = `http://localhost:8080/ws`;
+      const token = getBearerToken();
+
+      if (!token) {
+        log('Antes de conectar el websocket necesitas hacer login o pegar un token.', 'error');
+        return;
+      }
+
+      stompClient = new StompJs.Client({
+        webSocketFactory: () => new SockJS(wsUrl),
+        connectHeaders: {
+          Authorization: token
+        },
+        debug: (str) => console.log('STOMP:', str),
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000
+      });
+
+      stompClient.onConnect = () => {
+        setConnectionState(true);
+        log('Conectado al broker STOMP.', 'success');
+
+        stompClient.subscribe('/paymenting', (message) => {
+          handleSocketMessage('/paymenting', message.body);
+        });
+
+        stompClient.subscribe('/user/paymenting', (message) => {
+          handleSocketMessage('/user/paymenting', message.body);
+        });
+      };
+
+      stompClient.onStompError = (frame) => {
+        setConnectionState(false);
+        log(`Error STOMP: ${frame.headers['message'] || 'sin mensaje'}`, 'error');
+        if (frame.body) {
+          log(frame.body, 'error');
+        }
+      };
+
+      stompClient.onWebSocketClose = () => {
+        setConnectionState(false);
+        log('WebSocket cerrado.', 'error');
+      };
+
+      stompClient.onWebSocketError = () => {
+        setConnectionState(false);
+        log('Error de WebSocket.', 'error');
+      };
+
+      stompClient.activate();
+    }
+
+    async function login() {
+      buttons.login.disabled = true;
+      try {
+        const payload = {
+          email: inputs.loginEmail.value.trim(),
+          passwordHash: inputs.loginPassword.value
+        };
+
+        if (!payload.email || !payload.passwordHash) {
+          throw new Error('Debes completar email y password.');
+        }
+
+        log(`POST /api/v1/auth/login -> ${JSON.stringify({ email: payload.email })}`, 'info');
+
+        const response = await fetch(`${getBackendUrl()}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await response.text();
+        let json = null;
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch (e) {
+          json = text;
+        }
+
+        if (!response.ok) {
+          throw new Error(json && json.message ? json.message : `Login fallido: HTTP ${response.status}`);
+        }
+
+        const token = json?.access_token || json?.accessToken || json?.id_token || json?.idToken;
+        if (!token) {
+          throw new Error('El login no devolvió access_token.');
+        }
+
+        inputs.authToken.value = token;
+        log('Login exitoso, token guardado.', 'success');
+        setPaymentStatus('Login correcto. Ya puedes conectar el websocket.', 'success');
+        await connectWebSocket();
+        return json;
+      } catch (error) {
+        log(error.message || String(error), 'error');
+        setPaymentStatus(`Error de login: ${error.message || error}`, 'error');
+        throw error;
+      } finally {
+        buttons.login.disabled = false;
+      }
+    }
+
+    async function disconnectWebSocket() {
+      if (!stompClient) {
+        setConnectionState(false);
+        log('No hay un websocket activo.', 'info');
+        return;
+      }
+
+      await stompClient.deactivate();
+      setConnectionState(false);
+      log('WebSocket desconectado manualmente.', 'info');
+    }
+
+    function buildOrderPayload() {
+      const payload = {
+        total: Number(inputs.total.value),
+        fecha: new Date(inputs.fecha.value).toISOString(),
+        fechaOrden: inputs.fechaOrden.value,
+        idEstado: inputs.idEstado.value || 'pendiente',
+        idUsuario: inputs.idUsuario.value.trim(),
+        idProveedor: inputs.idProveedor.value.trim(),
+        idEmpresaCompradora: inputs.idEmpresaCompradora.value.trim(),
+        idSucursal: inputs.idSucursal.value.trim()
+      };
+
+      return payload;
+    }
+
+    async function createOrderAndPay() {
+      buttons.createPay.disabled = true;
+      setBoxTag(orderTag, 'creando...', 'pending');
+      setBoxTag(chargeTag, 'pendiente', 'pending');
+      setPaymentStatus('Esperando respuesta de pago...', 'pending');
+
+      try {
+        const orderPayload = buildOrderPayload();
+        log(`POST /api/v1/ordenes-compra -> ${JSON.stringify(orderPayload)}`, 'info');
+
+        const orderResponse = await fetch(`${getBackendUrl()}/api/v1/ordenes-compra`, {
+          method: 'POST',
+          headers: currentAuthHeaders(),
+          body: JSON.stringify(orderPayload)
+        });
+
+        const orderText = await orderResponse.text();
+        let orderJson = null;
+        try {
+          orderJson = orderText ? JSON.parse(orderText) : null;
+        } catch (e) {
+          orderJson = orderText;
+        }
+
+        if (!orderResponse.ok) {
+          setBoxTag(orderTag, `error ${orderResponse.status}`, 'error');
+          renderJson(orderResult, orderJson || orderText || `HTTP ${orderResponse.status}`);
+          throw new Error(`No se pudo crear la orden: HTTP ${orderResponse.status}`);
+        }
+
+        setBoxTag(orderTag, 'creada', 'success');
+        renderJson(orderResult, orderJson);
+        log(`Orden creada: ${orderJson.id}`, 'success');
+
+        const orderId = orderJson.id;
+        if (!orderId) {
+          throw new Error('La respuesta de orden no trajo el campo id.');
+        }
+
+        setBoxTag(chargeTag, 'cargando QR...', 'pending');
+        const chargePayload = { orderId };
+        log(`POST /api/v1/stereum/charge -> ${JSON.stringify(chargePayload)}`, 'info');
+
+        const chargeResponse = await fetch(`${getBackendUrl()}/api/v1/stereum/charge`, {
+          method: 'POST',
+          headers: currentAuthHeaders(),
+          body: JSON.stringify(chargePayload)
+        });
+
+        const chargeText = await chargeResponse.text();
+        let chargeJson = null;
+        try {
+          chargeJson = chargeText ? JSON.parse(chargeText) : null;
+        } catch (e) {
+          chargeJson = chargeText;
+        }
+
+        if (!chargeResponse.ok) {
+          setBoxTag(chargeTag, `error ${chargeResponse.status}`, 'error');
+          renderJson(chargeResult, chargeJson || chargeText || `HTTP ${chargeResponse.status}`);
+          throw new Error(`No se pudo generar el QR: HTTP ${chargeResponse.status}`);
+        }
+
+        setBoxTag(chargeTag, 'QR listo', 'success');
+        renderJson(chargeResult, chargeJson);
+
+        if (chargeJson && chargeJson.qrBase64) {
+          renderQr(chargeJson.qrBase64);
+          log('QR renderizado desde la respuesta HTTP de Stereum.', 'success');
+        }
+
+        if (chargeJson && chargeJson.transactionStatus) {
+          interpretPaymentMessage(chargeJson.transactionStatus);
+        }
+
+        log('Flujo de orden y cobro completado.', 'success');
+      } catch (error) {
+        log(error.message || String(error), 'error');
+        setPaymentStatus(`Error: ${error.message || error}`, 'error');
+      } finally {
+        buttons.createPay.disabled = false;
+      }
+    }
+
+    function sendWsTest() {
+      if (!stompClient || !stompClient.active) {
+        log('Primero conecta el websocket para enviar la prueba.', 'error');
+        return;
+      }
+
+      stompClient.publish({
+        destination: '/app/paymenting',
+        body: 'test-websocket'
+      });
+
+      log('Mensaje de prueba enviado a /app/paymenting', 'success');
+    }
+
+    function clearUi() {
+      orderResult.value = '';
+      chargeResult.value = '';
+      logBox.innerHTML = '';
+      qrImage.src = '';
+      qrImage.style.display = 'none';
+      qrPlaceholder.style.display = 'block';
+      setBoxTag(orderTag, 'sin crear', 'info');
+      setBoxTag(chargeTag, 'sin cobrar', 'info');
+      setPaymentStatus('Sin eventos todavía.', 'pending');
+      log('Interfaz limpiada.', 'info');
+    }
+
+    buttons.connect.addEventListener('click', connectWebSocket);
+    buttons.disconnect.addEventListener('click', disconnectWebSocket);
+    buttons.login.addEventListener('click', async () => {
+      try {
+        await login();
+      } catch (e) {
+        // Error ya reportado en el log.
+      }
+    });
+    buttons.createPay.addEventListener('click', createOrderAndPay);
+    buttons.wsTest.addEventListener('click', sendWsTest);
+    buttons.clear.addEventListener('click', clearUi);
+
+    initializeDates();
+    log('Página lista. Completa los UUIDs, pega tu token y presiona "Crear orden y pagar".', 'info');
+  </script>
+</body>
+</html>

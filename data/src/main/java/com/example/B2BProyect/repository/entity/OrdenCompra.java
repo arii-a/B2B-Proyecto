@@ -26,8 +26,6 @@ import java.util.UUID;
 })
 public class OrdenCompra {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @ColumnDefault("gen_random_uuid()")
     @Column(name = "id_orden", nullable = false)
     private UUID id;
 

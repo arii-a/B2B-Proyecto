@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,6 +21,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import java.io.Serializable;
 import java.util.Locale;
@@ -45,84 +50,9 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                                                 "/api-docs/**",
                                                 "/swagger-ui.html").permitAll()
 
-//                                        .requestMatchers(HttpMethod.GET, "api/v1/empresas")
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/empresas").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/proveedores").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/proveedores/**").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/almacenes").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/almacenes").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/products").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/products/**").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/categorias").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/categorias").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/categorias-proveedor").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/categorias-proveedor").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/cargos-empresa").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/cargos-empresa").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/comisiones").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/comisiones").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/contactos-empresa").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/contactos-empresa").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/contratos-empresa-detalle").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/contratos-empresa-detalle").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/contratos-empresa-tarifa").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/contratos-empresa-tarifa").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/detalles-factura").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/detalles-factura").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/detalles-orden").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/detalles-orden").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/facturas").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/facturas").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/ordenes-compra").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/ordenes-compra").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/precios-base").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/precios-base").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/productos-almacen").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/productos-almacen").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/reglas-comision").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/reglas-comision").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/roles-usuario").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/roles-usuario").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/sucursales-empresa").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/sucursales-empresa").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/tarifas-regla").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/tarifas-regla").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/tramos-tarifa").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/tramos-tarifa").permitAll()
-//
-//                                        .requestMatchers(HttpMethod.GET, "/api/v1/usuarios").permitAll()
-//                                        .requestMatchers(HttpMethod.POST, "/api/v1/usuarios").permitAll()
-//                                        .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/**").permitAll()
-
-                                        .requestMatchers(HttpMethod.GET,  "/api/v1/roles").permitAll()
-                                        .requestMatchers(HttpMethod.GET,  "/api/v1/cargos-empresa").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/v1/empresas").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/v1/sucursales-empresa").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/v1/contactos-empresa").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/v1/usuarios").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/v1/stereum/outbound").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-
+                                        .requestMatchers("/ws/**").permitAll()
                                         .requestMatchers("/error").anonymous() // <----- Fix
                                         .anyRequest().authenticated()
 
@@ -145,5 +75,4 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }
