@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.json.JSONObject;
 
 import java.time.Duration;
 import java.util.List;
@@ -25,8 +26,12 @@ public class SistemaA {
     @Value("${sistemaB2B.read-timeout:40000}")
     private int readTimeout;
 
-
     public Sistema1AuthResponse auth(Sistema1AuthRequest request) throws Exception {
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("email", request.getEmail()); // Assuming getEmail() exists
+        jsonObject.put("password", request.getPasswordHash());
+
         RestClient restClient = create();
 
         ResponseEntity<Sistema1AuthResponse> response;
@@ -35,7 +40,8 @@ public class SistemaA {
                     .uri(urlBase + "/api/v1/auth/login")
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .body(request)
+//                    .body(request)
+                    .body(jsonObject.toString())
                     .retrieve()
                     .toEntity(Sistema1AuthResponse.class);
         } catch (Exception e) {
@@ -90,6 +96,8 @@ public class SistemaA {
         Sistema1AuthRequest req = new Sistema1AuthRequest(authEmail, authPassword);
         Sistema1AuthResponse res = auth(req);
         log.info("Sistema1 JWT obtained: {}", res.getAccessToken());
+        JSONObject jsonObject = new JSONObject();
+        log.info("Sistema1 JWT MANUALLY obtained: {}", jsonObject.getString("access_token"));
         return res.getAccessToken();
     }
 
