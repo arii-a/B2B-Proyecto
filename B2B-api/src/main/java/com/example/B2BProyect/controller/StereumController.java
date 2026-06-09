@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.json.JSONObject;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,21 +52,21 @@ public class StereumController {
     public ResponseEntity<?> charge(@RequestBody PaymentRequest request) {
         OrdenCompra ordenCompra = ordenCompraService.findById(request.getOrderId()).get();
         try {
-            Customer customer = new Customer(
-                    ordenCompra.getIdUsuario().getNombre(),
-                    "Laredo",
-                    "76887344");
-            StereumApiRequest req = new StereumApiRequest(
-                    "BO",
-                    String.valueOf(ordenCompra.getTotal()),
-                    "USDT",
-                    "POLYGON",
-                    "COMPRA A: " + ordenCompra.getIdProveedor().getIdEmpresa().getNombre(),
-                    ordenCompra.getId().toString(),
-                    "10",
-                    customer
-            );
-            ;
+            JSONObject customer = new JSONObject();
+            customer.put("name", ordenCompra.getIdUsuario().getNombre());
+            customer.put("lastname", "Laredo");
+            customer.put("document_number", "76887344");
+
+            JSONObject req = new JSONObject();
+            req.put("country", "BO");
+            req.put("amount", "100");
+            req.put("currency", "USDT");
+            req.put("network", "POLYGON");
+            req.put("charge_reason", "COMPRA A: " + ordenCompra.getIdProveedor().getIdEmpresa().getNombre());
+            req.put("idempotency_key", ordenCompra.getId().toString());
+            req.put("reservation_validity_time", "10");
+            req.put("customer", customer);
+
 //            Usuario user = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //            clientes.put(request.getOrderId(), user.getNombre());
             log.info(clientes.toString());
@@ -92,8 +93,13 @@ public class StereumController {
                 .hmacHex(body.getBytes(StandardCharsets.UTF_8));
 
         if (!signature.equals(hmac)) {
+//            log.info("Body recibido: {}", body);
+//            log.info("HMAC calculado: {}", hmac);
+            log.info("X-Signature recibido: {}", signature);
             throw new Exception("MessageCode.SIGN_REQUEST_INVALID");
         }
+
+
 
 //        if (System.currentTimeMillis() / 1000 - tiempo >= 3000)
 //            throw new Exception("MessageCode.TIEMPO_INVALIDO");

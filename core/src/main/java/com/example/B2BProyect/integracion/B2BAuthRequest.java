@@ -12,11 +12,11 @@ import lombok.Setter;
 @Setter
 public class B2BAuthRequest {
 //    B2B
-//    private String email;
-//    private String passwordHash;
+    private String email;
+    private String passwordHash;
 //    MATIAS
-    private String username;
-    private String password;
+//    private String username;
+//    private String password;
 
 
 }

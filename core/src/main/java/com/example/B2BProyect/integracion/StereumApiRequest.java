@@ -1,8 +1,10 @@
 package com.example.B2BProyect.integracion;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.util.UUID;
 
 @AllArgsConstructor
