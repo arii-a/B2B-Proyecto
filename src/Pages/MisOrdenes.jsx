@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Client } from '@stomp/stompjs'
 import { api } from '../api/client'
 import PageHeader from '../components/PageHeader'
 import { useAuth } from '../AuthContext'
@@ -33,6 +34,9 @@ export default function MisOrdenes() {
 
   const [precioInfo, setPrecioInfo] = useState(null)
   const [cargandoPrecio, setCargandoPrecio] = useState(false)
+  const [esperandoWebhook, setEsperandoWebhook] = useState(false)
+
+  const stompClientRef = useRef(null)
 
   const showToast = (msg, tipo = 'success') => {
     setToast({ msg, tipo })
@@ -65,6 +69,48 @@ export default function MisOrdenes() {
   }
 
   useEffect(() => { fetchOrdenes() }, [session])
+
+  useEffect(() => {
+    if (!qrModal.open || !qrModal.ordenId) {
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate()
+        stompClientRef.current = null
+      }
+      setEsperandoWebhook(false)
+      return
+    }
+
+    const ordenId = qrModal.ordenId
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+    const wsUrl = apiUrl.replace(/^http/, 'ws') + '/ws/websocket'
+
+    const client = new Client({
+      brokerURL: wsUrl,
+      reconnectDelay: 0,
+      onConnect: () => {
+        client.subscribe(`/paymenting/${ordenId}`, (msg) => {
+          const status = (msg.body || '').toUpperCase()
+          if (['PAID', 'COMPLETED', 'CONFIRMED', 'SUCCESS'].includes(status)) {
+            client.deactivate()
+            stompClientRef.current = null
+            setEsperandoWebhook(false)
+            setQrModal({ open: false, qrBase64: null, ordenId: null, loading: false, amount: null })
+            cambiarEstado(ordenId, 'aprobado', 'Pago QR confirmado por Stereum. Trigger T3: factura generada.')
+          }
+        })
+        setEsperandoWebhook(true)
+      },
+      onStompError: () => setEsperandoWebhook(false),
+    })
+
+    client.activate()
+    stompClientRef.current = client
+
+    return () => {
+      client.deactivate()
+      stompClientRef.current = null
+    }
+  }, [qrModal.open, qrModal.ordenId])
 
   useEffect(() => {
     if (opcionElegida && productoEncontrado) buscarPreciosYDescuentos()
@@ -539,12 +585,25 @@ export default function MisOrdenes() {
                     <span style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a' }}>{formatBOB(qrModal.amount)}</span>
                   </div>
                 )}
-                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '1.5rem' }}>Escaneá el QR y luego confirmá el pago</p>
+                {esperandoWebhook ? (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <p style={{ fontSize: '13px', color: '#1e40af', fontWeight: '600', margin: '0 0 4px' }}>Escaneá el QR con tu billetera</p>
+                    <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>El pago se confirmará automáticamente</p>
+                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+                      <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: '600' }}>Escuchando confirmación...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '1.5rem' }}>Escaneá el QR y luego confirmá el pago</p>
+                )}
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                   <button style={styles.cancelBtn} onClick={cerrarQr}>Cancelar</button>
-                  <button style={{ ...styles.saveBtn, background: '#16a34a' }} onClick={pagoCompletado}>
-                    Pago completado
-                  </button>
+                  {!esperandoWebhook && (
+                    <button style={{ ...styles.saveBtn, background: '#16a34a' }} onClick={pagoCompletado}>
+                      Pago completado
+                    </button>
+                  )}
                 </div>
               </>
             ) : (

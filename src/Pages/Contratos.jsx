@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
 import PageHeader from '../components/PageHeader'
 import DataTable from '../components/DataTable'
@@ -17,11 +17,19 @@ export default function Contratos() {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const [mostrarForm, setMostrarForm] = useState(false)
+  const [vigenteDesdeManual, setVigenteDesdeManual] = useState(false)
+  const vigenteDesdeInputRef = useRef(null)
+
+  const hoyLocal = () => {
+    const now = new Date()
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
+    return now.toISOString().slice(0, 16)
+  }
 
   const [form, setForm] = useState({
     idEmpresaCompradora: '',
     idRegla: '',
-    vigenteDesde: '',
+    vigenteDesde: hoyLocal(),
     vigenteHasta: '',
     idProducto: '',
     porcentaje: '',
@@ -52,7 +60,11 @@ export default function Contratos() {
       setProductos(productosData || [])
 
       const misContratos = (contratosData || [])
-        .filter(c => c.idProveedor?.id === proveedor?.id)
+        .filter(c =>
+          session?.rol === 'proveedor'
+            ? c.idProveedor?.id === proveedor?.id
+            : c.idEmpresa?.id === session?.id_empresa
+        )
         .map(c => ({
           empresa: c.idEmpresa?.nombre || c.nombreEmpresa || '—',
           proveedor: c.idProveedor?.idEmpresa?.nombre || c.nombreProveedor || '—',
@@ -104,7 +116,8 @@ export default function Contratos() {
 
       setMsg('Contrato creado correctamente.')
       setMostrarForm(false)
-      setForm({ idEmpresaCompradora: '', idRegla: '', vigenteDesde: '', vigenteHasta: '', idProducto: '', porcentaje: '' })
+      setVigenteDesdeManual(false)
+      setForm({ idEmpresaCompradora: '', idRegla: '', vigenteDesde: hoyLocal(), vigenteHasta: '', idProducto: '', porcentaje: '' })
       cargarBase()
     } catch (e) {
       setMsg(`Error creando contrato: ${e.message}`)
@@ -146,7 +159,30 @@ export default function Contratos() {
             </div>
             <div>
               <label style={styles.label}>Vigente desde</label>
-              <input style={styles.input} type="datetime-local" value={form.vigenteDesde} onChange={e => setForm({ ...form, vigenteDesde: e.target.value })} />
+              {vigenteDesdeManual ? (
+                <input
+                  ref={vigenteDesdeInputRef}
+                  style={styles.input}
+                  type="datetime-local"
+                  value={form.vigenteDesde}
+                  onChange={e => setForm({ ...form, vigenteDesde: e.target.value })}
+                />
+              ) : (
+                <button
+                  type="button"
+                  style={styles.dateChip}
+                  onClick={() => {
+                    setVigenteDesdeManual(true)
+                    setTimeout(() => vigenteDesdeInputRef.current?.showPicker?.(), 50)
+                  }}
+                >
+                  <span style={styles.dateChipLabel}>Hoy</span>
+                  <span style={styles.dateChipDate}>
+                    {new Date(form.vigenteDesde).toLocaleDateString('es-BO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </span>
+                  <span style={styles.dateChipEdit}>clic para cambiar</span>
+                </button>
+              )}
             </div>
             <div>
               <label style={styles.label}>Vigente hasta</label>
@@ -165,7 +201,7 @@ export default function Contratos() {
             </div>
           </div>
           <div style={styles.actions}>
-            <button style={styles.cancelBtn} onClick={() => setMostrarForm(false)} disabled={saving}>Cancelar</button>
+            <button style={styles.cancelBtn} onClick={() => { setMostrarForm(false); setVigenteDesdeManual(false) }} disabled={saving}>Cancelar</button>
             <button style={styles.saveBtn} onClick={crearContrato} disabled={saving}>{saving ? 'Creando...' : 'Crear contrato'}</button>
           </div>
         </div>
@@ -185,6 +221,10 @@ const styles = {
   label: { display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '6px' },
   input: { width: '100%', padding: '10px 12px', border: '1.5px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', background: '#fff', color: '#0f172a', outline: 'none' },
   actions: { display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '1rem' },
+  dateChip: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', border: '1.5px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', cursor: 'pointer', textAlign: 'left', fontSize: '14px' },
+  dateChipLabel: { background: '#1e40af', color: '#fff', borderRadius: '4px', padding: '2px 8px', fontSize: '11px', fontWeight: '700', flexShrink: 0 },
+  dateChipDate: { color: '#0f172a', fontWeight: '600', flex: 1 },
+  dateChipEdit: { fontSize: '11px', color: '#94a3b8' },
   cancelBtn: { padding: '10px 16px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', color: '#475569' },
   saveBtn: { padding: '10px 16px', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' },
 }
