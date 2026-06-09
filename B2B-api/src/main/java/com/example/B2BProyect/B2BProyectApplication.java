@@ -7,6 +7,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.math.BigInteger;
+import java.util.UUID;
+
 @Slf4j
 @SpringBootApplication
 public class B2BProyectApplication implements CommandLineRunner {
@@ -19,7 +22,7 @@ public class B2BProyectApplication implements CommandLineRunner {
 	}
 
 	@Override
-	public void run(String... args) {
+	public void run(String... args) throws Exception {
 		/*try {
 			Customer customer = new Customer();
 			customer.setName("Ricardo");
@@ -28,11 +31,12 @@ public class B2BProyectApplication implements CommandLineRunner {
 
 			StereumApiRequest request1 = new StereumApiRequest();
 			request1.setCountry("BO");
-			request1.setAmount("6767");
-			request1.setCurrency("USDT");
+			request1.setAmount("100");
+			request1.setCurrency("BS");
 			request1.setNetwork("POLYGON");
 			request1.setChargeReason("Compra de prueba");
 			request1.setReservationValidityTime("10");
+			request1.setIdempotencyKey(UUID.randomUUID().toString());
 			request1.setCustomer(customer);
 
 			StereuemApiResponse response1 = sistemaB2B.callStereum(request1);
@@ -41,5 +45,12 @@ public class B2BProyectApplication implements CommandLineRunner {
 		} catch (Exception e) {
 			log.error("Integration call failed on startup: {}", e.getMessage());
 		}*/
+
+
+		/*B2BAuthRequest request = new B2BAuthRequest();
+		request.setEmail("root@nadamenos.com");
+		request.setPasswordHash("Abc123**");
+		B2BAuthResponse response = sistemaB2B.auth(request);
+		System.out.println(response);*/
 	}
 }

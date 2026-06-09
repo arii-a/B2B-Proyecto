@@ -1,6 +1,8 @@
 package com.example.B2BProyect.integracion;
 
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -11,6 +13,7 @@ import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -19,7 +22,7 @@ public class SistemaB2B {
 //    @Value("${sistemaB2B.url-base}")
 //    private String urlBase;
 
-    @Value("${stereum.url-base}")
+    @Value("${stereum.api.url}")
     private String stereumUrl;
 
 //    @Value("${sistemaB2B.connect-timeout:10000}")
@@ -28,41 +31,39 @@ public class SistemaB2B {
 //    @Value("${bsistemaB2B2b.read-timeout:40000}")
 //    private int readTimeout;
 
-    @Value("${stereum.api_key}")
+    @Value("${stereum.api.key}")
     private String stereumToken;
 
     private String token;
 
 
-//    public B2BAuthResponse auth(B2BAuthRequest request) throws Exception {
-//        RestClient restClient = create();
-//
-//        ResponseEntity<B2BAuthResponse> response;
-//        try {
-//            response = restClient.post()
-//                    .uri(urlBase + "/api/v1/auth")
-//                    .contentType(MediaType.APPLICATION_JSON)
-//                    .accept(MediaType.APPLICATION_JSON)
-//                    .body(request)
-//                    .retrieve()
-//                    .toEntity(B2BAuthResponse.class);
-//        } catch (Exception e) {
-//            log.error("Error calling B2B auth. ", e);
-//            throw e;
-//        }
-//
-//        if (!response.getStatusCode().is2xxSuccessful()) {
-//            log.error("B2B auth failed with status: {}", response.getStatusCode().value());
-//            throw new Exception("B2B auth failed");
-//        }
-//
-//        assert response.getBody() != null;
-//        token = response.getBody().getAccessToken();
-//        log.info("B2B JWT obtained: {}", token);
-//        return response.getBody();
-//    }
+    public B2BAuthResponse auth(JSONObject request) throws Exception {
+        RestClient restClient = create();
 
-    public StereuemApiResponse callStereum(StereumApiRequest request) throws Exception {
+        ResponseEntity<B2BAuthResponse> response;
+        try {
+            response = restClient.post()
+                    .uri("http://localhost:8080" + "/api/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(request.toString())
+                    .retrieve()
+                    .toEntity(B2BAuthResponse.class);
+        } catch (Exception e) {
+            log.error("Error calling B2B auth. ", e);
+            throw e;
+        }
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            log.error("B2B auth failed with status: {}", response.getStatusCode().value());
+            throw new Exception("B2B auth failed");
+        }
+
+        log.info("B2B JWT obtained: {}", response.getBody().getAccessToken());
+        return response.getBody();
+    }
+
+    public StereuemApiResponse callStereum(JSONObject request) throws Exception {
         RestClient restClient = create();
 
         ResponseEntity<StereuemApiResponse> response;
@@ -72,7 +73,7 @@ public class SistemaB2B {
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
                     .header("x-api-key", stereumToken)
-                    .body(request)
+                    .body(request.toString())
                     .retrieve()
                     .toEntity(StereuemApiResponse.class);
         } catch (Exception e) {
