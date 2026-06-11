@@ -35,5 +35,4 @@ public abstract class AuditableEntity implements Serializable {
     @Version
     protected Integer version;
 
-    public abstract String getNombre();
 }
