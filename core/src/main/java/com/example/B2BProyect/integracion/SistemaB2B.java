@@ -36,7 +36,6 @@ public class SistemaB2B {
 
     private String token;
 
-
     public B2BAuthResponse auth(JSONObject request) throws Exception {
         RestClient restClient = create();
 

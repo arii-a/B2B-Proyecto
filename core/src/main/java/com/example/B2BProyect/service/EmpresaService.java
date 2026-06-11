@@ -4,7 +4,10 @@ import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.dto.request.EmpresaRequest;
 import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.entity.Empresa;
+import com.example.B2BProyect.service.exception.NotDataFoundException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,11 +16,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class EmpresaService {
     private final EmpresaRepository empresaRepository;
+    private final LogService logService;
 
-    @Transactional
+    @Transactional(noRollbackFor = NotDataFoundException.class)
     public EmpresaDTO save(EmpresaRequest empresaDTO) {
         Empresa empresa = new Empresa();
         empresa.setNombre(empresaDTO.getNombre());
@@ -25,6 +30,9 @@ public class EmpresaService {
         empresa.setActivo(true);
         empresa.setNit(empresaDTO.getNit());
         empresa.setRazonSocial(empresaDTO.getRazonSocial());
+
+        logService.info("Creando empresa nueva. Vamos!");
+
         return new EmpresaDTO(this.empresaRepository.save(empresa));
     }
 
@@ -64,5 +72,11 @@ public class EmpresaService {
         if (!empresaRepository.existsById(id)) return false;
         empresaRepository.deleteById(id);
         return true;
+    }
+
+    @Scheduled(cron = "0 */1 * * * *")
+    public void listarEmpresas() {
+        List<EmpresaDTO> empresas = empresaRepository.findAllDTO();
+        log.info("Listando empresas: {}", empresas);
     }
 }
