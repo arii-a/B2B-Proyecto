@@ -1,0 +1,606 @@
+================================================================================
+  RESUMEN B2B PROYECTO - TEMAS DE EXAMEN
+  Proyecto: B2B Spring Boot (backend-b2b)
+================================================================================
+
+INDICE:
+  1. HMAC & JWT
+  2. JSONObject
+  3. Stereum (Pasarela de Pago)
+  4. Webhook
+  5. Transactions & Metodos Asinronos
+  6. Logs
+  7. Jobs (Tareas Programadas)
+
+================================================================================
+1. HMAC & JWT
+================================================================================
+
+DEPENDENCIAS (pom.xml):
+  - io.jsonwebtoken:jjwt-api:0.12.6
+  - io.jsonwebtoken:jjwt-impl:0.12.6
+  - io.jsonwebtoken:jjwt-jackson:0.12.6
+
+FLUJO GENERAL:
+  Login -> AuthController -> JwtTokenProvider.createToken() -> retorna token
+  Cada request -> JwtTokenFilter.doFilterInternal() -> JwtTokenProvider.validateToken()
+  WebSocket CONNECT -> WebSocketAuthChannelInterceptor.preSend() -> validateToken()
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../config/JwtTokenProvider.java
+CLASE: JwtTokenProvider (@Component)
+---------------------------------------------------------------------------
+
+Campos importantes:
+  @Value("${security.jwt.token.secret-key}")     private String secretKey;
+  @Value("${security.jwt.token.expire-length:28800000}")  private int validityInMinutes;
+
+  // En @PostConstruct decodifica la clave de Base64:
+  @PostConstruct
+  protected void init() {
+      secretKeyByte = Base64.getDecoder().decode(secretKey);
+  }
+
+METODO createToken(Usuario user) - GENERA el JWT:
+  - Crea Claims con: subject (username), id (userId), issuedAt, expiration
+  - Firma con HMAC-SHA256 usando Keys.hmacShaKeyFor(secretKeyByte)
+  - Retorna OKAuthDto con: accessToken, idToken, refreshToken, tokenType, expiresIn, expiresAt
+
+  SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyByte);
+  String token = Jwts.builder()
+          .claims(claims)
+          .expiration(validity)
+          .signWith(secretKey)   // <-- HMAC-SHA256
+          .compact();
+
+METODO validateToken(String token) - VALIDA el JWT:
+  - Parsea y verifica firma con la misma clave
+  - Verifica que no haya expirado
+  - Busca al usuario en DB y retorna Authentication
+  - Lanza ExpiredJwtException o InvalidJwtAuthenticationException en caso de fallo
+
+  Jws<Claims> claims = Jwts.parser()
+          .verifyWith(secretKey)
+          .build()
+          .parseSignedClaims(token);
+
+METODO resolveToken(String bearerToken):
+  - Extrae el token del header "Authorization: Bearer <token>"
+  - Si no empieza con "Bearer " retorna null
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../config/JwtTokenFilter.java
+CLASE: JwtTokenFilter extends OncePerRequestFilter
+---------------------------------------------------------------------------
+
+Se ejecuta en CADA REQUEST HTTP. Flujo:
+  1. Extrae token del header "Authorization" via resolveToken()
+  2. Si token es null, deja pasar el request (puede ser endpoint publico)
+  3. Llama validateToken() -> si es valido, setea SecurityContextHolder
+  4. Si falla (expirado, invalido, usuario no encontrado) -> retorna 401 UNAUTHORIZED
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) {
+      String token = jwtTokenProvider.resolveToken(req.getHeader("Authorization"));
+      if (token == null) { chain.doFilter(req, res); return; }
+      Optional<Authentication> auth = jwtTokenProvider.validateToken(token);
+      if (auth.isPresent()) {
+          SecurityContextHolder.getContext().setAuthentication(auth.get());
+          chain.doFilter(req, res);
+      } else {
+          res.setStatus(HttpStatus.UNAUTHORIZED.value());
+      }
+  }
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../config/WebSecurityConfiguration.java
+---------------------------------------------------------------------------
+
+  @EnableWebSecurity
+  @EnableMethodSecurity(securedEnabled = true)
+
+  Endpoints PUBLICOS (sin JWT):
+    - POST /api/v1/auth/login          (login)
+    - POST /api/v1/stereum/outbound    (webhook Stereum)
+    - /ws/**                           (WebSocket handshake)
+    - /swagger-ui/**                   (docs)
+
+  Session: STATELESS (no hay sesion en servidor)
+  CSRF: Deshabilitado
+  JwtTokenFilter se agrega ANTES de UsernamePasswordAuthenticationFilter
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../controller/AuthController.java
+ENDPOINT: POST /api/v1/auth/login
+---------------------------------------------------------------------------
+
+  Recibe: AuthenticationDTO { email, passwordHash }
+  Proceso:
+    1. Busca usuario en DB por email
+    2. authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password))
+    3. Si OK -> jwtTokenProvider.createToken(user)
+    4. Retorna OKAuthDto con el token JWT
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../config/WebSocketAuthChannelInterceptor.java
+CLASE: WebSocketAuthChannelInterceptor implements ChannelInterceptor
+---------------------------------------------------------------------------
+
+Valida JWT en conexiones WebSocket (STOMP CONNECT):
+  - Lee header "Authorization" del frame STOMP
+  - Llama resolveToken() y validateToken()
+  - Si invalido/expirado lanza IllegalArgumentException (rechaza la conexion)
+  - Si valido, setea accessor.setUser(authentication)
+
+HMAC en contexto de Webhook (ver seccion 4):
+  - Se usa HmacSHA256 para VERIFICAR la firma del payload recibido de Stereum
+  - NO es para JWT, es para autenticar que el webhook viene de Stereum
+
+================================================================================
+2. JSONObject
+================================================================================
+
+DEPENDENCIA (pom.xml):
+  - org.json:json:20240303
+
+USO: Se usa para construir el body de requests HTTP hacia APIs externas
+de forma dinamica, sin necesidad de crear clases Java para cada request.
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../controller/StereumController.java
+---------------------------------------------------------------------------
+
+  import org.json.JSONObject;
+
+  // Construir payload para Stereum:
+  JSONObject customer = new JSONObject();
+  customer.put("name",            ordenCompra.getIdUsuario().getNombre());
+  customer.put("lastname",        "Laredo");
+  customer.put("document_number", "76887344");
+
+  JSONObject req = new JSONObject();
+  req.put("country",                 "BO");
+  req.put("amount",                  "100");
+  req.put("currency",                "USDT");
+  req.put("network",                 "POLYGON");
+  req.put("charge_reason",           "COMPRA A: " + nombre);
+  req.put("idempotency_key",         ordenCompra.getId().toString());
+  req.put("reservation_validity_time","10");
+  req.put("customer",                customer);  // JSONObject dentro de JSONObject
+
+  return ok(sistemaB2B.callStereum(req));
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../controller/PagoController.java
+---------------------------------------------------------------------------
+
+  import org.json.JSONObject;
+
+  // Recibe un Map del body HTTP y lo convierte a JSONObject:
+  @PostMapping("/crear-cobro")
+  public ResponseEntity<?> crearCobro(@RequestBody Map<String, Object> body) {
+      return ResponseEntity.ok(sistemaB2B.callStereum(new JSONObject(body)));
+  }
+
+  // Constructor new JSONObject(map) convierte un Map<String,Object> a JSON
+
+---------------------------------------------------------------------------
+ARCHIVO: core/.../integracion/SistemaB2B.java
+---------------------------------------------------------------------------
+
+  import org.json.JSONObject;
+  import org.json.JSONArray;
+
+  // El metodo recibe JSONObject y lo pasa como body del RestClient:
+  public StereuemApiResponse callStereum(JSONObject request) throws Exception {
+      response = restClient.post()
+              .uri(stereumUrl + "/api/v1/transactions/create-charge")
+              .body(request.toString())   // <-- JSONObject.toString() = JSON string
+              .retrieve()
+              .toEntity(StereuemApiResponse.class);
+  }
+
+  // Diferencia JSONObject vs JSONArray:
+  // JSONObject  -> objeto { "key": "value" }
+  // JSONArray   -> arreglo [ item1, item2 ]
+
+================================================================================
+3. STEREUM (Pasarela de Pago Cripto)
+================================================================================
+
+Stereum Pay es una pasarela de pago en criptomonedas (USDT/Polygon).
+El flujo tiene DOS partes: iniciar el cobro y recibir la confirmacion.
+
+PROPIEDADES (application.properties):
+  stereum.api.url=https://...  (URL de la API de Stereum)
+  stereum.api.key=...          (API key para autenticar en Stereum)
+
+---------------------------------------------------------------------------
+FLUJO COMPLETO DE PAGO:
+---------------------------------------------------------------------------
+
+  PASO 1 - Frontend llama POST /api/v1/stereum/charge con { orderId: UUID }
+  PASO 2 - StereumController busca la OrdenCompra y construye el JSONObject
+  PASO 3 - SistemaB2B.callStereum() hace POST a Stereum con x-api-key header
+  PASO 4 - Stereum responde con QR (base64) y payment link
+  PASO 5 - El usuario paga escaneando el QR
+  PASO 6 - Stereum notifica via Webhook a POST /api/v1/stereum/outbound
+  PASO 7 - El controller verifica HMAC-SHA256 de la firma
+  PASO 8 - Si firma valida, envia el status por WebSocket al frontend
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../controller/StereumController.java
+CLASE: StereumController
+---------------------------------------------------------------------------
+
+  @Value("${stereum.api.key}") private String secretKey;
+  ConcurrentHashMap<UUID, String> clientes;  // mapa de clientes activos
+
+  ENDPOINT 1: POST /api/v1/stereum/charge
+    - Recibe: PaymentRequest { orderId: UUID }
+    - Busca OrdenCompra en DB
+    - Construye JSONObject con datos de la orden
+    - Llama sistemaB2B.callStereum(req)
+    - Retorna StereuemApiResponse (QR, paymentLink, etc.)
+
+  ENDPOINT 2: POST /api/v1/stereum/outbound  (Webhook - ver seccion 4)
+
+---------------------------------------------------------------------------
+ARCHIVO: core/.../integracion/SistemaB2B.java
+CLASE: SistemaB2B (@Service)
+---------------------------------------------------------------------------
+
+  @Value("${stereum.api.url}")  private String stereumUrl;
+  @Value("${stereum.api.key}")  private String stereumToken;
+
+  callStereum(JSONObject request):
+    - POST a {stereumUrl}/api/v1/transactions/create-charge
+    - Header: x-api-key: {stereumToken}
+    - Body: request.toString()
+    - Retorna: StereuemApiResponse
+
+---------------------------------------------------------------------------
+CLASES DTO (Data Transfer Objects):
+---------------------------------------------------------------------------
+
+  PaymentRequest.java:
+    - orderId: UUID  (id de la OrdenCompra)
+
+  StereuemApiResponse.java (respuesta de Stereum al crear cobro):
+    - amount, currency, network, id
+    - qrBase64      (imagen QR en base64 para mostrar al usuario)
+    - paymentLink   (enlace de pago alternativo)
+    - transactionStatus
+    - collectingAccount
+    - expirationTime
+
+  StereumPayResponse.java (payload del Webhook de Stereum):
+    - notificationType
+    - id
+    - transaction: Transaction
+    - timestamp
+
+  Transaction.java (detalle de la transaccion en el webhook):
+    - country, amount, amountReceived
+    - status, statusDescription
+    - currency, network
+    - id, idempotencyKey (UUID - mismo que orderId)
+    - createdDate, paymentDate
+
+================================================================================
+4. WEBHOOK
+================================================================================
+
+Un Webhook es un endpoint propio que recibe notificaciones de servicios externos.
+En este proyecto, Stereum llama al webhook cuando una transaccion cambia de estado.
+
+---------------------------------------------------------------------------
+ARCHIVO: B2B-api/.../controller/StereumController.java
+ENDPOINT: POST /api/v1/stereum/outbound
+---------------------------------------------------------------------------
+
+HEADERS esperados:
+  - X-Signature: <hmac-sha256 del body en hex>
+  - X-Timestamp: <timestamp unix>
+
+BODY: JSON con la estructura de StereumPayResponse
+
+PROCESO DEL WEBHOOK:
+  1. Recibe body como String raw (para calcular HMAC sin alteraciones)
+  2. Calcula HMAC-SHA256 del body con la secretKey de Stereum
+  3. Compara el HMAC calculado con X-Signature del header
+  4. Si NO coinciden -> lanza Exception ("SIGN_REQUEST_INVALID")
+  5. Si coinciden -> deserializa el body a StereumPayResponse
+  6. Publica el status de la transaccion por WebSocket
+
+CODIGO:
+  @PostMapping(value = "/outbound", consumes = APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> outbound(
+          @RequestHeader("X-Signature") String signature,
+          @RequestHeader("X-Timestamp") int tiempo,
+          @RequestBody String body) throws Exception {
+
+      // Verificacion HMAC:
+      String hmac = new HmacUtils("HmacSHA256",
+              secretKey.getBytes(StandardCharsets.UTF_8))
+              .hmacHex(body.getBytes(StandardCharsets.UTF_8));
+
+      if (!signature.equals(hmac)) {
+          throw new Exception("MessageCode.SIGN_REQUEST_INVALID");
+      }
+
+      // Deserializar body a objeto Java:
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      StereumPayResponse response = objectMapper.readValue(body, StereumPayResponse.class);
+
+      // Notificar por WebSocket al frontend:
+      template.convertAndSend(
+          "/paymenting/" + response.getTransaction().getIdempotencyKey(),
+          response.getTransaction().getStatus()
+      );
+
+      return ok().build();
+  }
+
+RELACION HMAC + WEBHOOK:
+  - HMAC (Hash-based Message Authentication Code) se usa para verificar
+    que el webhook proviene realmente de Stereum y no de un tercero.
+  - La clave compartida (stereum.api.key) solo la conocen este servidor y Stereum.
+  - Stereum firma el body con esa clave; el servidor verifica la firma.
+
+SEGURIDAD DEL ENDPOINT:
+  En WebSecurityConfiguration este endpoint esta PUBLICO (permitAll) porque
+  Stereum no manda JWT. La seguridad se hace via HMAC.
+
+NOTIFICACION WEBSOCKET:
+  SimpMessagingTemplate.convertAndSend(destino, payload)
+  - Destino: "/paymenting/{idempotencyKey}"
+  - Payload: status de la transaccion (String)
+  - El frontend escucha en este topic para actualizar la UI en tiempo real
+
+================================================================================
+5. TRANSACTIONS & METODOS ASINCRONOS
+================================================================================
+
+---------------------------------------------------------------------------
+@TRANSACTIONAL - Manejo de transacciones de base de datos
+---------------------------------------------------------------------------
+
+Annotation de Spring que garantiza que todas las operaciones de DB dentro
+del metodo se ejecuten en una sola transaccion (todo o nada).
+
+ARCHIVO: core/.../service/EmpresaService.java (ejemplo representativo de todos los servicios)
+
+  // Transaccion de escritura normal:
+  @Transactional
+  public EmpresaDTO save(EmpresaRequest dto) { ... }
+
+  // Solo lectura (optimizacion, no bloquea registros):
+  @Transactional(readOnly = true)
+  public List<EmpresaDTO> findAll() { ... }
+
+  // No hace rollback para esa excepcion especifica:
+  @Transactional(noRollbackFor = NotDataFoundException.class)
+  public EmpresaDTO save(EmpresaRequest dto) { ... }
+
+  // Nueva transaccion independiente (se usa en LogService):
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void info(String message) { ... }
+
+PROPAGATION.REQUIRES_NEW:
+  - Suspende la transaccion actual y crea una nueva independiente.
+  - Util en Logs: aunque el metodo que llama falle y haga rollback,
+    el log YA fue guardado en su propia transaccion.
+
+SERVICIOS CON @Transactional (todos usan el mismo patron):
+  EmpresaService, OrdenCompraService, ProductoService, FacturaService,
+  ProveedorService, UsuarioService, AlmacenService, CategoriaService, etc.
+
+---------------------------------------------------------------------------
+@ASYNC - Metodos Asincronos
+---------------------------------------------------------------------------
+
+Permite que un metodo se ejecute en un hilo separado (del ThreadPool)
+sin bloquear el hilo que lo llamo.
+
+HABILITACION: @EnableAsync en la aplicacion principal (B2BProyectApplication)
+
+ARCHIVO: B2B-api/.../config/InjectConfiguration.java
+BEAN: ThreadPoolTaskExecutor con nombre "taskLog"
+
+  @Bean(name = "taskLog")
+  public ThreadPoolTaskExecutor myTaskExecutor() {
+      ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+      executor.setCorePoolSize(corePoolSize);    // default: 5  (hilos siempre activos)
+      executor.setMaxPoolSize(maxPoolSize);      // default: 10 (maximo de hilos)
+      executor.setQueueCapacity(queueCapacity);  // default: 20 (cola de tareas pendientes)
+      executor.setThreadNamePrefix("Miguel-");   // prefijo del nombre del hilo
+      executor.initialize();
+      return executor;
+  }
+
+  Valores configurables en application.properties:
+    async.core-pool-size=5
+    async.max-pool-size=10
+    async.queue-capacity=20
+
+ARCHIVO: core/.../service/LogService.java
+USO COMBINADO DE @Async + @Transactional:
+
+  @Async("taskLog")                                    // hilo del pool "taskLog"
+  @Transactional(propagation = Propagation.REQUIRES_NEW) // transaccion propia
+  public void info(String message) {
+      log.info("{}", message);
+      logRepository.save(Log.builder()
+              .level(LogLevel.INFO)
+              .descripcion(message)
+              .build());
+  }
+
+  // La llamada a logService.info() retorna inmediatamente al caller
+  // El guardado en DB ocurre en segundo plano en el hilo "Miguel-X"
+
+================================================================================
+6. LOGS
+================================================================================
+
+Hay DOS tipos de logging en el proyecto:
+
+TIPO 1: Logging de consola/archivo con SLF4J + Lombok
+TIPO 2: Logging persistente en base de datos con LogService
+
+---------------------------------------------------------------------------
+TIPO 1: SLF4J (logging estandar a consola)
+---------------------------------------------------------------------------
+
+Se usa @Slf4j de Lombok en casi todas las clases para obtener el logger:
+
+  @Slf4j
+  public class MiClase {
+      // Lombok genera automaticamente: private static final Logger log = ...;
+
+      log.info("Mensaje informativo: {}", variable);
+      log.warn("Advertencia: {}", mensaje);
+      log.error("Error: {}", e.getMessage());
+      log.debug("Debug: {}", objeto);
+  }
+
+Archivos que usan @Slf4j: JwtTokenProvider, JwtTokenFilter, StereumController,
+SistemaB2B, AuthController, EmpresaService, LogService y muchos mas (~38 archivos).
+
+---------------------------------------------------------------------------
+TIPO 2: LogService (logging persistente a DB)
+---------------------------------------------------------------------------
+
+ARCHIVO: core/.../service/LogService.java
+ENTIDAD: data/.../entity/Log.java
+ENUM: LogLevel { INFO, WARN, ERROR, DEBUG, TRACE }
+
+  @Builder @Entity @Table(name = "log")
+  public class Log extends AuditableEntity {
+      @Id @UuidGenerator private String id;
+      @Enumerated(EnumType.STRING) private LogLevel level;
+      @Column(length = 4000) private String descripcion;
+  }
+
+LogService guarda cada log en la tabla "log" de la DB de forma ASINCRONA:
+
+  Metodos disponibles:
+    logService.info("mensaje")   -> nivel INFO
+    logService.warn("mensaje")   -> nivel WARN
+    logService.error("mensaje")  -> nivel ERROR
+    logService.debug("mensaje")  -> nivel DEBUG
+    logService.trace("mensaje")  -> nivel TRACE
+
+  Cada metodo: @Async("taskLog") + @Transactional(propagation = REQUIRES_NEW)
+  -> No bloquea al caller, se ejecuta en hilo "Miguel-X" del ThreadPool
+
+EJEMPLO DE USO EN EmpresaService:
+  @Transactional(noRollbackFor = NotDataFoundException.class)
+  public EmpresaDTO save(EmpresaRequest dto) {
+      // ...
+      logService.info("Creando empresa nueva. Vamos!");  // asincrono, no bloquea
+      return new EmpresaDTO(this.empresaRepository.save(empresa));
+  }
+
+================================================================================
+7. JOBS (Tareas Programadas)
+================================================================================
+
+Un Job es una tarea que se ejecuta automaticamente en un horario definido,
+sin necesidad de que nadie llame al endpoint.
+
+HABILITACION: @EnableScheduling en la aplicacion principal (B2BProyectApplication)
+
+No se usa Quartz. Solo Spring's @Scheduled nativo.
+
+---------------------------------------------------------------------------
+ARCHIVO: core/.../service/EmpresaService.java
+---------------------------------------------------------------------------
+
+  @Scheduled(cron = "0 */1 * * * *")
+  public void listarEmpresas() {
+      List<EmpresaDTO> empresas = empresaRepository.findAllDTO();
+      log.info("Listando empresas: {}", empresas);
+  }
+
+EXPLICACION DE LA EXPRESION CRON "0 */1 * * * *":
+  Formato: segundos minutos horas dia-mes mes dia-semana
+  - 0         -> en el segundo 0
+  - */1       -> cada 1 minuto (cada minuto)
+  - *         -> cualquier hora
+  - *         -> cualquier dia del mes
+  - *         -> cualquier mes
+  - *         -> cualquier dia de la semana
+  En resumen: se ejecuta al segundo 0 de cada minuto.
+
+QUE HACE: Lista todas las empresas de la DB y las imprime en el log.
+  (Aparentemente es un job de monitoreo/debug)
+
+EXPRESIONES CRON COMUNES:
+  "0 0 * * * *"         -> cada hora en punto
+  "0 0 8 * * MON-FRI"   -> lunes a viernes a las 8:00am
+  "0 */30 * * * *"      -> cada 30 minutos
+  "0 0 0 * * *"         -> cada dia a medianoche
+
+================================================================================
+RESUMEN DE ANOTACIONES CLAVE
+================================================================================
+
+  @Component          -> Bean de Spring (uso general)
+  @Service            -> Bean de tipo servicio (logica de negocio)
+  @RestController     -> Controlador REST (retorna JSON)
+  @Configuration      -> Clase de configuracion de Spring
+  @EnableWebSecurity  -> Activa Spring Security
+  @EnableAsync        -> Activa el soporte de @Async
+  @EnableScheduling   -> Activa el soporte de @Scheduled
+  @Async("taskLog")   -> Ejecuta en hilo del pool "taskLog"
+  @Scheduled(cron=..) -> Ejecuta segun la expresion cron
+  @Transactional      -> Envuelve en transaccion de DB
+  @Value("${prop}")   -> Inyecta valor de application.properties
+  @PostConstruct      -> Se ejecuta al iniciar el bean
+  @Slf4j              -> Lombok: genera el logger 'log'
+
+================================================================================
+DIAGRAMA DE FLUJO GENERAL
+================================================================================
+
+  [Frontend]
+      |
+      |-- POST /api/v1/auth/login --> [AuthController]
+      |       |                           |
+      |       |                    [AuthenticationManager]
+      |       |                           |
+      |       |                    [JwtTokenProvider.createToken()]
+      |       |                           |
+      |       <-- JWT Token --------------+
+      |
+      |-- GET/POST /api/v1/... (con Authorization: Bearer <token>)
+      |       |
+      |   [JwtTokenFilter] -> validateToken() -> SecurityContextHolder
+      |       |
+      |   [Controller] -> [Service] -> [Repository] -> DB
+      |
+      |-- POST /api/v1/stereum/charge
+      |       |
+      |   [StereumController]
+      |       |-- JSONObject con datos de la orden
+      |       |-- SistemaB2B.callStereum() -> POST a API Stereum
+      |       <-- StereuemApiResponse (QR, paymentLink)
+      |
+  [Usuario paga con QR]
+      |
+  [Stereum] -- POST /api/v1/stereum/outbound --> [StereumController]
+                       |
+                  [Verificar HMAC-SHA256]
+                       |
+                  [WebSocket /paymenting/{key}] --> [Frontend actualiza UI]
+
+  En background:
+  [Job @Scheduled] -> listarEmpresas() cada minuto
+  [LogService @Async] -> guarda logs en DB sin bloquear
+
+================================================================================
+FIN DEL RESUMEN
+================================================================================
