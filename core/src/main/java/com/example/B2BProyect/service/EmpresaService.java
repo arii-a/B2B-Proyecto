@@ -7,8 +7,10 @@ import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.service.exception.NotDataFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -72,6 +74,23 @@ public class EmpresaService {
         if (!empresaRepository.existsById(id)) return false;
         empresaRepository.deleteById(id);
         return true;
+    }
+
+
+    @Async("taskLog")
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void asyncUpdateEmpresa(UUID id, EmpresaRequest dto) {
+
+        Empresa empresa = empresaRepository.findById(id)
+                .orElseThrow(() -> new NotDataFoundException("emprea no encontrada: " + id));
+
+        if (dto.getNombre() != null)      empresa.setNombre(dto.getNombre());
+        if (dto.getDominio() != null)     empresa.setDominio(dto.getDominio());
+        if (dto.getNit() != null)         empresa.setNit(dto.getNit());
+        if (dto.getRazonSocial() != null) empresa.setRazonSocial(dto.getRazonSocial());
+
+        empresaRepository.save(empresa);
+        log.info("empresa actualizada de forma asincrona", empresa.getId());
     }
 
     @Scheduled(cron = "0 */1 * * * *")

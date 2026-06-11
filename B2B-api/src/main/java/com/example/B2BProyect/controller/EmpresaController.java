@@ -58,6 +58,18 @@ public class EmpresaController {
         }
     }
 
+
+    @PutMapping("/{id}/async")
+    public ResponseEntity<Void> asyncUpdate(@PathVariable UUID id, @RequestBody EmpresaRequest dto) {
+        try {
+            empresaService.asyncUpdateEmpresa(id, dto);
+            return ResponseEntity.accepted().build();
+        } catch (Exception e) {
+            log.error("error lanzando actualizacion asincrona: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         try {
