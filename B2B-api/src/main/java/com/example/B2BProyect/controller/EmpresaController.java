@@ -58,6 +58,20 @@ public class EmpresaController {
         }
     }
 
+    @PutMapping("/examen/{id}")
+    public ResponseEntity<EmpresaDTO> updateExamen(@PathVariable UUID id, @RequestBody EmpresaRequest dto) {
+        try {
+            empresaService.modificarEmpresa(id, dto);
+            return ResponseEntity.ok().build();
+        } catch (NullPointerException e) {
+            log.error("Empresa no se halló: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error actualizando empresa: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         try {

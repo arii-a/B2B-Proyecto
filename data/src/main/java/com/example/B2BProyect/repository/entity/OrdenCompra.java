@@ -24,7 +24,7 @@ import java.util.UUID;
         @Index(name = "idx_orden_usuario", columnList = "id_usuario"),
         @Index(name = "idx_orden_estado", columnList = "id_estado")
 })
-public class OrdenCompra {
+public class OrdenCompra extends AuditableEntity {
     @Id
     @Column(name = "id_orden", nullable = false)
     private UUID id;

@@ -39,4 +39,5 @@ public interface EmpresaRepository extends JpaRepository<Empresa, UUID> {
     @Query("SELECT new com.example.B2BProyect.repository.proyecciones.EmpresaRecord(e.id, e.nombre, e.nit, e.razonSocial) FROM Empresa e")
     List<EmpresaRecord> findAllRecord();
 
+
 }
