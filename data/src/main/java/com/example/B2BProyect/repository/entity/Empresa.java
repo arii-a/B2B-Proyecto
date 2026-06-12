@@ -15,7 +15,7 @@ import java.util.UUID;
 @Table(name = "empresa", indexes = {
         @Index(name = "idx_nit_empresa", columnList = "nit")
 })
-public class Empresa {
+public class Empresa extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @ColumnDefault("gen_random_uuid()")

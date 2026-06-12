@@ -46,18 +46,6 @@ public class EmpresaController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<EmpresaDTO> update(@PathVariable UUID id, @RequestBody EmpresaRequest dto) {
-        try {
-            return empresaService.update(id, dto)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            log.error("Error actualizando empresa: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
 
     @PutMapping("/{id}/async")
     public ResponseEntity<Void> asyncUpdate(@PathVariable UUID id, @RequestBody EmpresaRequest dto) {
@@ -65,19 +53,21 @@ public class EmpresaController {
             empresaService.asyncUpdateEmpresa(id, dto);
             return ResponseEntity.accepted().build();
         } catch (Exception e) {
-            log.error("error lanzando actualizacion asincrona: {}", e.getMessage());
+            log.error("error con la asincrona:", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    @PutMapping("/examen/{id}")
+    public ResponseEntity<EmpresaDTO> updateExamen(@PathVariable UUID id, @RequestBody EmpresaRequest dto) {
         try {
-            return empresaService.delete(id)
-                    ? ResponseEntity.noContent().build()
-                    : ResponseEntity.notFound().build();
+            empresaService.modificarEmpresa(id, dto);
+            return ResponseEntity.ok().build();
+        } catch (NullPointerException e) {
+            log.error("Empresa no se halló: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            log.error("Error eliminando empresa: {}", e.getMessage());
+            log.error("Error actualizando empresa: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

@@ -19,7 +19,7 @@ import java.util.UUID;
         @Index(name = "idx_factura_orden", columnList = "id_orden"),
         @Index(name = "idx_factura_estado", columnList = "id_estado")
 })
-public class Factura {
+public class Factura extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @ColumnDefault("gen_random_uuid()")

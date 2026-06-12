@@ -98,4 +98,20 @@ public class EmpresaService {
         List<EmpresaDTO> empresas = empresaRepository.findAllDTO();
         log.info("Listando empresas: {}", empresas);
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Async
+    public void modificarEmpresa(UUID id, EmpresaRequest dto) {
+        Empresa empresa = empresaRepository.findById(id).orElseThrow(()
+                -> new NullPointerException("No existe la empresa"));
+
+        if (dto.getNombre() != null) empresa.setNombre(dto.getNombre());
+        if (dto.getDominio() != null) empresa.setDominio(dto.getDominio());
+        if (dto.getNit() != null) empresa.setNit(dto.getNit());
+        if (dto.getRazonSocial() != null) empresa.setRazonSocial(dto.getRazonSocial());
+
+        empresaRepository.save(empresa);
+    }
+
+
 }
