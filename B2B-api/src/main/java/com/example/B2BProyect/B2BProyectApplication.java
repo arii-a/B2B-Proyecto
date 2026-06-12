@@ -17,7 +17,7 @@ import java.util.UUID;
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling
-@EnableJpaAuditing
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class B2BProyectApplication implements CommandLineRunner {
 
 	@Autowired
