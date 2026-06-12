@@ -46,7 +46,6 @@ public class EmpresaController {
         }
     }
 
-
     @PutMapping("/{id}/async")
     public ResponseEntity<Void> asyncUpdate(@PathVariable UUID id, @RequestBody EmpresaRequest dto) {
         try {
