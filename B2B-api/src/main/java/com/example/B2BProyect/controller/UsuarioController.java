@@ -1,5 +1,6 @@
 package com.example.B2BProyect.controller;
 
+import com.example.B2BProyect.service.exception.OperationException;
 import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZoneId;
 import java.util.Date;
@@ -47,9 +49,12 @@ public class UsuarioController {
         try {
             usuarioService.save(dto, empresaRepository, sucursalRepository, rolRepository);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e) {
+        } catch (OperationException e) {
             log.error("Error creando nuevo usuario: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error creando nuevo usuario", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al guardar usuario");
         }
     }
 
@@ -61,9 +66,12 @@ public class UsuarioController {
                             empresaRepository, sucursalRepository, rolRepository)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
+        } catch (OperationException e) {
             log.error("Error actualizando usuario: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error actualizando usuario", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al actualizar usuario");
         }
     }
 
@@ -83,9 +91,12 @@ public class UsuarioController {
 
                     PageRequest.of(page, size, Sort.by(sortDir, sortBy)))
             );
+        } catch (OperationException e) {
+            log.error("Error al listar usuarios: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            log.error("Error al listar el inventario de activos", e);
-            return ResponseEntity.badRequest().build();
+            log.error("Error al listar usuarios", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al listar usuarios");
         }
     }
 }

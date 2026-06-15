@@ -41,7 +41,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     List<UsuarioDTO> findAllDTO();
 
     @Query("SELECT new " +
-            "com.example.B2(" +
+            "com.example.B2BProyect.repository.dto.response.UsuarioDTO(" +
             "u.id, u.nombre, u.email, u.activo, u.idEmpresa.nombre, u.idSucursal.nombre, u.idRol.nombre)" +
             " FROM Usuario u WHERE u.id = :pId")
     Optional<UsuarioDTO> findByIdDTO(@Param("pId") UUID pId);
