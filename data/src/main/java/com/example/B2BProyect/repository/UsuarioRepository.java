@@ -1,12 +1,16 @@
 package com.example.B2BProyect.repository;
 
 import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
+import com.example.B2BProyect.repository.entity.Log;
 import com.example.B2BProyect.repository.entity.Usuario;
 import com.example.B2BProyect.repository.proyecciones.UsuarioProjection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +41,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     List<UsuarioDTO> findAllDTO();
 
     @Query("SELECT new " +
-            "com.example.B2BProyect.repository.dto.response.UsuarioDTO(" +
+            "com.example.B2(" +
             "u.id, u.nombre, u.email, u.activo, u.idEmpresa.nombre, u.idSucursal.nombre, u.idRol.nombre)" +
             " FROM Usuario u WHERE u.id = :pId")
     Optional<UsuarioDTO> findByIdDTO(@Param("pId") UUID pId);
@@ -48,4 +52,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
     @Query("SELECT u FROM Usuario u WHERE u.email=:pEmail")
     Optional<Usuario> findByUserEmailToValidateSession(@Param("pEmail") String pEmail);
+
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.UsuarioDTO(" +
+            "u.id, u.nombre, u.email, u.activo, u.idEmpresa.nombre, u.idSucursal.nombre, u.idRol.nombre)" +
+            " FROM Usuario u WHERE u.createdDate BETWEEN :pInit AND :pEnd")
+    Page<UsuarioDTO> findAllByOrderByDateDesc(
+            @Param("pInit") LocalDateTime pInit,
+            @Param("pEnd") LocalDateTime pEnd,
+            Pageable pageable);
 }
