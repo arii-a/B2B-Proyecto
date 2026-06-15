@@ -7,11 +7,14 @@ import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.service.exception.NotDataFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,8 +42,11 @@ public class EmpresaService {
     }
 
     @Transactional(readOnly = true)
-    public List<EmpresaDTO> findAll() {
-        return empresaRepository.findAllDTO();
+    public Page<EmpresaDTO> findAll(Integer page, Integer size, String sortBy) {
+        log.info("PAGE: " + page);
+        log.info("SIZE: " + size);
+        log.info("SORTBY: " + sortBy);
+        return empresaRepository.findAllDTO(PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
     @Transactional(readOnly = true)
@@ -76,25 +82,9 @@ public class EmpresaService {
         return true;
     }
 
-    @Scheduled(cron = "0 */1 * * * *")
-    public void listarEmpresas() {
-        List<EmpresaDTO> empresas = empresaRepository.findAllDTO();
-        log.info("Listando empresas: {}", empresas);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Async
-    public void modificarEmpresa(UUID id, EmpresaRequest dto) {
-        Empresa empresa = empresaRepository.findById(id).orElseThrow(()
-                -> new NullPointerException("No existe la empresa"));
-
-        if (dto.getNombre() != null) empresa.setNombre(dto.getNombre());
-        if (dto.getDominio() != null) empresa.setDominio(dto.getDominio());
-        if (dto.getNit() != null) empresa.setNit(dto.getNit());
-        if (dto.getRazonSocial() != null) empresa.setRazonSocial(dto.getRazonSocial());
-
-        empresaRepository.save(empresa);
-    }
-
-
+//    @Scheduled(cron = "0 */1 * * * *")
+//    public void listarEmpresas(Pageable page) {
+//        Page<EmpresaDTO> empresas = empresaRepository.findAllDTO(page);
+//        log.info("Listando empresas: {}", empresas);
+//    }
 }

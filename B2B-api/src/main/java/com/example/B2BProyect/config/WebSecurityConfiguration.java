@@ -26,7 +26,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-
 import java.io.Serializable;
 import java.util.Locale;
 
@@ -53,12 +52,10 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
 
                                         .requestMatchers(HttpMethod.POST, "/api/v1/stereum/outbound").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-
-                                        .requestMatchers(HttpMethod.POST, "/api/v2/**").denyAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/v2/**").denyAll()
-                                        .requestMatchers(HttpMethod.PUT, "/api/v2/**").denyAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/v2/*").denyAll()
-
+                                        .requestMatchers(HttpMethod.POST, "/api/v2/*").denyAll()
+                                        .requestMatchers(HttpMethod.GET, "/api/v2/*").denyAll()
+                                        .requestMatchers(HttpMethod.PUT, "/api/v2/*").denyAll()
+                                        .requestMatchers(HttpMethod.PATCH, "/api/v2/*").denyAll()
                                         .requestMatchers("/ws/**").permitAll()
                                         .requestMatchers("/error").anonymous() // <----- Fix
                                         .anyRequest().authenticated()

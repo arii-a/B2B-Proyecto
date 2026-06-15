@@ -4,6 +4,8 @@ import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.repository.proyecciones.EmpresaProjection;
 import com.example.B2BProyect.repository.proyecciones.EmpresaRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,7 +26,7 @@ public interface EmpresaRepository extends JpaRepository<Empresa, UUID> {
     @Query("SELECT new" +
             " com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial)" +
             " FROM Empresa e")
-    List<EmpresaDTO> findAllDTO();
+    Page<EmpresaDTO> findAllDTO(Pageable pageable);
 
     @Query("SELECT new " +
             "com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial)" +
@@ -38,6 +40,4 @@ public interface EmpresaRepository extends JpaRepository<Empresa, UUID> {
     // record
     @Query("SELECT new com.example.B2BProyect.repository.proyecciones.EmpresaRecord(e.id, e.nombre, e.nit, e.razonSocial) FROM Empresa e")
     List<EmpresaRecord> findAllRecord();
-
-
 }

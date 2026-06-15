@@ -31,7 +31,7 @@ public class SistemaB2B {
 //    @Value("${bsistemaB2B2b.read-timeout:40000}")
 //    private int readTimeout;
 
-    @Value("${stereum.api.key}")
+    @Value("${stereum.api_key}")
     private String stereumToken;
 
     private String token;
