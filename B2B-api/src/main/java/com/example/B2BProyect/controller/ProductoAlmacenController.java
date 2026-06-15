@@ -1,5 +1,6 @@
 package com.example.B2BProyect.controller;
 
+import com.example.B2BProyect.service.exception.OperationException;
 import com.example.B2BProyect.repository.dto.request.ProductoAlmacenRequest;
 import com.example.B2BProyect.repository.dto.response.ProductoAlmacenDTO;
 import com.example.B2BProyect.repository.entity.ProductoAlmacenId;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +27,12 @@ public class ProductoAlmacenController {
     public ResponseEntity<List<ProductoAlmacenDTO>> findAll() {
         try {
             return ResponseEntity.ok(productoAlmacenService.findAll());
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error listando producto-almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -35,9 +40,12 @@ public class ProductoAlmacenController {
     public ResponseEntity<List<ProductoAlmacenDTO>> findByAlmacen(@PathVariable UUID idAlmacen) {
         try {
             return ResponseEntity.ok(productoAlmacenService.findByAlmacen(idAlmacen));
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error listando producto-almacén por almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -46,9 +54,12 @@ public class ProductoAlmacenController {
         try {
             productoAlmacenService.save(dto);
             return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error creando producto-almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -63,9 +74,12 @@ public class ProductoAlmacenController {
             return productoAlmacenService.update(id, dto)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error actualizando producto-almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -79,9 +93,12 @@ public class ProductoAlmacenController {
             return productoAlmacenService.delete(id)
                     ? ResponseEntity.noContent().build()
                     : ResponseEntity.notFound().build();
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error eliminando producto-almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 }
