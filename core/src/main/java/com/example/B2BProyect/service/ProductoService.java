@@ -5,6 +5,8 @@ import com.example.B2BProyect.repository.dto.request.ProductoRequest;
 import com.example.B2BProyect.repository.dto.response.ProductoDTO;
 import com.example.B2BProyect.repository.entity.Producto;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,11 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public List<ProductoDTO> findAll() {
         return productoRepository.findAll().stream().map(ProductoDTO::new).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductoDTO> findAllPaged(int page, int size) {
+        return productoRepository.findAllPaged(PageRequest.of(page, size));
     }
 
     @Transactional(readOnly = true)
