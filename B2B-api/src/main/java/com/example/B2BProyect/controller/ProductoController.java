@@ -5,6 +5,7 @@ import com.example.B2BProyect.repository.dto.response.ProductoDTO;
 import com.example.B2BProyect.service.ProductoService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,6 +27,18 @@ public class ProductoController {
             return ResponseEntity.ok(productoService.findAll());
         } catch (Exception e) {
             log.error("Error al listar productos: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<Page<ProductoDTO>> findAllPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            return ResponseEntity.ok(productoService.findAllPaged(page, size));
+        } catch (Exception e) {
+            log.error("Error al listar productos paginados: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
