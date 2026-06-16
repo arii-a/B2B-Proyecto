@@ -1,13 +1,15 @@
 package com.example.B2BProyect.repository.dto.response;
 
 import com.example.B2BProyect.repository.entity.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class EmpresaDTO {
     private UUID id;
     private String nombre;

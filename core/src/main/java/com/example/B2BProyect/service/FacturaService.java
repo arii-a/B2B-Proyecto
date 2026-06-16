@@ -5,9 +5,12 @@ import com.example.B2BProyect.repository.dto.request.FacturaRequest;
 import com.example.B2BProyect.repository.dto.response.FacturaDTO;
 import com.example.B2BProyect.repository.entity.Factura;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,5 +59,10 @@ public class FacturaService {
         if (!facturaRepository.existsById(id)) return false;
         facturaRepository.deleteById(id);
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FacturaDTO> findAllByOrderByDateDesc(LocalDateTime pInit, LocalDateTime pEnd, Pageable pageable) {
+        return facturaRepository.findAllByOrderByDateDesc(pInit, pEnd, pageable);
     }
 }
