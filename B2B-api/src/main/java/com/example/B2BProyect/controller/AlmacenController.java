@@ -1,5 +1,6 @@
 package com.example.B2BProyect.controller;
 
+import com.example.B2BProyect.service.exception.OperationException;
 import com.example.B2BProyect.repository.dto.request.AlmacenRequest;
 import com.example.B2BProyect.repository.dto.response.AlmacenDTO;
 import com.example.B2BProyect.service.AlmacenService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +27,12 @@ public class AlmacenController {
     public ResponseEntity<List<AlmacenDTO>> findAll() {
         try {
             return ResponseEntity.ok(almacenService.findAll());
-        } catch (Exception e) {
+        } catch (OperationException e) {
             log.error("Error listando almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error listando almacén", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al listar almacenes");
         }
     }
 
@@ -36,9 +41,12 @@ public class AlmacenController {
         try {
             almacenService.save(dto);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e) {
+        } catch (OperationException e) {
             log.error("Error creando almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error creando almacén", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al guardar almacén");
         }
     }
 
@@ -48,9 +56,12 @@ public class AlmacenController {
             return almacenService.update(id, dto)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
+        } catch (OperationException e) {
             log.error("Error actualizando almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error actualizando almacén", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al actualizar almacén");
         }
     }
 
@@ -60,9 +71,12 @@ public class AlmacenController {
             return almacenService.delete(id)
                     ? ResponseEntity.noContent().build()
                     : ResponseEntity.notFound().build();
-        } catch (Exception e) {
+        } catch (OperationException e) {
             log.error("Error eliminando almacén: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error eliminando almacén", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al eliminar almacén");
         }
     }
 }

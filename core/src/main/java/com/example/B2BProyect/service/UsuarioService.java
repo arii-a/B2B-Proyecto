@@ -8,13 +8,17 @@ import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
 import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.dto.response.SucursalEmpresaDTO;
 import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
+import com.example.B2BProyect.repository.entity.Log;
 import com.example.B2BProyect.repository.entity.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -87,5 +91,10 @@ public class UsuarioService {
                 rolRepository.findById(dto.getIdRol()).ifPresent(usuario::setIdRol);
             return new UsuarioDTO(usuarioRepository.save(usuario));
         });
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UsuarioDTO> findAllByOrderByDateDesc(LocalDateTime pInit, LocalDateTime pEnd, Pageable pageable) {
+        return usuarioRepository.findAllByOrderByDateDesc(pInit, pEnd, pageable);
     }
 }

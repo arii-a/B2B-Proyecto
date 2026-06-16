@@ -4,14 +4,18 @@ import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.dto.request.EmpresaRequest;
 import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.entity.Empresa;
+import com.example.B2BProyect.service.exception.EmpresasException;
 import com.example.B2BProyect.service.exception.NotDataFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,15 +36,12 @@ public class EmpresaService {
         empresa.setActivo(true);
         empresa.setNit(empresaDTO.getNit());
         empresa.setRazonSocial(empresaDTO.getRazonSocial());
-
-        logService.info("Creando empresa nueva. Vamos!");
-
         return new EmpresaDTO(this.empresaRepository.save(empresa));
     }
 
     @Transactional(readOnly = true)
-    public List<EmpresaDTO> findAll() {
-        return empresaRepository.findAllDTO();
+    public Page<EmpresaDTO> findAll(Integer page, Integer size, String sortBy) {
+        return empresaRepository.findAllDTO(PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
     @Transactional(readOnly = true)
@@ -76,42 +77,9 @@ public class EmpresaService {
         return true;
     }
 
-
-    @Async("taskLog")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void asyncUpdateEmpresa(UUID id, EmpresaRequest dto) {
-
-        Empresa empresa = empresaRepository.findById(id)
-                .orElseThrow(() -> new NotDataFoundException("emprea no encontrada: " + id));
-
-        if (dto.getNombre() != null)      empresa.setNombre(dto.getNombre());
-        if (dto.getDominio() != null)     empresa.setDominio(dto.getDominio());
-        if (dto.getNit() != null)         empresa.setNit(dto.getNit());
-        if (dto.getRazonSocial() != null) empresa.setRazonSocial(dto.getRazonSocial());
-
-        empresaRepository.save(empresa);
-        log.info("empresa actualizada de forma asincrona", empresa.getId());
-    }
-
-    @Scheduled(cron = "0 */1 * * * *")
-    public void listarEmpresas() {
-        List<EmpresaDTO> empresas = empresaRepository.findAllDTO();
-        log.info("Listando empresas: {}", empresas);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Async
-    public void modificarEmpresa(UUID id, EmpresaRequest dto) {
-        Empresa empresa = empresaRepository.findById(id).orElseThrow(()
-                -> new NullPointerException("No existe la empresa"));
-
-        if (dto.getNombre() != null) empresa.setNombre(dto.getNombre());
-        if (dto.getDominio() != null) empresa.setDominio(dto.getDominio());
-        if (dto.getNit() != null) empresa.setNit(dto.getNit());
-        if (dto.getRazonSocial() != null) empresa.setRazonSocial(dto.getRazonSocial());
-
-        empresaRepository.save(empresa);
-    }
-
-
+//    @Scheduled(cron = "0 */1 * * * *")
+//    public void listarEmpresas(Pageable page) {
+//        Page<EmpresaDTO> empresas = empresaRepository.findAllDTO(page);
+//        log.info("Listando empresas: {}", empresas);
+//    }
 }
