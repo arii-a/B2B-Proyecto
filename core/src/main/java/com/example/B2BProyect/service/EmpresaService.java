@@ -4,6 +4,7 @@ import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.dto.request.EmpresaRequest;
 import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.entity.Empresa;
+import com.example.B2BProyect.service.exception.EmpresasException;
 import com.example.B2BProyect.service.exception.NotDataFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,17 +36,11 @@ public class EmpresaService {
         empresa.setActivo(true);
         empresa.setNit(empresaDTO.getNit());
         empresa.setRazonSocial(empresaDTO.getRazonSocial());
-
-        logService.info("Creando empresa nueva. Vamos!");
-
         return new EmpresaDTO(this.empresaRepository.save(empresa));
     }
 
     @Transactional(readOnly = true)
     public Page<EmpresaDTO> findAll(Integer page, Integer size, String sortBy) {
-        log.info("PAGE: " + page);
-        log.info("SIZE: " + size);
-        log.info("SORTBY: " + sortBy);
         return empresaRepository.findAllDTO(PageRequest.of(page, size, Sort.by(sortBy)));
     }
 

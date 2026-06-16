@@ -3,7 +3,9 @@ package com.example.B2BProyect.service;
 import com.example.B2BProyect.repository.OrdenCompraRepository;
 import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
+import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
+import com.example.B2BProyect.service.exception.EmpresasException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Slf4j
 @Service
