@@ -6,6 +6,7 @@ import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
 import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
+import com.example.B2BProyect.service.EmailService;
 import com.example.B2BProyect.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final EmailService emailService;
     private final EmpresaRepository empresaRepository;
     private final SucursalEmpresaRepository sucursalRepository;
     private final RolUsuarioRepository rolRepository;
@@ -43,6 +46,12 @@ public class UsuarioController {
             return ResponseEntity.badRequest().build();
         }
     }*/
+
+    @GetMapping("/password-recovery")
+    public ResponseEntity<String> testPasswordRecovery() {
+        emailService.sendPassword("nicolascresposuarez@gmail.com", "TestPass123");
+        return ResponseEntity.ok("Email sent");
+    }
 
     @PostMapping
     public ResponseEntity<Void> save(@RequestBody UsuarioRequest dto) {
@@ -81,16 +90,14 @@ public class UsuarioController {
                                                  @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
                                                  @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir,
 
-                                                 @RequestParam("from") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-                                                 @RequestParam("to") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) {
+                                                 @RequestParam(value = "from", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+                                                 @RequestParam(value = "to", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) {
 
         try {
-            return ResponseEntity.ok(usuarioService.findAllByOrderByDateDesc(from.toInstant()
-                            .atZone(ZoneId.systemDefault()).toLocalDateTime(),
-                    to.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-
-                    PageRequest.of(page, size, Sort.by(sortDir, sortBy)))
-            );
+            LocalDateTime pInit = from != null ? from.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime() : null;
+            LocalDateTime pEnd  = to   != null ? to.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()   : null;
+            return ResponseEntity.ok(usuarioService.findAllByOrderByDateDesc(pInit, pEnd,
+                    PageRequest.of(page, size, Sort.by(sortDir, sortBy))));
         } catch (OperationException e) {
             log.error("Error al listar usuarios: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

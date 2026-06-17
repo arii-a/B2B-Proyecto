@@ -5,6 +5,8 @@ import com.example.B2BProyect.repository.dto.request.TarifaReglaRequest;
 import com.example.B2BProyect.repository.dto.response.TarifaReglaDTO;
 import com.example.B2BProyect.repository.entity.TarifaRegla;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,5 +58,10 @@ public class TarifaReglaService {
         if (!tarifaReglaRepository.existsById(id)) return false;
         tarifaReglaRepository.deleteById(id);
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TarifaReglaDTO> findAllPaged(int page, int size) {
+        return tarifaReglaRepository.findAll(PageRequest.of(page, size)).map(TarifaReglaDTO::new);
     }
 }

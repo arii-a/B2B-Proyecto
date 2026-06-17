@@ -95,6 +95,8 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public Page<UsuarioDTO> findAllByOrderByDateDesc(LocalDateTime pInit, LocalDateTime pEnd, Pageable pageable) {
+        if (pInit == null || pEnd == null)
+            return usuarioRepository.findAllPaged(pageable);
         return usuarioRepository.findAllByOrderByDateDesc(pInit, pEnd, pageable);
     }
 }

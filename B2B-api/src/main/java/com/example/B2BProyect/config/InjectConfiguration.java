@@ -62,7 +62,7 @@ public class InjectConfiguration {
         executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(queueCapacity);
 
-        executor.setThreadNamePrefix("Miguel-");
+        executor.setThreadNamePrefix("ModoExamen-");
         executor.initialize();
         return executor;
     }

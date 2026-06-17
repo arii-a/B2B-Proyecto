@@ -3,6 +3,7 @@ package com.example.B2BProyect.controller;
 import com.example.B2BProyect.repository.dto.request.FacturaRequest;
 import com.example.B2BProyect.repository.dto.response.FacturaDTO;
 import com.example.B2BProyect.service.FacturaService;
+import org.springframework.data.domain.Page;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,18 @@ public class FacturaController {
             return ResponseEntity.ok(facturaService.findAll());
         } catch (Exception e) {
             log.error("Error listando factura: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<Page<FacturaDTO>> findAllPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            return ResponseEntity.ok(facturaService.findAllPaged(page, size));
+        } catch (Exception e) {
+            log.error("Error listando facturas paginadas: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

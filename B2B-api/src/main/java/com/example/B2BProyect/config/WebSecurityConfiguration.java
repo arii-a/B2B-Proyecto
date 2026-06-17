@@ -44,6 +44,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                 .authorizeHttpRequests(
                         authorizationManagerRequestMatcherRegistry ->
                                 authorizationManagerRequestMatcherRegistry
+                                        .requestMatchers(request -> request.getRequestURI().contains("/v2/")).denyAll()
                                         .requestMatchers("/swagger-ui/**",
                                                 "/v3/api-docs/**",
                                                 "/v3/api-docs",
