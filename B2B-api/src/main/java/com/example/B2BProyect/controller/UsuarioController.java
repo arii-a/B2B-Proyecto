@@ -5,6 +5,7 @@ import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
 import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
+import com.example.B2BProyect.service.EmailService;
 import com.example.B2BProyect.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final EmailService emailService;
     private final EmpresaRepository empresaRepository;
     private final SucursalEmpresaRepository sucursalRepository;
     private final RolUsuarioRepository rolRepository;
@@ -41,6 +43,12 @@ public class UsuarioController {
             return ResponseEntity.badRequest().build();
         }
     }*/
+
+    @GetMapping("/password-recovery")
+    public ResponseEntity<String> testPasswordRecovery() {
+        emailService.sendPassword("nicolascresposuarez@gmail.com", "TestPass123");
+        return ResponseEntity.ok("Email sent");
+    }
 
     @PostMapping
     public ResponseEntity<Void> save(@RequestBody UsuarioRequest dto) {
