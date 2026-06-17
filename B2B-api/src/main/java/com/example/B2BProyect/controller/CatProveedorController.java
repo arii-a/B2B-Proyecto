@@ -1,5 +1,6 @@
 package com.example.B2BProyect.controller;
 
+import com.example.B2BProyect.service.exception.OperationException;
 import com.example.B2BProyect.repository.dto.request.CatProveedorRequest;
 import com.example.B2BProyect.repository.dto.response.CatProveedorDTO;
 import com.example.B2BProyect.service.CatProveedorService;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -23,9 +25,12 @@ public class CatProveedorController {
     public ResponseEntity<List<CatProveedorDTO>> findAll() {
         try {
             return ResponseEntity.ok(catProveedorService.findAll());
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error llamando a las categorias de proveedor: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -34,9 +39,12 @@ public class CatProveedorController {
         try {
             catProveedorService.save(catProveedor);
             return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error creando nueva categoria de proveedor: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 }

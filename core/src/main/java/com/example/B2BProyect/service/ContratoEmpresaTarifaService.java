@@ -5,6 +5,8 @@ import com.example.B2BProyect.repository.dto.request.ContratoEmpresaTarifaReques
 import com.example.B2BProyect.repository.dto.response.ContratoEmpresaTarifasDTO;
 import com.example.B2BProyect.repository.entity.ContratoEmpresaTarifa;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,5 +68,10 @@ public class ContratoEmpresaTarifaService {
         if (!contratoEmpresaTarifaRepository.existsById(id)) return false;
         contratoEmpresaTarifaRepository.deleteById(id);
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ContratoEmpresaTarifasDTO> findAllPaged(int page, int size) {
+        return contratoEmpresaTarifaRepository.findAll(PageRequest.of(page, size)).map(ContratoEmpresaTarifasDTO::new);
     }
 }

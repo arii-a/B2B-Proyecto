@@ -1,5 +1,6 @@
 package com.example.B2BProyect.controller;
 
+import com.example.B2BProyect.service.exception.OperationException;
 import com.example.B2BProyect.repository.dto.request.ContratoEmpresaDetalleRequest;
 import com.example.B2BProyect.repository.dto.response.ContratoEmpresaDetalleDTO;
 import com.example.B2BProyect.service.ContratoEmpresaDetalleService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +27,12 @@ public class ContratoEmpresaDetalleController {
     public ResponseEntity<List<ContratoEmpresaDetalleDTO>> findAll() {
         try {
             return ResponseEntity.ok(contratoEmpresaDetalleService.findAll());
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error listando contrato detalle: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -36,9 +41,12 @@ public class ContratoEmpresaDetalleController {
         try {
             contratoEmpresaDetalleService.save(dto);
             return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error creando contrato detalle: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -48,9 +56,12 @@ public class ContratoEmpresaDetalleController {
             return contratoEmpresaDetalleService.update(id, dto)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error actualizando contrato detalle: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 
@@ -60,9 +71,12 @@ public class ContratoEmpresaDetalleController {
             return contratoEmpresaDetalleService.delete(id)
                     ? ResponseEntity.noContent().build()
                     : ResponseEntity.notFound().build();
+        } catch (OperationException e) {
+            log.error("OperationException: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             log.error("Error eliminando contrato detalle: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
         }
     }
 }

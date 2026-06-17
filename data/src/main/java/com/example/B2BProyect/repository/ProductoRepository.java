@@ -3,6 +3,8 @@ package com.example.B2BProyect.repository;
 import com.example.B2BProyect.repository.dto.response.ProductoDTO;
 import com.example.B2BProyect.repository.entity.Producto;
 import com.example.B2BProyect.repository.proyecciones.ProductoProjection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,6 +38,13 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID> {
     // proyección por interfaz: para catálogo y búsquedas
     @Query("SELECT p.id AS id, p.sku AS sku, p.nombre AS nombre, p.activo AS activo FROM Producto p")
     List<ProductoProjection> findResumenProductos();
+
+    @Query(value = "SELECT new com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
+            "p.id, p.sku, p.nombre, p.descripcion, p.unidadMedida, p.activo," +
+            " p.idCategoria.nombre, p.idProveedor.idEmpresa.nombre)" +
+            " FROM Producto p ORDER BY p.id DESC",
+            countQuery = "SELECT COUNT(p) FROM Producto p")
+    Page<ProductoDTO> findAllPaged(Pageable pageable);
 
     List<Producto> findByIdProveedorId(UUID idProveedor);
 

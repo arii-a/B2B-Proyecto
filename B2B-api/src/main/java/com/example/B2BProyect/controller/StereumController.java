@@ -2,33 +2,21 @@ package com.example.B2BProyect.controller;
 
 import com.example.B2BProyect.integracion.*;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
-import com.example.B2BProyect.repository.entity.Usuario;
 import com.example.B2BProyect.service.OrdenCompraService;
-import com.example.B2BProyect.service.StereumService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.json.JSONObject;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,8 +29,8 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("/api/v1/stereum")
 public class StereumController {
 
-    private ConcurrentHashMap<UUID, String> clientes = new ConcurrentHashMap();
-    @Value("${stereum.api_key}")
+    private ConcurrentHashMap<UUID, String> clientes = new ConcurrentHashMap<>();
+    @Value("${stereum.api.key}")
     private String secretKey;
 
     private final SistemaB2B sistemaB2B;
@@ -88,7 +76,7 @@ public class StereumController {
 
         final ObjectMapper mapper = new ObjectMapper();
 
-        String hmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256,
+        String hmac = new HmacUtils("HmacSHA256",
                 secretKey.getBytes(StandardCharsets.UTF_8))
                 .hmacHex(body.getBytes(StandardCharsets.UTF_8));
 
@@ -108,12 +96,8 @@ public class StereumController {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         StereumPayResponse response = objectMapper.readValue(body, StereumPayResponse.class);
 
-//        template.convertAndSendToUser(clientes.get(response.getTransaction().getIdempotencyKey()),"/paymenting", response.getTransaction().getStatus());
-        try {
-            return ok().build();
-        } catch (Exception e) {
-            throw e ;
-        }
+        template.convertAndSend("/paymenting/" + response.getTransaction().getIdempotencyKey(), response.getTransaction().getStatus());
+        return ok().build();
     }
 
 }
