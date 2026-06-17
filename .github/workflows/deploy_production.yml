@@ -1,0 +1,68 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+  # Uncomment the lines below to also deploy automatically on push to main:
+  # push:
+  #   branches: [main]
+
+jobs:
+  deploy:
+    name: Build & deploy to production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Angular (production)
+        run: npm run build -- --configuration production
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 185.196.21.57 >> ~/.ssh/known_hosts
+
+      - name: Update API code and install dependencies
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 185.196.21.57
+          port: 22
+          username: deploy
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /var/www/scrum-portal
+            git fetch origin main
+            git reset --hard origin/main
+            cd api
+            npm ci --omit=dev
+
+      - name: Upload frontend build
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            dist/scrum-portal/browser/ \
+            deploy@185.196.21.57:/var/www/scrum-portal/dist/scrum-portal/browser/
+
+      - name: Reload API process
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 185.196.21.57
+          port: 22
+          username: deploy
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          script: |
+            pm2 reload scrum-portal-api --update-env
+            pm2 save
