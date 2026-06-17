@@ -7,6 +7,7 @@ import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.repository.entity.Proveedor;
 import com.example.B2BProyect.repository.entity.Usuario;
 import com.example.B2BProyect.service.*;
+import org.springframework.data.domain.Page;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,18 @@ public class OrdenCompraController {
             return ResponseEntity.ok(ordenCompraService.findAll());
         } catch (Exception e) {
             log.error("Error listando orden compra: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<Page<OrdenCompraDTO>> findAllPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            return ResponseEntity.ok(ordenCompraService.findAllPaged(page, size));
+        } catch (Exception e) {
+            log.error("Error listando ordenes compra paginadas: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
