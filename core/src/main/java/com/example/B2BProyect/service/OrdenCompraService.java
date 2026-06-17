@@ -9,6 +9,7 @@ import com.example.B2BProyect.service.exception.EmpresasException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,6 +85,11 @@ public class OrdenCompraService {
         if (!ordenCompraRepository.existsById(id)) return false;
         ordenCompraRepository.deleteById(id);
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrdenCompraDTO> findAllPaged(int page, int size) {
+        return ordenCompraRepository.findAll(PageRequest.of(page, size)).map(OrdenCompraDTO::new);
     }
 
     @Transactional(readOnly = true)

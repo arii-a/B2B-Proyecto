@@ -6,7 +6,11 @@
       "Bash(Format-Table -AutoSize)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Universidad\\\\Semestre VII\\\\Bases De Datos Avanzadas\\\\MARKETPLACE_B2B\\\\db-demo\\\\src\" -Recurse | Where-Object {$_.Extension -in '.jsx', '.js'} | Select-Object FullName, @{Name='Type'; Expression={if\\($_.PSIsContainer\\) {'Folder'} else {$_.Extension}}} | Format-List)",
       "Bash(dir C:\\\\Universidad\\\\Semestre VII\\\\Certificacion III - Springboot\\\\B2B-Proyecto\\\\B2B-api\\\\src\\\\main\\\\java\\\\com\\\\example\\\\B2BProyect\\\\config\\\\ *)",
-      "Bash(fc *)"
+      "Bash(fc *)",
+      "PowerShell(git *)",
+      "Read(//mnt/**)",
+      "Read(//c//**)",
+      "Bash(git *)"
     ]
   }
 }

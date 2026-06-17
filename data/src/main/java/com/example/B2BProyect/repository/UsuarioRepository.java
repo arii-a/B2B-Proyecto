@@ -60,4 +60,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
             @Param("pInit") LocalDateTime pInit,
             @Param("pEnd") LocalDateTime pEnd,
             Pageable pageable);
+
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.UsuarioDTO(" +
+            "u.id, u.nombre, u.email, u.activo, u.idEmpresa.nombre, u.idSucursal.nombre, u.idRol.nombre)" +
+            " FROM Usuario u")
+    Page<UsuarioDTO> findAllPaged(Pageable pageable);
 }
