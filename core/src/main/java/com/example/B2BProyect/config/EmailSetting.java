@@ -32,6 +32,8 @@ public class EmailSetting {
     @Value("${mail.smtp.password}")
     private String password;
 
+
+
     @Bean
     @Lazy
     public JavaMailSender javaMailSender() {

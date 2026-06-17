@@ -14,6 +14,13 @@ public class MailContentBuilder {
         this.templateEngine = templateEngine;
     }
 
+    public String build(String message) {
+        Context context = new Context();
+        context.setVariable("message", message);
+        return templateEngine.process("mailTemplate", context);
+    }
+
+
     public String sendPassword(String password) {
         final Context ctx = new Context();
         ctx.setVariable("password", password);
@@ -22,4 +29,5 @@ public class MailContentBuilder {
         ctx.setVariable("imageLinkedin", "imageLinkedin");
         return this.templateEngine.process("mailPassword", ctx);
     }
+
 }

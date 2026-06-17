@@ -40,11 +40,13 @@ public class EmailService {
             messageHelper.setReplyTo(new InternetAddress(mailNoreply, mailNoreply));
             messageHelper.setSubject("Password reset");
             String message = mailContentBuilder.sendPassword(password);
+
             messageHelper.setText(message, true);
             messageHelper.addInline("banner", new ClassPathResource(BANNER_PNG));
             messageHelper.addInline("imageLinkedin", new ClassPathResource(LINKEDIN_PNG));
             messageHelper.addInline("imageX", new ClassPathResource(X_PNG));
         };
         javaMailSender.send(messagePreparator);
+
     }
 }

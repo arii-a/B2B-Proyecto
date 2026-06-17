@@ -9,6 +9,7 @@ import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.repository.entity.RolUsuario;
 import com.example.B2BProyect.repository.entity.SucursalEmpresa;
 import com.example.B2BProyect.repository.entity.Usuario;
+import com.example.B2BProyect.service.EmailService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -24,10 +25,12 @@ public class DataInitializer implements CommandLineRunner {
     private final SucursalEmpresaRepository sucursalEmpresaRepository;
     private final UsuarioRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Override
     public void run(String... args) throws Exception {
         init();
+        emailService.sendPassword("santiagovillanueva1@upb.edu","123546");
     }
 
     private void init() {
