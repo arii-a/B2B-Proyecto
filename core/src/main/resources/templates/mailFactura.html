@@ -1,0 +1,393 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <title>UPB - Confirmación de Compra</title>
+    <style>
+        /* -------------------------------------
+            GLOBAL RESETS
+        ------------------------------------- */
+
+        img {
+            border: none;
+            -ms-interpolation-mode: bicubic;
+            max-width: 100%;
+        }
+
+        body {
+            background-color: #f6f6f6;
+            font-family: sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        tbody {
+            display: table-row-group;
+            vertical-align: middle;
+            border-color: inherit;
+        }
+
+        table {
+            border-collapse: separate;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+            width: 100%;
+        }
+
+        table td {
+            font-family: sans-serif;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        /* -------------------------------------
+            BODY & CONTAINER
+        ------------------------------------- */
+
+        .body {
+            background: linear-gradient(180deg, #002855 0%, #004A99 100%);
+            width: 100%;
+        }
+
+        .container {
+            display: block;
+            margin: 0 auto !important;
+            max-width: 580px;
+            padding: 10px;
+            width: 580px;
+        }
+
+        p {
+            color: #1c1c1c !important;
+        }
+
+        .content {
+            box-sizing: border-box;
+            display: block;
+            margin: 0 auto;
+            max-width: 580px;
+            padding: 10px;
+        }
+
+        /* -------------------------------------
+            HEADER, FOOTER, MAIN
+        ------------------------------------- */
+        .main {
+            background: #ffffff;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .wrapper {
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .footer {
+            clear: both;
+            margin-top: 10px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer td, .footer p, .footer span, .footer a {
+            color: #999999;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* -------------------------------------
+            TYPOGRAPHY
+        ------------------------------------- */
+        h1, h2, h3, h4 {
+            color: #002855;
+            font-family: sans-serif;
+            font-weight: 700;
+            line-height: 1.4;
+            margin: 0;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+        }
+
+        p, ul, div, a, ol {
+            font-family: sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            margin: 0;
+            margin-bottom: 15px;
+        }
+
+        /* Ajuste de alineación para la factura (izquierda/justificado en textos) */
+        .text-info {
+            list-style-position: inside;
+            margin-left: 5px;
+            text-align: left;
+        }
+
+        /* -------------------------------------
+            ITEMS TABLE & INVOICE STYLES
+        ------------------------------------- */
+        .invoice-table {
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-spacing: 0;
+        }
+        .invoice-table th {
+            background-color: #f6f6f6;
+            color: #002855;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px;
+            font-size: 13px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .invoice-table td {
+            padding: 10px;
+            border-bottom: 1px solid #f6f6f6;
+            font-size: 13px;
+            color: #333333;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .total-row td {
+            font-weight: bold;
+            color: #002855;
+            font-size: 15px;
+            border-top: 2px solid #002855;
+            border-bottom: none;
+        }
+        .metadata-box {
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #F3A900;
+        }
+
+        /* -------------------------------------
+            BUTTONS
+        ------------------------------------- */
+        .btn {
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .btn table {
+            width: auto;
+            margin: 0 auto;
+        }
+        .btn table td {
+            background-color: #ffffff;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .btn a {
+            background-color: #F3A900;
+            border: solid 1px #F3A900;
+            border-radius: 5px;
+            box-sizing: border-box;
+            color: #ffffff;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0;
+            padding: 12px 25px;
+            text-decoration: none;
+        }
+
+        /* -------------------------------------
+            RESPONSIVE
+        ------------------------------------- */
+        @media only screen and (max-width: 620px) {
+            table[class=body] h1 {
+                font-size: 22px !important;
+                margin-bottom: 10px !important;
+            }
+            table[class=body] p,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+                font-size: 15px !important;
+            }
+            table[class=body] .wrapper {
+                padding: 15px !important;
+            }
+            table[class=body] .container {
+                width: 100% !important;
+            }
+        }
+
+        @media all {
+            .btn-primary table td:hover { background-color: #D69400 !important; }
+            .btn-primary a:hover { background-color: #D69400 !important; border-color: #D69400 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<span class="preheader">Tu comprobante de pago de la UPB.</span>
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+    <tr>
+        <td>&nbsp;</td>
+        <td class="container">
+            <div class="content">
+
+                <table role="presentation" class="main">
+                    <tr>
+                        <td class="wrapper">
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="overflow: hidden">
+                                        <div>
+                                            <img th:src="|cid:${imageResourceName}|" alt="Logo UPB"
+                                                 style="max-width: 120px; margin-top: 3%; height: auto; margin-left: 0; margin-right: auto;"/>
+                                        </div>
+                                        <br>
+
+                                        <h1>¡Gracias por tu pago!</h1>
+                                        <p class="text-info">Hola <b th:text="${customerName}">Juan Pérez</b>,</p>
+                                        <p class="text-info">Confirmamos que tu transacción se ha procesado con éxito. A continuación, encontrarás los detalles de tu compra y facturación:</p>
+
+                                        <div class="metadata-box">
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td style="font-size: 13px; line-height: 1.6; color: #444444;">
+                                                        <strong>Nro. de Factura/Recibo:</strong> <span th:text="${invoiceNumber}">001-00012345</span><br/>
+                                                        <strong>Fecha:</strong> <span th:text="${invoiceDate}">18/06/2026</span><br/>
+                                                        <strong>Método de Pago:</strong> <span th:text="${paymentMethod}">Tarjeta de Crédito/Débito</span>
+                                                    </td>
+                                                    <td style="font-size: 13px; line-height: 1.6; color: #444444;">
+                                                        <strong>Razón Social:</strong> <span th:text="${fiscalName}">Juan Pérez</span><br/>
+                                                        <strong>NIT/CI:</strong> <span th:text="${fiscalId}">12345678</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <table class="invoice-table">
+                                            <thead>
+                                            <tr>
+                                                <th>Concepto</th>
+                                                <th style="width: 15%; text-align: center;">Cant.</th>
+                                                <th style="width: 25%; text-align: right;">Subtotal</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:each="item : ${invoiceItems}">
+                                                <td th:text="${item.description}">Matrícula Semestral - Ingeniería de Sistemas</td>
+                                                <td style="text-align: center;" th:text="${item.quantity}">1</td>
+                                                <td class="text-right" th:text="${item.formattedPrice}">Bs. 3,500.00</td>
+                                            </tr>
+
+                                            <tr class="total-row">
+                                                <td></td>
+                                                <td style="text-align: center;">Total:</td>
+                                                <td class="text-right" th:text="${totalAmount}">Bs. 3,500.00</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+                                            <tbody>
+                                            <tr>
+                                                <td align="center">
+                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                        <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <a th:href="${downloadPdfUrl}" target="_blank">Descargar Factura Oficial (PDF)</a>
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <br/>
+                                        <p class="text-info" style="font-size: 12px; color: #666666 !important; text-align: center;">
+                                            Si tienes alguna duda con este cobro, por favor comunícate con el departamento de Facturación.
+                                        </p>
+                                        <br/>
+
+                                        <div style="background-color: #e0e0e0; height: 1px;"></div>
+
+                                        <div>
+                                            <table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 15px;">
+                                                <tr>
+                                                    <td width="50%" align="center" style="padding-left: 10px; padding-right: 10px;">
+                                                        <a href="https://x.com/upb_edu" target="_blank" class="etiqueta-a">
+                                                            <img th:src="|cid:${imageX}|" alt="Twitter" title="Twitter" style="max-width: 35px; height: auto;" border="0"/>
+                                                        </a>
+                                                    </td>
+                                                    <td width="50%" align="center" style="padding-left: 10px; padding-right: 10px;">
+                                                        <a href="https://linkedin.com/school/universidad-privada-boliviana" target="_blank" class="etiqueta-a" >
+                                                            <img th:src="|cid:${imageLinkedin}|" title="LinkedIn" alt="LinkedIn" style="max-width: 35px; height: auto;" border="0"/>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <table style="margin-top: 10px;">
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-size:12px; font-family:Arial,sans-serif; color:#a1a2b2; line-height:1.2">
+                                                            <p style="margin:0; font-size:12px; text-align:center">
+                                                                <strong>
+                                                                    <span style="word-break:break-word; font-size:14px">
+                                                                        <a href="https://www.upb.edu" style="text-decoration:none; color:#a1a2b2" rel="noopener" target="_blank">Acerca de</a> &nbsp;|&nbsp;
+                                                                        <a href="https://api.whatsapp.com/send?phone=59163608144" style="text-decoration:none; color:#a1a2b2" rel="noopener" target="_blank">Contáctanos</a>
+                                                                    </span>
+                                                                </strong>
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <table width="100%" border="0" cellpadding="15" cellspacing="0" role="presentation" style="word-break:break-word">
+                                                <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-family:sans-serif">
+                                                            <div style="font-size:12px; color:#a1a2b2; line-height:1.2">
+                                                                <p style="margin:0; font-size:12px; text-align:center">
+                                                                    <span style="text-decoration:none; color:#a1a2b2; font-size:14px">© Universidad Privada Boliviana.<br>Santa Cruz de la Sierra, Bolivia.</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </td>
+        <td>&nbsp;</td>
+    </tr>
+</table>
+
+</body>
+</html>

@@ -6,6 +6,9 @@ target/
 
 ### STS ###
 .apt_generated
+.claude
+.mvn
+.history
 .classpath
 .factorypath
 .project
@@ -34,5 +37,6 @@ build/
 
 **/src/main/resources/application.properties
 **/src/main/resources/.env
-**/src/main/resources/.env
 .env
+CUESTIONARIO_EXAMEN.txt
+RESUMEN_EXAMEN.txt

@@ -6,9 +6,11 @@ import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.dto.request.UsuarioRequest;
 import com.example.B2BProyect.repository.dto.response.UsuarioDTO;
+import com.example.B2BProyect.service.EmailService;
 import com.example.B2BProyect.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Slf4j
@@ -31,6 +34,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final EmailService emailService;
     private final EmpresaRepository empresaRepository;
     private final SucursalEmpresaRepository sucursalRepository;
     private final RolUsuarioRepository rolRepository;
@@ -44,6 +48,14 @@ public class UsuarioController {
             return ResponseEntity.badRequest().build();
         }
     }*/
+
+    @GetMapping("/password-recovery")
+    public ResponseEntity<String> testPasswordRecovery() {
+        Random r = new Random();
+        int ra = r.nextInt(100000, 999999);
+        emailService.sendPassword("nicolascresposuarez@gmail.com", String.valueOf(ra));
+        return ResponseEntity.ok("Email sent");
+    }
 
     @PostMapping
     public ResponseEntity<Void> save(@RequestBody UsuarioRequest dto) {
