@@ -12,7 +12,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
 public class EmailSenderJob extends QuartzJobBean implements InterruptableJob {
-    public static final String NAME_JOB = "EmailSenderJob";
+    public static final String NAME_JOB = "STEVE_JOB";
     private static final String NAME_TRIGGER = "EmailSenderJob-trigger";
     private JobService jobService;
 
