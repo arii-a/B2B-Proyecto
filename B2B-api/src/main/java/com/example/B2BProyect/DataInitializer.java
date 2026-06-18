@@ -1,6 +1,11 @@
 package com.example.B2BProyect;
 
 
+import com.example.B2BProyect.job.EmailSenderJob;
+import com.example.B2BProyect.quartz.CronExpressionConstant;
+import com.example.B2BProyect.quartz.service.JobDto;
+import com.example.B2BProyect.quartz.service.JobService;
+import com.example.B2BProyect.quartz.service.JobUtil;
 import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
@@ -28,10 +33,17 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final JobService jobService;
 
     @Override
     public void run(String... args) throws Exception {
         init();
+
+        JobDto jobDto = EmailSenderJob.getJobDto(JobUtil.GROUP_NAME);
+        if (!jobService.existJobName(jobDto.getGroupName(), jobDto.getJobName())){
+            jobService.scheduleCronJob(jobDto, new Date(), CronExpressionConstant.CRON_X_3_SEG, null, "Este Job envia correos");
+        }
+
 //        emailService.sendPassword("santiagovillanueva1@upb.edu","123546");
         Factura factura = new Factura();
 
@@ -66,7 +78,7 @@ public class DataInitializer implements CommandLineRunner {
         factura.setIdEstado("pagada");
         factura.setIdOrden(orden);
 
-        emailService.sendFactura("santiagovillanueva1@upb.edu", factura);
+//        emailService.sendFactura("santiagovillanueva1@upb.edu", factura);
     }
 
     private void init() {
