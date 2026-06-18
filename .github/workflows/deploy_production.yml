@@ -27,19 +27,12 @@ jobs:
       - name: Build (production)
         run: npm run build
 
-      - name: Install rsync
-        run: sudo apt-get install -y rsync
-
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H 74.163.80.99 >> ~/.ssh/known_hosts
-
       - name: Upload frontend build
-        run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            dist/ \
-            azureadmin@74.163.80.99:/home/azureadmin/Frontend-B2B/dist/
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 74.163.80.99
+          username: azureadmin
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          source: "dist/"
+          target: /home/azureadmin/Frontend-B2B/dist/
+          strip_components: 1
