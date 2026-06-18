@@ -6,6 +6,9 @@ target/
 
 ### STS ###
 .apt_generated
+.claude
+.mvn
+.history
 .classpath
 .factorypath
 .project

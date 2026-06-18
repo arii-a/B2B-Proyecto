@@ -1,7 +1,6 @@
 package com.example.B2BProyect.controller;
 
 import com.example.B2BProyect.service.exception.OperationException;
-import com.example.B2BProyect.integracion.StereumPayResponse;
 import com.example.B2BProyect.repository.dto.request.EmpresaRequest;
 import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.entity.Usuario;
@@ -13,13 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j

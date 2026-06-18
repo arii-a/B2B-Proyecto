@@ -10,6 +10,7 @@ import com.example.B2BProyect.service.EmailService;
 import com.example.B2BProyect.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Slf4j
@@ -49,7 +51,9 @@ public class UsuarioController {
 
     @GetMapping("/password-recovery")
     public ResponseEntity<String> testPasswordRecovery() {
-        emailService.sendPassword("nicolascresposuarez@gmail.com", "TestPass123");
+        Random r = new Random();
+        int ra = r.nextInt(100000, 999999);
+        emailService.sendPassword("nicolascresposuarez@gmail.com", String.valueOf(ra));
         return ResponseEntity.ok("Email sent");
     }
 
