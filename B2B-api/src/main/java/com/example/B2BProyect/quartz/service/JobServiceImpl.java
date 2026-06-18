@@ -1,6 +1,7 @@
 package com.example.B2BProyect.quartz.service;
 
 
+import com.example.B2BProyect.service.exception.OperationException;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.Trigger.TriggerState;
@@ -302,8 +303,6 @@ public class JobServiceImpl implements JobService {
         } catch (Exception e) {
             log.error("[{}] [{}] Exception. Error al reprogramar el job", groupName, jobName, e);
             throw new OperationException("Excepcion al reprogramar el job: [" + groupName + " , " + jobName + " ]");
-        } catch (OperationException e) {
-            throw new RuntimeException(e);
         }
     }
 
