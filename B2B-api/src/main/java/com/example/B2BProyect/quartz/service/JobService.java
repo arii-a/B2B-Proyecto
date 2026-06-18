@@ -1,6 +1,7 @@
 package com.example.B2BProyect.quartz.service;
 
 
+import com.example.B2BProyect.service.exception.OperationException;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -31,8 +32,8 @@ public interface JobService {
 	boolean pauseJob(JobDto jobDto);
 	boolean resumeJob(String groupKey, String jobName);
 	boolean resumeJob(JobDto jobDto);
-	void startJobNow(String groupKey, String jobKey, JobDataMap data) throws OperationException, OperationException;
-	void startJobNow(JobDto jobDto, JobDataMap data) throws OperationException, OperationException;
+	void startJobNow(String groupKey, String jobKey, JobDataMap data) throws OperationException;
+	void startJobNow(JobDto jobDto, JobDataMap data) throws OperationException;
 	boolean isJobRunning(String groupKey, String jobName);
 	List<JobDto> getAllJobs(String groupName);
 	List<JobDto> getJobInfo(String groupName, String jobName);
