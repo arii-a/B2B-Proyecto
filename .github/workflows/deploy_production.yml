@@ -1,10 +1,10 @@
 name: Deploy Production
 
 on:
-  workflow_dispatch:
+  # workflow_dispatch:
   # Uncomment the lines below to also deploy automatically on push to main:
-  # push:
-  #   branches: [main]
+  push:
+    branches: [frontend-b2b]
 
 jobs:
   deploy:
