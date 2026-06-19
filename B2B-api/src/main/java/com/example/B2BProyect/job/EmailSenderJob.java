@@ -15,13 +15,15 @@ public class EmailSenderJob extends QuartzJobBean implements InterruptableJob {
     public static final String NAME_JOB = "STEVE_JOB";
     private static final String NAME_TRIGGER = "EmailSenderJob-trigger";
     private JobService jobService;
+    private static int count = 0;
 
     @SneakyThrows
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         JobKey key = jobExecutionContext.getJobDetail().getKey();
         JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        log.info("Ejecutando!!!!");
+        System.out.println("How many are now? " + count);
+        count += 1;
     }
 
 

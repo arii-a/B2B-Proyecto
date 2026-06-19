@@ -1,5 +1,7 @@
 package com.example.B2BProyect.controller;
 
+import com.example.B2BProyect.integracion.totp.TotpService;
+import com.example.B2BProyect.repository.entity.Usuario;
 import com.example.B2BProyect.service.exception.OperationException;
 import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.RolUsuarioRepository;
@@ -38,7 +40,7 @@ public class UsuarioController {
     private final EmpresaRepository empresaRepository;
     private final SucursalEmpresaRepository sucursalRepository;
     private final RolUsuarioRepository rolRepository;
-
+    private final TotpService totpService;
     /*@GetMapping
     public ResponseEntity<List<UsuarioDTO>> findAll() {
         try {
@@ -87,6 +89,27 @@ public class UsuarioController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al actualizar usuario");
         }
     }
+
+    @GetMapping("/auth-code/{id}")
+    public ResponseEntity<String> setup(@PathVariable UUID id) throws Exception{
+        Usuario user = usuarioService.findById(id).orElseThrow();
+        String rawSecret = totpService.generateSecretForUser(user);
+        String qrUrl = totpService.getQrUrl(rawSecret, user.getNombre(), "B2B-Project");
+        return ResponseEntity.ok(qrUrl);
+    }
+
+    @PostMapping("/verify/{id}")
+    public ResponseEntity<String> authVerify(@PathVariable UUID id, @RequestParam String code) throws Exception{
+            Usuario user = usuarioService.findById(id).orElseThrow();
+            boolean valid = totpService.verifyCode(user, code);
+
+            if (valid) {
+                usuarioService.saveComplete(user);
+                return ResponseEntity.ok("2FA activado correctamente");
+            }
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Código inválido");
+        }
 
     @GetMapping()
     public ResponseEntity<Page<UsuarioDTO>> logs(@RequestParam(value = "page", defaultValue = "0") Integer page,

@@ -50,6 +50,11 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
+    public void saveComplete(Usuario usuario) {
+        usuarioRepository.save(usuario);
+    }
+
     @Transactional(readOnly = true)
     public List<UsuarioDTO> findAll() {
         return usuarioRepository.findAll().stream()

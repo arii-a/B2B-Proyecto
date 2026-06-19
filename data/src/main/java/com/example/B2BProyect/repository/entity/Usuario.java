@@ -44,6 +44,9 @@ public class Usuario extends AuditableEntity implements UserDetails {
     @Column(name = "activo", nullable = false)
     private Boolean activo = false;
 
+    @Column(name = "recovery_key", length = 100)
+    private String totpSecret;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_empresa", nullable = false)

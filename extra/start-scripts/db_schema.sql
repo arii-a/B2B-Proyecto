@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     email         VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     activo        BOOLEAN      NOT NULL DEFAULT TRUE,
+    recovery_key  VARCHAR(100),
     id_empresa    UUID          NOT NULL,
     id_sucursal   UUID          NOT NULL,
     id_rol        UUID          NOT NULL,

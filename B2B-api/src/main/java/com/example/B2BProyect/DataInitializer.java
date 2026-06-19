@@ -41,7 +41,7 @@ public class DataInitializer implements CommandLineRunner {
 
         JobDto jobDto = EmailSenderJob.getJobDto(JobUtil.GROUP_NAME);
         if (!jobService.existJobName(jobDto.getGroupName(), jobDto.getJobName())){
-            jobService.scheduleCronJob(jobDto, new Date(), CronExpressionConstant.CRON_X_3_SEG, null, "Este Job envia correos");
+            jobService.scheduleCronJob(jobDto, new Date(), CronExpressionConstant.CRON_START_NOW, null, "Este Job envia correos");
         }
 
 //        emailService.sendPassword("santiagovillanueva1@upb.edu","123546");

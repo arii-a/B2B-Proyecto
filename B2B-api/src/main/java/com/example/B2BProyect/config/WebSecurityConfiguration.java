@@ -53,6 +53,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
 
                                         .requestMatchers(HttpMethod.POST, "/api/v1/stereum/outbound").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login/2fa").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/v2/*").denyAll()
                                         .requestMatchers(HttpMethod.GET, "/api/v2/*").denyAll()
                                         .requestMatchers(HttpMethod.PUT, "/api/v2/*").denyAll()
