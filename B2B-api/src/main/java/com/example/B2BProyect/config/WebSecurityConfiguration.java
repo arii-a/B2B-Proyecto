@@ -1,6 +1,7 @@
 package com.example.B2BProyect.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -59,6 +60,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                                         .requestMatchers(HttpMethod.PATCH, "/api/v2/*").denyAll()
                                         .requestMatchers("/ws/**").permitAll()
                                         .requestMatchers("/error").anonymous() // <----- Fix
+                                        .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
                                         .anyRequest().authenticated()
 
                 )
