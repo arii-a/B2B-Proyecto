@@ -2,7 +2,6 @@ name: Deploy Production
 
 on:
   workflow_dispatch:
-  # Uncomment the lines below to also deploy automatically on push to main:
   # push:
   #   branches: [main]
 
@@ -15,54 +14,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Build Angular (production)
-        run: npm run build -- --configuration production
+      - name: Build JAR (prod profile)
+        run: mvn clean package -Denv=prod -DskipTests
 
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H 185.196.21.57 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 74.163.80.99 >> ~/.ssh/known_hosts
 
-      - name: Update API code and install dependencies
+      - name: Upload JAR to server
+        run: |
+          rsync -avz \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            B2B-api/target/*.jar \
+            azureadmin@74.163.80.99:~/Backend-B2B/app.jar
+
+      - name: Restart application
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 185.196.21.57
+          host: 74.163.80.99
           port: 22
-          username: deploy
+          username: azureadmin
           key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd /var/www/scrum-portal
+            cd ~/Backend-B2B
+            # Pull latest code so git history / resources stay in sync
             git fetch origin main
             git reset --hard origin/main
-            cd api
-            npm ci --omit=dev
-
-      - name: Upload frontend build
-        run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            dist/scrum-portal/browser/ \
-            deploy@185.196.21.57:/var/www/scrum-portal/dist/scrum-portal/browser/
-
-      - name: Reload API process
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: 185.196.21.57
-          port: 22
-          username: deploy
-          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
-          script: |
-            pm2 reload scrum-portal-api --update-env
-            pm2 save
+            # Restart via systemd service (assumed name: b2b-api)
+            sudo systemctl restart b2b-api
+            sudo systemctl status b2b-api --no-pager

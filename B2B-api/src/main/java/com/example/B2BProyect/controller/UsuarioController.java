@@ -49,7 +49,7 @@ public class UsuarioController {
 
     @GetMapping("/password-recovery")
     public ResponseEntity<String> testPasswordRecovery() {
-        emailService.sendPassword("nicolascresposuarez@gmail.com", "TestPass123");
+        emailService.sendPassword("nicolascresposuarez@gmail.com", "TestPass123"); //Correo del profe: rllayus@gmail.com
         return ResponseEntity.ok("Email sent");
     }
 
