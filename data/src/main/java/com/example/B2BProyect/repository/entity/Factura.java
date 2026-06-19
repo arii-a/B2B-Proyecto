@@ -2,7 +2,9 @@ package com.example.B2BProyect.repository.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -15,6 +17,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Table(name = "factura", indexes = {
         @Index(name = "idx_factura_orden", columnList = "id_orden"),
         @Index(name = "idx_factura_estado", columnList = "id_estado")

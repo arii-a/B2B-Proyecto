@@ -1,19 +1,14 @@
 package com.example.B2BProyect.integracion;
 
+import com.example.B2BProyect.integracion.stereum.StereuemApiResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service

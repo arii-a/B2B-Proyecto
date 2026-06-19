@@ -1,6 +1,7 @@
 package com.example.B2BProyect.service;
 
 import com.example.B2BProyect.config.MailContentBuilder;
+import com.example.B2BProyect.repository.entity.Factura;
 import jakarta.mail.internet.InternetAddress;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -21,9 +23,10 @@ public class EmailService {
     private static final String BANNER_PNG = "images/upb.png";
     private static final String LINKEDIN_PNG = "images/linkedin@2x.png";
     private static final String X_PNG = "images/twitter@2x.png";
+    private final ConcurrentHashMap<String, Factura> facturaList = new ConcurrentHashMap<>();
 
-    @Value("${mail.smtp.from-mail}")
-    private String mailFrom;
+//    @Value("${mail.smtp.from-mail:}")
+    private String mailFrom = "santiagovillanueva1@upb.edu";
     @Value("${mail.smtp.mail-noreply}")
     private String mailNoreply;
     private final MailContentBuilder mailContentBuilder;
@@ -40,6 +43,7 @@ public class EmailService {
             messageHelper.setReplyTo(new InternetAddress(mailNoreply, mailNoreply));
             messageHelper.setSubject("Password reset");
             String message = mailContentBuilder.sendPassword(password);
+
             messageHelper.setText(message, true);
             messageHelper.addInline("banner", new ClassPathResource(BANNER_PNG));
             messageHelper.addInline("imageLinkedin", new ClassPathResource(LINKEDIN_PNG));
@@ -47,4 +51,51 @@ public class EmailService {
         };
         javaMailSender.send(messagePreparator);
     }
+
+    public void sendFactura(String to, Factura factura) {
+        MimeMessagePreparator messagePreparator = mimeMessage -> {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setFrom(new InternetAddress(mailFrom));
+            messageHelper.setReplyTo(new InternetAddress(mailNoreply, mailNoreply));
+            messageHelper.setSubject("Verification sent");
+            String message = mailContentBuilder.sendFactura(factura);
+
+            messageHelper.setText(message, true);
+            messageHelper.addInline("banner", new ClassPathResource(BANNER_PNG));
+            messageHelper.addInline("imageLinkedin", new ClassPathResource(LINKEDIN_PNG));
+            messageHelper.addInline("imageX", new ClassPathResource(X_PNG));
+        };
+        javaMailSender.send(messagePreparator);
+    }
+
+    public void sendPasswordResetCode(String to, String code) {
+//        MimeMessageHelper message = new MimeMessageHelper();
+//        message.setTo(to);
+//        message.setSubject("Código de recuperación de contraseña");
+//        message.setText("""
+//                Recibimos una solicitud para restablecer tu contraseña.
+//
+//                Tu código de verificación es: %s
+//
+//                Expira en 15 minutos. Si no solicitaste esto, ignora este mensaje.
+//                """.formatted(code));
+//        javaMailSender.send(message);
+
+        MimeMessagePreparator messagePreparator = mimeMessage -> {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            messageHelper.setTo("santiagovillanueva1@upb.edu");
+            messageHelper.setFrom(new InternetAddress(mailFrom));
+            messageHelper.setReplyTo(new InternetAddress(mailNoreply, mailNoreply));
+            messageHelper.setSubject("Verification sent");
+            String message = mailContentBuilder.sendPassword(code);
+
+            messageHelper.setText(message, true);
+            messageHelper.addInline("banner", new ClassPathResource(BANNER_PNG));
+            messageHelper.addInline("imageLinkedin", new ClassPathResource(LINKEDIN_PNG));
+            messageHelper.addInline("imageX", new ClassPathResource(X_PNG));
+        };
+        javaMailSender.send(messagePreparator);
+    }
+
 }
