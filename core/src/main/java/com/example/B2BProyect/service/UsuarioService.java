@@ -50,6 +50,11 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
+    public void saveComplete(Usuario usuario) {
+        usuarioRepository.save(usuario);
+    }
+
     @Transactional(readOnly = true)
     public List<UsuarioDTO> findAll() {
         return usuarioRepository.findAll().stream()
@@ -67,6 +72,11 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Optional<Usuario> findById(UUID id) {
         return usuarioRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
     }
 
     @Transactional(readOnly = true)

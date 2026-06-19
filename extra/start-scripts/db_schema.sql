@@ -61,6 +61,8 @@ DROP TABLE IF EXISTS rol_usuario;
 
 DROP TABLE IF EXISTS movimientos;
 
+DROP TABLE IF EXISTS password_reset_token;
+
 -- ------------------------------------------------------------
 -- ROL_USUARIO
 -- ------------------------------------------------------------
@@ -127,6 +129,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     email         VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     activo        BOOLEAN      NOT NULL DEFAULT TRUE,
+    recovery_key  VARCHAR(100),
     id_empresa    UUID          NOT NULL,
     id_sucursal   UUID          NOT NULL,
     id_rol        UUID          NOT NULL,
@@ -382,7 +385,7 @@ CREATE TABLE IF NOT EXISTS factura (
 -- DETALLE_FACTURA
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS detalle_factura (
-                                               id_detalle      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_detalle      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cantidad        INT           NOT NULL,
     precio_unitario DECIMAL(14,2) NOT NULL,
     subtotal        DECIMAL(14,2) NOT NULL,
@@ -393,9 +396,17 @@ CREATE TABLE IF NOT EXISTS detalle_factura (
     CONSTRAINT fk_detfactura_producto FOREIGN KEY (id_producto)        REFERENCES producto (id_producto)
     );
 
+CREATE TABLE IF NOT EXISTS password_reset_token (
+    id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    email         TEXT        NOT NULL,
+    code          VARCHAR(6)  NOT NULL,
+    expires_at    TIMESTAMP   NOT NULL,
+    used          BOOLEAN     DEFAULT false,
+)
 ------------------------------
 -- INDICES
 ------------------------------
+CREATE INDEX idx_password_reset_token  ON password_reset_token (id)
 -- empresa
 CREATE INDEX idx_nit_empresa    ON empresa (nit);
 

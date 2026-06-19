@@ -1,19 +1,27 @@
 package com.example.B2BProyect;
 
 
+import com.example.B2BProyect.job.EmailSenderJob;
+import com.example.B2BProyect.quartz.CronExpressionConstant;
+import com.example.B2BProyect.quartz.service.JobDto;
+import com.example.B2BProyect.quartz.service.JobService;
+import com.example.B2BProyect.quartz.service.JobUtil;
 import com.example.B2BProyect.repository.EmpresaRepository;
 import com.example.B2BProyect.repository.RolUsuarioRepository;
 import com.example.B2BProyect.repository.SucursalEmpresaRepository;
 import com.example.B2BProyect.repository.UsuarioRepository;
-import com.example.B2BProyect.repository.entity.Empresa;
-import com.example.B2BProyect.repository.entity.RolUsuario;
-import com.example.B2BProyect.repository.entity.SucursalEmpresa;
-import com.example.B2BProyect.repository.entity.Usuario;
+import com.example.B2BProyect.repository.entity.*;
+import com.example.B2BProyect.service.EmailService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -24,10 +32,53 @@ public class DataInitializer implements CommandLineRunner {
     private final SucursalEmpresaRepository sucursalEmpresaRepository;
     private final UsuarioRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final JobService jobService;
 
     @Override
     public void run(String... args) throws Exception {
         init();
+
+        JobDto jobDto = EmailSenderJob.getJobDto(JobUtil.GROUP_NAME);
+        if (!jobService.existJobName(jobDto.getGroupName(), jobDto.getJobName())){
+            jobService.scheduleCronJob(jobDto, new Date(), CronExpressionConstant.CRON_START_NOW, null, "Este Job envia correos");
+        }
+
+//        emailService.sendPassword("santiagovillanueva1@upb.edu","123546");
+        Factura factura = new Factura();
+
+        Empresa empresa = new Empresa();
+        empresa.setNombre("Industrias Andinas S.A.");
+        empresa.setNit("1029384756");
+        empresa.setRazonSocial("Industrias Andinas Sociedad Anonima");
+
+        Producto producto = new Producto();
+        producto.setNombre("Monitor LED 24 pulgadas");
+        producto.setSku("MON-LED-24");
+
+        DetalleOrden detalle = new DetalleOrden();
+        detalle.setCantidad(3);
+        detalle.setPrecioUnitario(new BigDecimal("425.50"));
+        detalle.setSubtotal(new BigDecimal("1276.50"));
+        detalle.setIdProducto(producto);
+
+        OrdenCompra orden = new OrdenCompra();
+        orden.setId(UUID.fromString("8f2a6d0c-7b91-4d3e-9c41-2f63c1a8e902"));
+        orden.setTotal(new BigDecimal("1276.50"));
+        orden.setFecha(Instant.parse("2026-06-18T15:42:00Z"));
+        orden.setIdEstado("pagada");
+        orden.setIdEmpresaCompradora(empresa);
+        orden.setDetalleOrdens(new LinkedHashSet<>(List.of(detalle)));
+
+        detalle.setIdOrden(orden);
+
+        factura.setId(UUID.fromString("3c1d8a5f-6e27-4f83-b9a0-91d7b2e4c620"));
+        factura.setFecha(Instant.parse("2026-06-18T15:45:00Z"));
+        factura.setTotal(new BigDecimal("1276.50"));
+        factura.setIdEstado("pagada");
+        factura.setIdOrden(orden);
+
+//        emailService.sendFactura("santiagovillanueva1@upb.edu", factura);
     }
 
     private void init() {
@@ -79,6 +130,7 @@ public class DataInitializer implements CommandLineRunner {
                             .idEmpresa(empresa)
                             .idSucursal(sucursal)
                     .build());
+            userRepository.save(root);
         }
     }
 }

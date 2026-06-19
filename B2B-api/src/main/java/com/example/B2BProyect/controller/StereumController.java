@@ -1,6 +1,8 @@
 package com.example.B2BProyect.controller;
 
 import com.example.B2BProyect.integracion.*;
+import com.example.B2BProyect.integracion.stereum.PaymentRequest;
+import com.example.B2BProyect.integracion.stereum.StereumPayResponse;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
 import com.example.B2BProyect.service.OrdenCompraService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
