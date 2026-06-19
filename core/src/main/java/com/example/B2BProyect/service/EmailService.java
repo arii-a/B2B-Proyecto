@@ -69,4 +69,33 @@ public class EmailService {
         javaMailSender.send(messagePreparator);
     }
 
+    public void sendPasswordResetCode(String to, String code) {
+//        MimeMessageHelper message = new MimeMessageHelper();
+//        message.setTo(to);
+//        message.setSubject("Código de recuperación de contraseña");
+//        message.setText("""
+//                Recibimos una solicitud para restablecer tu contraseña.
+//
+//                Tu código de verificación es: %s
+//
+//                Expira en 15 minutos. Si no solicitaste esto, ignora este mensaje.
+//                """.formatted(code));
+//        javaMailSender.send(message);
+
+        MimeMessagePreparator messagePreparator = mimeMessage -> {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            messageHelper.setTo("santiagovillanueva1@upb.edu");
+            messageHelper.setFrom(new InternetAddress(mailFrom));
+            messageHelper.setReplyTo(new InternetAddress(mailNoreply, mailNoreply));
+            messageHelper.setSubject("Verification sent");
+            String message = mailContentBuilder.sendPassword(code);
+
+            messageHelper.setText(message, true);
+            messageHelper.addInline("banner", new ClassPathResource(BANNER_PNG));
+            messageHelper.addInline("imageLinkedin", new ClassPathResource(LINKEDIN_PNG));
+            messageHelper.addInline("imageX", new ClassPathResource(X_PNG));
+        };
+        javaMailSender.send(messagePreparator);
+    }
+
 }

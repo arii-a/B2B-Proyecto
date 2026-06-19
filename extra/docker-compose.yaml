@@ -8,6 +8,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql
       - ./start-scripts/db_schema.sql:/docker-entrypoint-initdb.d/db_schema.sql
+      - ./start-scripts/quartz.sql:/docker-entrypoint-initdb.d/quartz.sql
     container_name: b2b_database
     ports:
       - "5432:5432"

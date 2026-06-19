@@ -6,6 +6,7 @@ import com.example.B2BProyect.repository.dto.Auth2FA;
 import com.example.B2BProyect.repository.dto.OKAuthDto;
 import com.example.B2BProyect.repository.dto.request.AuthenticationDTO;
 import com.example.B2BProyect.repository.entity.Usuario;
+import com.example.B2BProyect.service.PasswordResetService;
 import com.example.B2BProyect.service.UsuarioService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.AllArgsConstructor;
@@ -31,7 +32,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UsuarioService userService;
     private final AuthenticationManager authenticationManager;
-
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     public ResponseEntity<?> token(
@@ -63,6 +64,19 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<String> requestReset(@RequestParam String email) {
+        passwordResetService.requestReset(email);
+        return ResponseEntity.ok("Código enviado al correo");
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseEntity<String> confirmReset(@RequestParam String email,
+                                               @RequestParam String code,
+                                               @RequestParam String newPassword) {
+        passwordResetService.resetPassword(email, code, newPassword);
+        return ResponseEntity.ok("Contraseña actualizada correctamente");
+    }
 
 
     public OKAuthDto auth(AuthenticationDTO data)  {

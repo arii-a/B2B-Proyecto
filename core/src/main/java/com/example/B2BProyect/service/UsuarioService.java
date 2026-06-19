@@ -75,6 +75,11 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Usuario> findByEmailToValidateSession(String email) {
         return this.usuarioRepository.findByUserEmailToValidateSession(email);
     }
