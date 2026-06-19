@@ -3,9 +3,9 @@
   <component name="JpaBuddyIdeaProjectConfig" migrateIndexesAndConstraints="true" newRepositoryParent="org.springframework.data.jpa.repository.JpaRepository">
     <option name="defaultUnitInitialized" value="true" />
     <option name="migrateIndexesAndConstraints" value="true" />
-    <option name="reLastEntityCreationPackage" value="B2BProyect/src/main/java/com/example/B2BProyect" />
+    <option name="reLastEntityCreationPackage" value="B2B-api/src/main/java/com/example/B2BProyect" />
     <option name="renamerInitialized" value="true" />
-    <option name="reverseEngineeringLastDbConnectionId" value="d77ac7ca-6491-40c9-bed4-94417c27e051__b2b_platform_public" />
+    <option name="reverseEngineeringLastDbConnectionId" value="34321b94-5cc4-43f5-baa9-e75c0da0bb1c" />
   </component>
   <component name="JpaPluginProjectSettings" commentSavingStrategy="@Comment annotation" reExcludeTablePrefixes="" reExcludeColumnPrefixes="" reExcludeTableSuffixes="" reExcludeColumnSuffixes="" />
   <component name="PersistenceUnitSettings">
