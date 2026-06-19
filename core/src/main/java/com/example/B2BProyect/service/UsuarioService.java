@@ -12,6 +12,8 @@ import com.example.B2BProyect.repository.entity.Log;
 import com.example.B2BProyect.repository.entity.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +32,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @CacheEvict(cacheNames = "usuarios", allEntries = true)
     @Transactional
     public void save(UsuarioRequest dto,
                      EmpresaRepository empresaRepository,
@@ -55,6 +58,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Cacheable(cacheNames = "usuarios")
     @Transactional(readOnly = true)
     public List<UsuarioDTO> findAll() {
         return usuarioRepository.findAll().stream()
@@ -84,6 +88,7 @@ public class UsuarioService {
         return this.usuarioRepository.findByUserEmailToValidateSession(email);
     }
 
+    @CacheEvict(cacheNames = "usuarios", allEntries = true)
     @Transactional
     public Optional<UsuarioDTO> update(UUID id, UsuarioRequest dto,
                                        EmpresaRepository empresaRepository,

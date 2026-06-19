@@ -5,6 +5,8 @@ import com.example.B2BProyect.repository.dto.request.ProductoRequest;
 import com.example.B2BProyect.repository.dto.response.ProductoDTO;
 import com.example.B2BProyect.repository.entity.Producto;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class ProductoService {
     private final CategoriaService categoriaService;
     private final ProveedorService proveedorService;
 
+    @CacheEvict(cacheNames = "productos", allEntries = true)
     @Transactional
     public void save(ProductoRequest request) {
         Producto producto = new Producto();
@@ -36,6 +39,7 @@ public class ProductoService {
         productoRepository.save(producto);
     }
 
+    @Cacheable(cacheNames = "productos")
     @Transactional(readOnly = true)
     public List<ProductoDTO> findAll() {
         return productoRepository.findAll().stream().map(ProductoDTO::new).toList();
@@ -51,6 +55,7 @@ public class ProductoService {
         return productoRepository.findById(id);
     }
 
+    @CacheEvict(cacheNames = "productos", allEntries = true)
     @Transactional
     public Optional<ProductoDTO> update(UUID id, ProductoRequest dto) {
         return productoRepository.findById(id).map(producto -> {
@@ -73,6 +78,7 @@ public class ProductoService {
                 .stream().map(ProductoDTO::new).toList();
     }
 
+    @CacheEvict(cacheNames = "productos", allEntries = true)
     @Transactional
     public boolean delete(UUID id) {
         if (!productoRepository.existsById(id)) return false;
