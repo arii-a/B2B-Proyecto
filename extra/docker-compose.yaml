@@ -1,28 +1,30 @@
 services:
   db:
-    image: postgres:16-alpine
+    build: .
     environment:
       POSTGRES_DB: b2b_proyecto
       POSTGRES_USER: "owner"
       POSTGRES_PASSWORD: "123456"
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql
       - ./start-scripts/db_schema.sql:/docker-entrypoint-initdb.d/db_schema.sql
-    container_name: b2b-database
+      - ./start-scripts/quartz.sql:/docker-entrypoint-initdb.d/quartz.sql
+    container_name: b2b_database
     ports:
       - "5432:5432"
   spring-app:
-     build: .
-     depends_on:
+    build: .
+    depends_on:
       - db
-     image: b2b-spring-app
-     container_name: b2b-spring
-     ports:
-      - "8080:8080"
-     environment:
+    image: b2b-spring-app
+    container_name: b2b-spring
+    ports:
+     - "8080:8080"
+    env_file:
+      - /resources/.env
+    environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/b2b_proyecto
       SPRING_DATASOURCE_USERNAME: owner
       SPRING_DATASOURCE_PASSWORD: 123456
-
 volumes:
   pg_data:
