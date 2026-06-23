@@ -1,5 +1,7 @@
 package com.example.B2BProyect.service;
 
+import com.example.B2BProyect.repository.PrecioBaseRepository;
+import com.example.B2BProyect.repository.ProductoAlmacenRepository;
 import com.example.B2BProyect.repository.ProductoRepository;
 import com.example.B2BProyect.repository.dto.request.ProductoRequest;
 import com.example.B2BProyect.repository.dto.response.ProductoDTO;
@@ -18,6 +20,8 @@ import java.util.UUID;
 @Service
 public class ProductoService {
     private final ProductoRepository productoRepository;
+    private final PrecioBaseRepository precioBaseRepository;
+    private final ProductoAlmacenRepository productoAlmacenRepository;
     private final CategoriaService categoriaService;
     private final ProveedorService proveedorService;
     private final UnidadMedidaService unidadMedidaService;
@@ -79,6 +83,8 @@ public class ProductoService {
     @Transactional
     public boolean delete(UUID id) {
         if (!productoRepository.existsById(id)) return false;
+        precioBaseRepository.deleteByIdProductoId(id);
+        productoAlmacenRepository.deleteById_IdProducto(id);
         productoRepository.deleteById(id);
         return true;
     }
