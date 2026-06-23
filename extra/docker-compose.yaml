@@ -18,9 +18,46 @@ services:
       context: .
       dockerfile: Dockerfile.spring
     environment:
+      # Datasource
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/b2b_proyecto
       SPRING_DATASOURCE_USERNAME: owner
       SPRING_DATASOURCE_PASSWORD: "123456"
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 5
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: 5
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 30000
+      SPRING_DATASOURCE_HIKARI_INITIALIZATION_FAIL_TIMEOUT: 10000
+      SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: 600000
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TEST_QUERY: SELECT 1
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "false"
+      # Cache
+      SPRING_CACHE_TYPE: caffeine
+      SPRING_CACHE_CACHE_NAMES: usuarios,productos
+      SPRING_CACHE_CAFFEINE_SPEC: initialCapacity=100,maximumSize=500,expireAfterWrite=10m,recordStats
+      # JWT
+      SECURITY_JWT_TOKEN_SECRET_KEY: pQKOkAZ8j59Kb6QJC+LHL7viCOUvfhBZ7PjGeIznKbY=
+      SECURITY_JWT_TOKEN_EXPIRE_LENGTH: 200
+      # Stereum
+      STEREUM_API_URL: https://api.stereum.tech
+      STEREUM_API_KEY: e7edbae2-7026-4793-b185-f182fcc9e84b
+      STEREUM_SECRET_KEY: 7144779d3dec4ec2855ef52cf405a5ab6ef42ab1b065445ab61e025b57f10dcd6fcda27c775a4a5797b99913d451c2b0863d8de5bc3549d790f503f457b1ea1e
+      # Async
+      ASYNC_CORE_POOL_SIZE: 5
+      ASYNC_MAX_POOL_SIZQE: 10
+      ASYNC_QUEUE_CAPACITY: 20
+      # Actuator
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+      # Mail (set real values or remove if not used in prod)
+      MAIL_HOST: smtp.gmail.com
+      MAIL_SMTP_PORT: 587
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS_ENABLE: "true"
+      MAIL_SMTP_PROTOCOL: smtp
+      MAIL_SMTP_USERNAME: ${MAIL_SMTP_USERNAME}
+      MAIL_SMTP_PASSWORD: ${MAIL_SMTP_PASSWORD}
     ports:
       - "8080:8080"
     depends_on:
