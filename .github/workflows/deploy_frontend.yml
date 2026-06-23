@@ -1,0 +1,50 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [frontend-b2b]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & deploy frontend to production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 74.163.80.99 >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            dist/ \
+            azureadmin@74.163.80.99:/var/www/html/
+
+      - name: Reload nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 74.163.80.99
+          port: 22
+          username: azureadmin
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          script: sudo systemctl reload nginx
