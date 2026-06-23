@@ -1,0 +1,15 @@
+package com.example.B2BProyect.repository.dto.request;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class ApiKeyRequest {
+    private String nombre;
+    private LocalDateTime expiresAt;
+}
