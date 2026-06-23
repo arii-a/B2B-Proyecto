@@ -39,7 +39,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
 
     @Bean
     @Order(1)
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsFilter corsFilter, JwtTokenFilter jwtTokenFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, CorsFilter corsFilter, JwtTokenFilter jwtTokenFilter, ApiKeyFilter apiKeyFilter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(corsFilter, SessionManagementFilter.class)
                 .authorizeHttpRequests(
@@ -66,7 +66,8 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
 
                 )
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtTokenFilter, ApiKeyFilter.class)
                 //.addFilterAfter(maintenanceModeFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors((cors) -> cors.configurationSource(apiConfigurationSource()));
         return http.build();
