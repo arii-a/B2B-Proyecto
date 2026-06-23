@@ -33,8 +33,7 @@ jobs:
 
       - name: Upload JAR to server
         run: |
-          rsync -avz \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             B2B-api/target/*.jar \
             azureadmin@74.163.80.99:~/Backend-B2B/app.jar
 

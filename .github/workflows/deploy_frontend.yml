@@ -35,10 +35,13 @@ jobs:
 
       - name: Deploy to server
         run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            dist/ \
-            azureadmin@74.163.80.99:/var/www/html/
+          tar -czf dist.tar.gz -C dist .
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            dist.tar.gz \
+            azureadmin@74.163.80.99:/tmp/dist.tar.gz
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            azureadmin@74.163.80.99 \
+            "sudo rm -rf /var/www/html/* && sudo tar -xzf /tmp/dist.tar.gz -C /var/www/html/ && rm /tmp/dist.tar.gz"
 
       - name: Reload nginx
         uses: appleboy/ssh-action@v1.0.3
