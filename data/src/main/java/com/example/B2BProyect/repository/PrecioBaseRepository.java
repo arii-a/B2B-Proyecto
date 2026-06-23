@@ -38,4 +38,6 @@ public interface PrecioBaseRepository extends JpaRepository<PrecioBase, UUID> {
             "pb.idProveedor.idEmpresa.nombre, pb.idProducto.nombre)" +
             " FROM PrecioBase pb WHERE pb.id = :pId")
     Optional<PrecioBaseDTO> findByIdDTO(@Param("pId") UUID pId);
+
+    void deleteByIdProductoId(UUID idProductoId);
 }

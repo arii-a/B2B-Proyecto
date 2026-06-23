@@ -40,3 +40,5 @@ build/
 .env
 CUESTIONARIO_EXAMEN.txt
 RESUMEN_EXAMEN.txt
+
+uploads/
