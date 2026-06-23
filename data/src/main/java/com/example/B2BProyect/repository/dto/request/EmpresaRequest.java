@@ -19,4 +19,7 @@ public class EmpresaRequest {
 
     @JsonProperty("razon_social")
     private String razonSocial;
+
+    @JsonProperty("logo_url")
+    private String logoUrl;
 }

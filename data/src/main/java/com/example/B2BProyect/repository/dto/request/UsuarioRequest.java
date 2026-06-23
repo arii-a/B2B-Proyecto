@@ -12,6 +12,7 @@ public class UsuarioRequest {
     private String email;
     private String password;
     private Boolean activo;
+    private String avatarUrl;
     private UUID idEmpresa;
     private UUID idSucursal;
     private UUID idRol;

@@ -13,19 +13,19 @@ import java.util.UUID;
 public interface ContratoEmpresaDetalleRepository extends JpaRepository<ContratoEmpresaDetalle, UUID> {
     @Query("SELECT new " +
             "com.example.B2BProyect.repository.dto.response.ContratoEmpresaDetalleDTO(" +
-            "cd.id, cd.porcentajeDescuento, cd.idProducto.nombre, cd.idContrato.idRegla.nombre) " +
+            "cd.id, cd.porcentajeDescuento, cd.idProducto, cd.idContrato) " +
             "FROM ContratoEmpresaDetalle cd WHERE cd.idContrato.id = :pIdContrato")
     List<ContratoEmpresaDetalleDTO> findByContratoDTO(@Param("pIdContrato") UUID pIdContrato);
 
     @Query("SELECT new" +
             " com.example.B2BProyect.repository.dto.response.ContratoEmpresaDetalleDTO(" +
-            "cd.id, cd.porcentajeDescuento, cd.idProducto.nombre, cd.idContrato.idRegla.nombre)" +
+            "cd.id, cd.porcentajeDescuento, cd.idProducto, cd.idContrato)" +
             " FROM ContratoEmpresaDetalle cd")
     List<ContratoEmpresaDetalleDTO> findAllDTO();
 
     @Query("SELECT new " +
             "com.example.B2BProyect.repository.dto.response.ContratoEmpresaDetalleDTO(" +
-            "cd.id, cd.porcentajeDescuento, cd.idProducto.nombre, cd.idContrato.idRegla.nombre)" +
+            "cd.id, cd.porcentajeDescuento, cd.idProducto, cd.idContrato)" +
             " FROM ContratoEmpresaDetalle cd WHERE cd.id = :pId")
     Optional<ContratoEmpresaDetalleDTO> findByIdDTO(@Param("pId") UUID pId);
 

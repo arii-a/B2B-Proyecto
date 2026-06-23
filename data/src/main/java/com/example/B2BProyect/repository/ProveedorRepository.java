@@ -20,7 +20,7 @@ public interface ProveedorRepository extends JpaRepository<Proveedor, UUID> {
 
     // mando solo el nombre de la empresa para que al listar todos los proveedores no salga información extra
     @Query("SELECT new" +
-            " com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa.nombre)" +
+            " com.example.B2BProyect.repository.dto.response.ProveedorDTO(p.id, p.activo, p.idEmpresa)" +
             " FROM Proveedor p")
     List<ProveedorDTO> findAllDTO();
 

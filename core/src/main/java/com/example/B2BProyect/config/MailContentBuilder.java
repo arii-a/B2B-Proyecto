@@ -62,5 +62,30 @@ public class MailContentBuilder {
         return this.templateEngine.process("mailFactura", ctx);
     }
 
+    public String sendSolicitudProveedor(String empresaNombre, String logoUrl, String nit) {
+        final Context ctx = new Context();
+        ctx.setVariable("empresaNombre", empresaNombre);
+        ctx.setVariable("logoUrl",       logoUrl);
+        ctx.setVariable("nit",           nit);
+        ctx.setVariable("inicial",       empresaNombre != null && !empresaNombre.isEmpty()
+                                             ? String.valueOf(empresaNombre.charAt(0)).toUpperCase() : "E");
+        ctx.setVariable("imageResourceName", "banner");
+        ctx.setVariable("imageX",            "imageX");
+        ctx.setVariable("imageLinkedin",     "imageLinkedin");
+        return this.templateEngine.process("mailSolicitudProveedor", ctx);
+    }
+
+    public String sendStockAlerta(String productoNombre, int stockActual, int stockMinimo, String almacenNombre) {
+        final Context ctx = new Context();
+        ctx.setVariable("productoNombre", productoNombre);
+        ctx.setVariable("stockActual",    stockActual);
+        ctx.setVariable("stockMinimo",    stockMinimo);
+        ctx.setVariable("almacenNombre",  almacenNombre);
+        ctx.setVariable("imageResourceName", "banner");
+        ctx.setVariable("imageX",            "imageX");
+        ctx.setVariable("imageLinkedin",     "imageLinkedin");
+        return this.templateEngine.process("mailStockAlerta", ctx);
+    }
+
 }
 

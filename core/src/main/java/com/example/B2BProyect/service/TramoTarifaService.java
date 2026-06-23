@@ -16,18 +16,20 @@ import java.util.UUID;
 @AllArgsConstructor
 public class TramoTarifaService {
     private final TramoTarifaRepository tramoTarifaRepository;
-    private final TarifaReglaService tarifaReglaService;
+    private final ContratoEmpresaTarifaService contratoEmpresaTarifaService;
 
     @Transactional
-    public void save(TramoTarifaRequest request) {
+    public TramoTarifaDTO save(TramoTarifaRequest request) {
         TramoTarifa tramo = new TramoTarifa();
         tramo.setTipo(request.getTipo());
         tramo.setCantidadMinima(request.getCantidadMinima());
         tramo.setCantidadMaxima(request.getCantidadMaxima());
-        tramo.setPorcentajeDesc(request.getPorcentajeDesc());
-        if (request.getIdRegla() != null)
-            tarifaReglaService.findById(request.getIdRegla()).ifPresent(tramo::setIdRegla);
-        tramoTarifaRepository.save(tramo);
+        tramo.setPorcentajeDesc(request.getPorcentajeDesc() != null ? request.getPorcentajeDesc() : java.math.BigDecimal.ZERO);
+        tramo.setTipoDescuento(request.getTipoDescuento() != null ? request.getTipoDescuento() : "porcentaje");
+        tramo.setMontoFijo(request.getMontoFijo());
+        if (request.getIdContrato() != null)
+            contratoEmpresaTarifaService.findById(request.getIdContrato()).ifPresent(tramo::setIdContrato);
+        return new TramoTarifaDTO(tramoTarifaRepository.save(tramo));
     }
 
     @Transactional(readOnly = true)
@@ -47,8 +49,10 @@ public class TramoTarifaService {
             if (dto.getCantidadMinima() != null)  tramo.setCantidadMinima(dto.getCantidadMinima());
             if (dto.getCantidadMaxima() != null)  tramo.setCantidadMaxima(dto.getCantidadMaxima());
             if (dto.getPorcentajeDesc() != null)  tramo.setPorcentajeDesc(dto.getPorcentajeDesc());
-            if (dto.getIdRegla() != null)
-                tarifaReglaService.findById(dto.getIdRegla()).ifPresent(tramo::setIdRegla);
+            if (dto.getTipoDescuento() != null)   tramo.setTipoDescuento(dto.getTipoDescuento());
+            tramo.setMontoFijo(dto.getMontoFijo());
+            if (dto.getIdContrato() != null)
+                contratoEmpresaTarifaService.findById(dto.getIdContrato()).ifPresent(tramo::setIdContrato);
             return new TramoTarifaDTO(tramoTarifaRepository.save(tramo));
         });
     }

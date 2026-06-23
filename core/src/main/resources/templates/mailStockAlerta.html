@@ -1,0 +1,109 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Alerta de stock bajo</title>
+    <style>
+        body { background-color: #EEF1FB; font-family: sans-serif; font-size: 14px; margin: 0; padding: 0; }
+        .wrapper { max-width: 560px; margin: 32px auto; padding: 0 16px; }
+
+        .header { background: linear-gradient(135deg, #06175D 0%, #1a3a8f 100%); border-radius: 12px 12px 0 0; padding: 28px 32px 24px; text-align: center; }
+        .header-logo { max-height: 32px; margin-bottom: 8px; }
+        .header-title { color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin: 0; opacity: .75; }
+
+        .card { background: #ffffff; border-radius: 0 0 12px 12px; padding: 32px; }
+
+        /* Alert banner */
+        .alert-banner { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; padding: 16px 20px; text-align: center; margin-bottom: 28px; }
+        .alert-icon { font-size: 32px; display: block; margin-bottom: 8px; }
+        .alert-title { margin: 0 0 4px; font-size: 17px; font-weight: 800; color: #92400e; }
+        .alert-sub { margin: 0; font-size: 13px; color: #b45309; }
+
+        /* Product card */
+        .product-card { background: #F7F8FC; border: 1px solid #DDE0EE; border-radius: 10px; padding: 18px 22px; margin-bottom: 24px; }
+        .product-name { margin: 0 0 14px; font-size: 16px; font-weight: 800; color: #06175D; }
+        .stock-row { display: flex; justify-content: space-between; gap: 12px; }
+        .stock-box { flex: 1; text-align: center; padding: 12px; border-radius: 8px; }
+        .stock-box.current { background: #fef2f2; border: 1.5px solid #fca5a5; }
+        .stock-box.minimum { background: #EEF1FB; border: 1.5px solid #DDE0EE; }
+        .stock-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; color: #9599AE; }
+        .stock-value-current { font-size: 28px; font-weight: 900; color: #dc2626; line-height: 1; }
+        .stock-value-min    { font-size: 28px; font-weight: 900; color: #06175D; line-height: 1; }
+        .stock-unit { display: block; font-size: 11px; color: #9599AE; margin-top: 3px; }
+
+        .warehouse-row { margin-top: 14px; padding-top: 12px; border-top: 1px solid #DDE0EE; font-size: 12px; color: #9599AE; }
+        .warehouse-row strong { color: #1A1D3B; }
+
+        .body-text { color: #1A1D3B; font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+        .divider { border: none; border-top: 1px solid #EEF1FB; margin: 24px 0; }
+
+        .footer { text-align: center; padding: 20px 0 8px; }
+        .footer-social { margin-bottom: 14px; }
+        .footer-social a { display: inline-block; margin: 0 8px; }
+        .footer-social img { height: 28px; width: auto; }
+        .footer-text { font-size: 11px; color: #9599AE; margin: 0; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+    <div class="header">
+        <img th:src="|cid:${imageResourceName}|" alt="Marketplace B2B" class="header-logo"/>
+        <p class="header-title">Marketplace B2B · Alerta de inventario</p>
+    </div>
+
+    <div class="card">
+
+        <div class="alert-banner">
+            <span class="alert-icon">⚠️</span>
+            <p class="alert-title">Stock por debajo del mínimo</p>
+            <p class="alert-sub">Se requiere reposición de inventario</p>
+        </div>
+
+        <p class="body-text">
+            El siguiente producto ha bajado por debajo del nivel mínimo de stock configurado:
+        </p>
+
+        <div class="product-card">
+            <p class="product-name" th:text="${productoNombre}">Nombre del producto</p>
+            <div class="stock-row">
+                <div class="stock-box current">
+                    <span class="stock-label">Stock actual</span>
+                    <span class="stock-value-current" th:text="${stockActual}">0</span>
+                    <span class="stock-unit" th:text="${unidad ?: 'unidades'}">unidades</span>
+                </div>
+                <div class="stock-box minimum">
+                    <span class="stock-label">Mínimo configurado</span>
+                    <span class="stock-value-min" th:text="${stockMinimo}">0</span>
+                    <span class="stock-unit" th:text="${unidad ?: 'unidades'}">unidades</span>
+                </div>
+            </div>
+            <p class="warehouse-row" th:if="${almacenNombre != null}">
+                Almacén: <strong th:text="${almacenNombre}">—</strong>
+            </p>
+        </div>
+
+        <p class="body-text">
+            Revisá tu inventario en la plataforma y realizá la reposición necesaria para evitar
+            interrupciones en la disponibilidad de tus productos.
+        </p>
+
+        <hr class="divider"/>
+
+        <div class="footer">
+            <div class="footer-social">
+                <a href="https://x.com/upb_edu" target="_blank">
+                    <img th:src="|cid:${imageX}|" alt="X"/>
+                </a>
+                <a href="https://linkedin.com/school/universidad-privada-boliviana" target="_blank">
+                    <img th:src="|cid:${imageLinkedin}|" alt="LinkedIn"/>
+                </a>
+            </div>
+            <p class="footer-text">© Universidad Privada Boliviana · Santa Cruz de la Sierra, Bolivia</p>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

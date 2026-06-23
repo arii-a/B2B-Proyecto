@@ -10,4 +10,8 @@ public class ProveedorRequest {
 
     @NotNull
     private Boolean activo;
+
+    private String urlMatricula;
+    private String urlCiFrontal;
+    private String urlCiReverso;
 }

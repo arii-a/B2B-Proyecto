@@ -41,11 +41,11 @@ public class AuthController {
             OKAuthDto token = auth(data);
             return ok(token);
         } catch (BadCredentialsException e) {
-            log.error("Error BadCredentialsException al autenticar", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error al autenticar");
+            log.warn("Credenciales inválidas para: {}", data.email());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email o contraseña incorrectos");
         } catch (Exception e) {
             log.error("Error al autentificar el usuario: {}", data.email(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error al autenticar");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno al autenticar");
         }
     }
 

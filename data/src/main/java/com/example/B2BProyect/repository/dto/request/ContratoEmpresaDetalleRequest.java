@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ContratoEmpresaDetalleRequest {
     private BigDecimal porcentajeDescuento;
+    private BigDecimal montoFijo;
     private UUID idProducto;
     private UUID idContrato;
 }

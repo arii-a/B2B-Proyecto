@@ -20,7 +20,6 @@ public class ContratoEmpresaTarifaService {
     private final ContratoEmpresaTarifaRepository contratoEmpresaTarifaRepository;
     private final EmpresaService empresaService;
     private final ProveedorService proveedorService;
-    private final TarifaReglaService tarifaReglaService;
 
     @Transactional
     public ContratoEmpresaTarifasDTO save(ContratoEmpresaTarifaRequest request) {
@@ -32,8 +31,6 @@ public class ContratoEmpresaTarifaService {
             empresaService.findById(request.getIdEmpresa()).ifPresent(contrato::setIdEmpresa);
         if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(contrato::setIdProveedor);
-        if (request.getIdRegla() != null)
-            tarifaReglaService.findById(request.getIdRegla()).ifPresent(contrato::setIdRegla);
         return new ContratoEmpresaTarifasDTO(contratoEmpresaTarifaRepository.save(contrato));
     }
 
@@ -57,8 +54,6 @@ public class ContratoEmpresaTarifaService {
                 empresaService.findById(dto.getIdEmpresa()).ifPresent(contrato::setIdEmpresa);
             if (dto.getIdProveedor() != null)
                 proveedorService.findById(dto.getIdProveedor()).ifPresent(contrato::setIdProveedor);
-            if (dto.getIdRegla() != null)
-                tarifaReglaService.findById(dto.getIdRegla()).ifPresent(contrato::setIdRegla);
             return new ContratoEmpresaTarifasDTO(contratoEmpresaTarifaRepository.save(contrato));
         });
     }
