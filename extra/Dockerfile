@@ -1,4 +1,4 @@
-FROM postgres:18-alpine
+FROM postgres:16-alpine
 
 COPY ./start-scripts/db_schema.sql /docker-entrypoint-initdb.d/
 
