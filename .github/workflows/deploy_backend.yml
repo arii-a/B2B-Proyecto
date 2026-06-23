@@ -1,13 +1,13 @@
-name: Deploy Production
+name: Deploy Backend
 
 on:
+  push:
+    branches: [backend-b2b]
   workflow_dispatch:
-  # push:
-  #   branches: [main]
 
 jobs:
   deploy:
-    name: Build & deploy to production
+    name: Build & deploy backend to production
     runs-on: ubuntu-latest
 
     steps:
@@ -47,10 +47,5 @@ jobs:
           key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd ~/Backend-B2B
-            # Pull latest code so git history / resources stay in sync
-            git fetch origin main
-            git reset --hard origin/main
-            # Restart via systemd service (assumed name: b2b-api)
             sudo systemctl restart b2b-api
             sudo systemctl status b2b-api --no-pager
