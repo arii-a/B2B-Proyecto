@@ -22,7 +22,8 @@ public class ContratoEmpresaDetalleService {
     @Transactional
     public void save(ContratoEmpresaDetalleRequest request) {
         ContratoEmpresaDetalle detalle = new ContratoEmpresaDetalle();
-        detalle.setPorcentajeDescuento(request.getPorcentajeDescuento());
+        detalle.setPorcentajeDescuento(request.getPorcentajeDescuento() != null ? request.getPorcentajeDescuento() : java.math.BigDecimal.ZERO);
+        detalle.setMontoFijo(request.getMontoFijo());
         if (request.getIdProducto() != null)
             productoService.findById(request.getIdProducto()).ifPresent(detalle::setIdProducto);
         if (request.getIdContrato() != null)
@@ -44,6 +45,7 @@ public class ContratoEmpresaDetalleService {
     public Optional<ContratoEmpresaDetalleDTO> update(UUID id, ContratoEmpresaDetalleRequest dto) {
         return contratoEmpresaDetalleRepository.findById(id).map(detalle -> {
             if (dto.getPorcentajeDescuento() != null) detalle.setPorcentajeDescuento(dto.getPorcentajeDescuento());
+            detalle.setMontoFijo(dto.getMontoFijo());
             if (dto.getIdProducto() != null)
                 productoService.findById(dto.getIdProducto()).ifPresent(detalle::setIdProducto);
             if (dto.getIdContrato() != null)

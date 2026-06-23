@@ -13,7 +13,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "tramo_tarifa", indexes = {
-        @Index(name = "idx_tramo_regla", columnList = "id_regla")
+        @Index(name = "idx_tramo_contrato", columnList = "id_contrato")
 })
 public class TramoTarifa {
     @Id
@@ -34,9 +34,16 @@ public class TramoTarifa {
     @Column(name = "porcentaje_desc", nullable = false, precision = 14, scale = 2)
     private BigDecimal porcentajeDesc;
 
+    @ColumnDefault("'porcentaje'")
+    @Column(name = "tipo_descuento", nullable = false, length = 20)
+    private String tipoDescuento = "porcentaje";
+
+    @Column(name = "monto_fijo", precision = 14, scale = 2)
+    private BigDecimal montoFijo;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_regla", nullable = false)
-    private TarifaRegla idRegla;
+    @JoinColumn(name = "id_contrato", nullable = false)
+    private ContratoEmpresaTarifa idContrato;
 
 }

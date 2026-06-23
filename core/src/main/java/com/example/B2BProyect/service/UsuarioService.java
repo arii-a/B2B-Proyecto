@@ -29,6 +29,7 @@ import java.util.UUID;
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
     public void save(UsuarioRequest dto,
@@ -83,6 +84,7 @@ public class UsuarioService {
             if (dto.getNombre() != null)   usuario.setNombre(dto.getNombre());
             if (dto.getEmail() != null)    usuario.setEmail(dto.getEmail());
             if (dto.getActivo() != null)   usuario.setActivo(dto.getActivo());
+            usuario.setAvatarUrl(dto.getAvatarUrl());
             if (dto.getIdEmpresa() != null)
                 empresaRepository.findById(dto.getIdEmpresa()).ifPresent(usuario::setIdEmpresa);
             if (dto.getIdSucursal() != null)
@@ -91,6 +93,17 @@ public class UsuarioService {
                 rolRepository.findById(dto.getIdRol()).ifPresent(usuario::setIdRol);
             return new UsuarioDTO(usuarioRepository.save(usuario));
         });
+    }
+
+    @Transactional
+    public boolean resetPassword(String email) {
+        return usuarioRepository.findByEmail(email).map(usuario -> {
+            String tempPwd = java.util.UUID.randomUUID().toString().substring(0, 8);
+            usuario.setPasswordHash(passwordEncoder.encode(tempPwd));
+            usuarioRepository.save(usuario);
+            emailService.sendPassword(email, tempPwd);
+            return true;
+        }).orElse(false);
     }
 
     @Transactional(readOnly = true)

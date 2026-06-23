@@ -35,11 +35,6 @@ public class ContratoEmpresaTarifa {
     @JoinColumn(name = "id_proveedor", nullable = false)
     private Proveedor idProveedor;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_regla", nullable = false)
-    private TarifaRegla idRegla;
-
     @Column(name = "vigente_desde", nullable = false)
     private Instant vigenteDesde;
 
@@ -52,5 +47,8 @@ public class ContratoEmpresaTarifa {
 
     @OneToMany(mappedBy = "idContrato")
     private Set<ContratoEmpresaDetalle> contratoEmpresaDetalles = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "idContrato")
+    private Set<TramoTarifa> tramos = new LinkedHashSet<>();
 
 }

@@ -38,6 +38,9 @@ public class Empresa extends AuditableEntity {
     @Column(name = "razon_social", nullable = false, length = 200)
     private String razonSocial;
 
+    @Column(name = "logo_url", length = 500)
+    private String logoUrl;
+
     @OneToMany(mappedBy = "idEmpresa")
     private Set<ContactosEmpresa> contactosEmpresas = new LinkedHashSet<>();
 

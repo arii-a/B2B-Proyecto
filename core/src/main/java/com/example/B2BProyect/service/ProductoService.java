@@ -20,20 +20,22 @@ public class ProductoService {
     private final ProductoRepository productoRepository;
     private final CategoriaService categoriaService;
     private final ProveedorService proveedorService;
+    private final UnidadMedidaService unidadMedidaService;
 
     @Transactional
-    public void save(ProductoRequest request) {
+    public ProductoDTO save(ProductoRequest request) {
         Producto producto = new Producto();
         producto.setSku(request.getSku());
         producto.setNombre(request.getNombre());
         producto.setDescripcion(request.getDescripcion());
-        producto.setUnidadMedida(request.getUnidadMedida());
         producto.setActivo(request.getActivo());
         if (request.getIdCategoria() != null)
             categoriaService.findById(request.getIdCategoria()).ifPresent(producto::setIdCategoria);
         if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(producto::setIdProveedor);
-        productoRepository.save(producto);
+        if (request.getIdUnidadMedida() != null)
+            unidadMedidaService.findById(request.getIdUnidadMedida()).ifPresent(producto::setIdUnidadMedida);
+        return new ProductoDTO(productoRepository.save(producto));
     }
 
     @Transactional(readOnly = true)
@@ -54,15 +56,16 @@ public class ProductoService {
     @Transactional
     public Optional<ProductoDTO> update(UUID id, ProductoRequest dto) {
         return productoRepository.findById(id).map(producto -> {
-            if (dto.getSku() != null)          producto.setSku(dto.getSku());
-            if (dto.getNombre() != null)       producto.setNombre(dto.getNombre());
-            if (dto.getDescripcion() != null)  producto.setDescripcion(dto.getDescripcion());
-            if (dto.getUnidadMedida() != null) producto.setUnidadMedida(dto.getUnidadMedida());
-            if (dto.getActivo() != null)       producto.setActivo(dto.getActivo());
+            if (dto.getSku() != null)             producto.setSku(dto.getSku());
+            if (dto.getNombre() != null)          producto.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null)     producto.setDescripcion(dto.getDescripcion());
+            if (dto.getActivo() != null)          producto.setActivo(dto.getActivo());
             if (dto.getIdCategoria() != null)
                 categoriaService.findById(dto.getIdCategoria()).ifPresent(producto::setIdCategoria);
             if (dto.getIdProveedor() != null)
                 proveedorService.findById(dto.getIdProveedor()).ifPresent(producto::setIdProveedor);
+            if (dto.getIdUnidadMedida() != null)
+                unidadMedidaService.findById(dto.getIdUnidadMedida()).ifPresent(producto::setIdUnidadMedida);
             return new ProductoDTO(productoRepository.save(producto));
         });
     }

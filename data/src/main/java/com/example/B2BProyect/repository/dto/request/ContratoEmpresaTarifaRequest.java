@@ -16,5 +16,4 @@ public class ContratoEmpresaTarifaRequest {
     private Boolean activo;
     private UUID idEmpresa;
     private UUID idProveedor;
-    private UUID idRegla;
 }

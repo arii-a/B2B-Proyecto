@@ -13,7 +13,7 @@ public class ProductoRequest {
     private String sku;
     private String nombre;
     private String descripcion;
-    private String unidadMedida;
+    private UUID idUnidadMedida;
     private Boolean activo;
     private UUID idCategoria;
     private UUID idProveedor;

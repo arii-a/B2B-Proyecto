@@ -13,10 +13,16 @@ public class ProveedorDTO {
     private Boolean activo = false;
     private String nombreEmpresa;
     private EmpresaDTO idEmpresa;
+    private String urlMatricula;
+    private String urlCiFrontal;
+    private String urlCiReverso;
 
     public ProveedorDTO(Proveedor proveedor) {
         this.id = proveedor.getId();
         this.activo = proveedor.getActivo();
+        this.urlMatricula = proveedor.getUrlMatricula();
+        this.urlCiFrontal = proveedor.getUrlCiFrontal();
+        this.urlCiReverso = proveedor.getUrlCiReverso();
         this.idEmpresa = new EmpresaDTO(proveedor.getIdEmpresa());
     }
 

@@ -26,6 +26,9 @@ public class ContratoEmpresaDetalle {
     @Column(name = "porcentaje_descuento", nullable = false, precision = 14, scale = 2)
     private BigDecimal porcentajeDescuento;
 
+    @Column(name = "monto_fijo", precision = 14, scale = 2)
+    private BigDecimal montoFijo;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_producto", nullable = false)
