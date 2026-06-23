@@ -35,9 +35,9 @@ jobs:
         run: |
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             B2B-api/target/*.jar \
-            azureadmin@74.163.80.99:~/Backend-B2B/app.jar
+            azureadmin@74.163.80.99:~/Backend-B2B/extra/B2B-api-0.0.1-SNAPSHOT.jar
 
-      - name: Restart application
+      - name: Rebuild and restart container
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 74.163.80.99
@@ -46,5 +46,7 @@ jobs:
           key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
           script: |
             set -e
-            sudo systemctl restart b2b-api
-            sudo systemctl status b2b-api --no-pager
+            cd ~/Backend-B2B/extra
+            sudo docker compose build spring-app
+            sudo docker compose up -d spring-app
+            sudo docker compose ps

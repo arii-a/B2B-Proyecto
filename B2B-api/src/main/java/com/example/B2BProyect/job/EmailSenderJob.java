@@ -22,7 +22,7 @@ public class EmailSenderJob extends QuartzJobBean implements InterruptableJob {
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         JobKey key = jobExecutionContext.getJobDetail().getKey();
         JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        System.out.println("How many are now? " + count);
+//        System.out.println("How many are now? " + count);
         count += 1;
     }
 

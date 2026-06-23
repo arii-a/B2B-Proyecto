@@ -14,7 +14,8 @@
       "Bash(del \"C:\\\\Users\\\\nicol\\\\Documents\\\\Programming_Local\\\\certificacion_3_springboot\\\\B2B-Proyecto\\\\CUESTIONARIO_EXAMEN.txt\" \"C:\\\\Users\\\\nicol\\\\Documents\\\\Programming_Local\\\\certificacion_3_springboot\\\\B2B-Proyecto\\\\RESUMEN_EXAMEN.txt\")",
       "Bash(jar tf *)",
       "Bash(xargs -I{} sh -c 'jar tf \"$1\" 2>/dev/null | grep -li health && echo \"$1\"' _ {})",
-      "Bash(xargs head -1)"
+      "Bash(xargs head -1)",
+      "Bash(ssh *)"
     ]
   }
 }
