@@ -12,5 +12,19 @@ services:
     container_name: b2b_database
     ports:
       - "5432:5432"
+
+  spring-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.spring
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/b2b_proyecto
+      SPRING_DATASOURCE_USERNAME: owner
+      SPRING_DATASOURCE_PASSWORD: "123456"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
 volumes:
   pg_data:
