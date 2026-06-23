@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Client } from '@stomp/stompjs'
 import { api } from '../api/client'
 import PageHeader from '../components/PageHeader'
@@ -13,6 +14,7 @@ const ESTADO_COLORS = {
 
 export default function MisOrdenes() {
   const { session } = useAuth()
+  const location = useLocation()
 
   const [ordenes, setOrdenes] = useState([])
   const [rawOrdenes, setRawOrdenes] = useState([])
@@ -69,6 +71,16 @@ export default function MisOrdenes() {
   }
 
   useEffect(() => { fetchOrdenes() }, [session])
+
+  useEffect(() => {
+    const ps = location.state?.preselect
+    if (!ps?.sku) return
+    window.history.replaceState({}, document.title)
+    limpiarFormulario()
+    setMostrarForm(true)
+    setSkuBusqueda(ps.sku)
+    buscarProductoPorSku(ps.sku)
+  }, [])
 
   useEffect(() => {
     if (!qrModal.open || !qrModal.ordenId) {
@@ -140,8 +152,8 @@ export default function MisOrdenes() {
     setProcesando(null)
   }
 
-  const buscarProductoPorSku = async () => {
-    const sku = skuBusqueda.trim()
+  const buscarProductoPorSku = async (skuOverride) => {
+    const sku = (skuOverride ?? skuBusqueda).trim()
     if (!sku) { showToast('Escribe un SKU para buscar.', 'error'); return }
     setBuscandoSku(true)
     setProductoEncontrado(null)
@@ -446,8 +458,19 @@ export default function MisOrdenes() {
               <div style={styles.quantityBox}>
                 <label style={styles.label}>Cantidad a comprar</label>
                 <div style={styles.addRow}>
-                  <input style={styles.qtyInput} type="number" min="1" max={opcionElegida.stock} value={cantidad}
-                    onChange={e => setCantidad(e.target.value)} />
+                  <div style={styles.qtyControl}>
+                    <button type="button" style={styles.qtyStep}
+                      onClick={e => { e.preventDefault(); setCantidad(c => Math.max(1, Number(c) - 1)) }}>−</button>
+                    <input
+                      style={styles.qtyInput}
+                      type="number" min="1" max={opcionElegida.stock}
+                      value={cantidad}
+                      onChange={e => setCantidad(e.target.value)}
+                      onWheel={e => e.currentTarget.blur()}
+                    />
+                    <button type="button" style={styles.qtyStep}
+                      onClick={e => { e.preventDefault(); setCantidad(c => Math.min(opcionElegida.stock, Number(c) + 1)) }}>+</button>
+                  </div>
                   <button style={styles.addBtn} onClick={agregarProductoAOrden}>Agregar producto</button>
                 </div>
                 <p style={styles.quantityHint}>Máximo: {opcionElegida.stock}</p>
@@ -557,14 +580,6 @@ export default function MisOrdenes() {
         </div>
       )}
 
-      <div style={styles.triggerInfo}>
-        <p style={styles.triggerTitle}>Flujo activo en esta pantalla</p>
-        <div style={styles.triggerGrid}>
-          <div style={styles.triggerItem}><span style={styles.triggerBadge}>Nuevo</span><span>Buscar SKU → agregar productos → crear orden pendiente</span></div>
-          <div style={styles.triggerItem}><span style={styles.triggerBadge}>T2</span><span>Cancelar → revierte stock en almacén automáticamente</span></div>
-          <div style={styles.triggerItem}><span style={styles.triggerBadge}>T3</span><span>Aprobar → genera factura pendiente automáticamente</span></div>
-        </div>
-      </div>
 
       {qrModal.open && (
         <div style={styles.modalOverlay}>
@@ -727,7 +742,9 @@ const styles = {
   optionStock: { display: 'block', fontSize: '12px', color: '#166534', fontWeight: '600' },
   quantityBox: { marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #DDE0EE' },
   addRow: { display: 'flex', gap: '8px', alignItems: 'center' },
-  qtyInput: { width: '130px', padding: '10px 12px', border: '1.5px solid #DDE0EE', borderRadius: '8px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' },
+  qtyControl: { display: 'flex', alignItems: 'center', border: '1.5px solid #DDE0EE', borderRadius: '8px', overflow: 'hidden', background: '#fff' },
+  qtyStep: { padding: '0 12px', height: '40px', background: '#F7F8FC', border: 'none', fontSize: '18px', fontWeight: '600', color: '#06175D', cursor: 'pointer', lineHeight: 1, flexShrink: 0 },
+  qtyInput: { width: '60px', padding: '10px 4px', border: 'none', borderLeft: '1.5px solid #DDE0EE', borderRight: '1.5px solid #DDE0EE', fontSize: '14px', outline: 'none', boxSizing: 'border-box', textAlign: 'center', MozAppearance: 'textfield' },
   addBtn: { padding: '10px 14px', background: '#06175D', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' },
   quantityHint: { margin: '6px 0 0', color: '#9599AE', fontSize: '12px' },
   precioBox: { marginTop: '1rem', background: '#F0F2FA', border: '1px solid #DDE0EE', borderRadius: '12px', padding: '14px 16px' },

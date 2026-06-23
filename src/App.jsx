@@ -12,11 +12,13 @@ import VistaPage from './Pages/VistaPage'
 import Facturas from './Pages/Facturas'
 import Contratos from './Pages/Contratos'
 import TarifasProducto from './Pages/TarifasProducto'
-import ReglasTarifa from './Pages/ReglasTarifa'
 import Productos from './Pages/Productos'
 import Stock from './Pages/Stock'
 import PreciosBase from './Pages/PreciosBase'
 import Proveedores from './Pages/Proveedores'
+import Catalogo from './Pages/Catalogo'
+import MisProductos from './Pages/MisProductos'
+import Almacenes from './Pages/Almacenes'
 import MiCuenta from './Pages/MiCuenta'
 import Admin from './Pages/Admin'
 import AdminProductos from './Pages/admin/AdminProductos'
@@ -44,12 +46,14 @@ function ProtectedRoutes() {
         <Route path="/facturas" element={<Facturas />} />
         <Route path="/tarifas-producto" element={<TarifasProducto />} />
         <Route path="/productos" element={<Productos />} />
-        <Route path="/reglas-tarifa" element={<ReglasTarifa />} />
         <Route path="/stock" element={<Stock />} />
         <Route path="/precios" element={<PreciosBase />} />
         <Route path="/comisiones" element={<VistaPage tipo="comisiones" />} />
         <Route path="/resumen" element={<VistaPage tipo="resumen" />} />
-        <Route path="/proveedores" element={<Proveedores />} />
+        <Route path="/proveedores"    element={<Proveedores />} />
+        <Route path="/catalogo"       element={<Catalogo />} />
+        <Route path="/mis-productos"  element={<MisProductos />} />
+        <Route path="/almacenes"      element={<Almacenes />} />
         <Route path="/mi-cuenta"   element={<MiCuenta />} />
 
         <Route path="/admin/empresas"    element={<AdminEmpresas />} />

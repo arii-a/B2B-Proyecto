@@ -2,7 +2,17 @@ import { useState } from 'react'
 import { api } from '../../api/client'
 import PageHeader from '../../components/PageHeader'
 
-const hoy = new Date().toISOString().split('T')[0]
+const isoToDisplay = (iso) => {
+  const [y, m, d] = iso.split('-')
+  return `${d}/${m}/${y.slice(2)}`
+}
+const displayToISO = (s) => {
+  const [d, m, y] = s.split('/')
+  if (!d || !m || !y) return ''
+  return `20${y.slice(-2)}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+}
+
+const hoy   = new Date().toISOString().split('T')[0]
 const hace30 = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
 
 export default function AdminLogs() {
@@ -11,14 +21,14 @@ export default function AdminLogs() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
-  const [from, setFrom] = useState(hace30)
-  const [to, setTo] = useState(hoy)
+  const [from, setFrom] = useState(isoToDisplay(hace30))
+  const [to, setTo] = useState(isoToDisplay(hoy))
   const PAGE_SIZE = 10
 
   const cargar = async (p) => {
     setLoading(true)
     try {
-      const res = await api.get(`/api/v1/logs?page=${p}&size=${PAGE_SIZE}&from=${from}&to=${to}`)
+      const res = await api.get(`/api/v1/logs?page=${p}&size=${PAGE_SIZE}&from=${displayToISO(from)}&to=${displayToISO(to)}`)
       setData(res.content ?? [])
       setTotalPages(res.totalPages ?? 0)
       setTotalElements(res.totalElements ?? 0)
@@ -39,11 +49,11 @@ export default function AdminLogs() {
       <div style={styles.filtros}>
         <div style={styles.filtroGroup}>
           <label style={styles.label}>Desde</label>
-          <input type="date" style={styles.input} value={from} onChange={e => setFrom(e.target.value)} />
+          <input type="text" placeholder="dd/mm/aa" maxLength={8} style={styles.input} value={from} onChange={e => setFrom(e.target.value)} />
         </div>
         <div style={styles.filtroGroup}>
           <label style={styles.label}>Hasta</label>
-          <input type="date" style={styles.input} value={to} onChange={e => setTo(e.target.value)} />
+          <input type="text" placeholder="dd/mm/aa" maxLength={8} style={styles.input} value={to} onChange={e => setTo(e.target.value)} />
         </div>
         <button style={styles.btn} onClick={buscar}>Buscar</button>
       </div>

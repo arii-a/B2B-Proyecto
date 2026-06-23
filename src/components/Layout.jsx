@@ -12,33 +12,30 @@ const C = {
 }
 
 const proveedorLinks = [
-  { to: '/dashboard',      icon: 'dashboard',  label: 'Dashboard'        },
-  { to: '/mis-ordenes',    icon: 'orders',     label: 'Mis órdenes'      },
-  { to: '/stock',          icon: 'stock',      label: 'Stock almacenes'  },
-  { to: '/contratos',      icon: 'contratos',  label: 'Contratos'        },
-  { to: '/reglas-tarifa',  icon: 'reglas',     label: 'Reglas de tarifa' },
-  { to: '/productos',      icon: 'productos',  label: 'Productos'        },
-  { to: '/precios',        icon: 'precios',    label: 'Precios base'     },
-  { to: '/mi-cuenta',      icon: 'cuenta',     label: 'Mi cuenta'        },
+  { to: '/dashboard',       icon: 'dashboard',    label: 'Dashboard'           },
+  { to: '/mis-ordenes',     icon: 'orders',       label: 'Mis órdenes'         },
+  { to: '/mis-productos',   icon: 'misproductos', label: 'Mis productos'       },
+  { to: '/almacenes',       icon: 'almacenes',    label: 'Almacenes'           },
+  { to: '/contratos',       icon: 'contratos',    label: 'Contratos'           },
+  { to: '/mi-cuenta',       icon: 'cuenta',       label: 'Mi cuenta'           },
 ]
 
 const empresaLinks = [
   { to: '/dashboard',   icon: 'dashboard',  label: 'Dashboard'          },
+  { to: '/catalogo',    icon: 'catalogo',   label: 'Catálogo'           },
   { to: '/mis-ordenes', icon: 'orders',     label: 'Mis órdenes'        },
   { to: '/facturas',    icon: 'facturas',   label: 'Facturas'           },
   { to: '/contratos',   icon: 'contratos',  label: 'Contratos'          },
-  { to: '/resumen',     icon: 'resumen',    label: 'Resumen de compras' },
   { to: '/proveedores', icon: 'truck',      label: 'Proveedores'        },
   { to: '/mi-cuenta',   icon: 'cuenta',     label: 'Mi cuenta'          },
 ]
 
 const adminLinks = [
-  { to: '/dashboard',          icon: 'dashboard',  label: 'Dashboard'   },
-  { to: '/admin/empresas',     icon: 'empresas',   label: 'Empresas'    },
-  { to: '/admin/proveedores',  icon: 'truck',      label: 'Proveedores' },
-  { to: '/admin/productos',    icon: 'productos',  label: 'Productos'   },
-  { to: '/admin/usuarios',     icon: 'usuarios',   label: 'Usuarios'    },
-  { to: '/admin/logs',         icon: 'logs',       label: 'Logs'        },
+  { to: '/dashboard',      icon: 'dashboard', label: 'Dashboard'   },
+  { to: '/admin/empresas', icon: 'empresas',  label: 'Empresas'    },
+  { to: '/admin/productos',icon: 'productos', label: 'Productos'   },
+  { to: '/admin/usuarios', icon: 'usuarios',  label: 'Usuarios'    },
+  { to: '/admin/logs',     icon: 'logs',      label: 'Logs'        },
 ]
 
 const rolLabel = { admin: 'Administrador', proveedor: 'Proveedor', empresa: 'Empresa compradora' }
@@ -130,6 +127,9 @@ function NavIcon({ type }) {
     empresas:   <><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="22" x2="15" y2="12"/><line x1="9" y1="12" x2="15" y2="12"/></>,
     logs:       <><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>,
     usuarios:   <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    catalogo:      <><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="16" y1="10" x2="8" y2="10"/><line x1="16" y1="14" x2="8" y2="14"/></>,
+    misproductos:  <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><path d="M7 21h10"/><path d="M12 17v4"/><circle cx="7" cy="6" r="1"/></>,
+    almacenes:     <><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="22" x2="15" y2="12"/><line x1="9" y1="12" x2="15" y2="12"/></>,
     cuenta:     <><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></>,
   }
   return (
@@ -143,7 +143,8 @@ const s = {
   shell:      { display: 'flex', minHeight: '100vh', background: '#F0F2FA' },
 
   sidebar:    { width: '248px', flexShrink: 0, background: C.primary, display: 'flex',
-                flexDirection: 'column', padding: '1.25rem 1rem', gap: '0' },
+                flexDirection: 'column', padding: '1.25rem 1rem', gap: '0',
+                height: '100vh', position: 'sticky', top: 0, overflowY: 'auto' },
 
   brand:      { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' },
   brandLogo:  { width: '38px', height: '38px', borderRadius: '9px', background: 'rgba(255,255,255,0.1)',

@@ -12,6 +12,34 @@ export default function Login() {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
 
+  const [showReset, setShowReset]       = useState(false)
+  const [resetEmail, setResetEmail]     = useState('')
+  const [resetMsg, setResetMsg]         = useState('')
+  const [resetErr, setResetErr]         = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+
+  const handleReset = async (e) => {
+    e.preventDefault()
+    setResetMsg('')
+    setResetErr('')
+    setResetLoading(true)
+    try {
+      const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+      const res = await fetch(`${BASE}/api/v1/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Error al enviar')
+      setResetMsg(data.message)
+    } catch (err) {
+      setResetErr(err.message)
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
@@ -67,55 +95,94 @@ export default function Login() {
       {/* Right panel */}
       <div style={s.right}>
         <div style={s.card}>
-          <h1 style={s.cardTitle}>Iniciar sesión</h1>
-          <p style={s.cardSub}>Ingresa tus credenciales para acceder al panel</p>
+          {!showReset ? (<>
+            <h1 style={s.cardTitle}>Iniciar sesión</h1>
+            <p style={s.cardSub}>Ingresa tus credenciales para acceder al panel</p>
 
-          <form onSubmit={handleLogin} style={s.form}>
-            <div style={s.field}>
-              <label style={s.label}>Correo electrónico</label>
-              <input
-                style={s.input}
-                type="email"
-                placeholder="usuario@empresa.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div style={s.field}>
-              <label style={s.label}>Contraseña</label>
-              <input
-                style={s.input}
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {error && (
-              <div style={s.errorBox}>
-                <span style={s.errorIcon}>!</span>
-                {error}
+            <form onSubmit={handleLogin} style={s.form}>
+              <div style={s.field}>
+                <label style={s.label}>Correo electrónico</label>
+                <input
+                  style={s.input}
+                  type="email"
+                  placeholder="usuario@empresa.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                />
               </div>
-            )}
 
-            <button style={s.btn} type="submit" disabled={loading}>
-              {loading ? 'Verificando...' : 'Ingresar →'}
+              <div style={s.field}>
+                <label style={s.label}>Contraseña</label>
+                <input
+                  style={s.input}
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {error && (
+                <div style={s.errorBox}>
+                  <span style={s.errorIcon}>!</span>
+                  {error}
+                </div>
+              )}
+
+              <button style={s.btn} type="submit" disabled={loading}>
+                {loading ? 'Verificando...' : 'Ingresar →'}
+              </button>
+            </form>
+
+            <button style={s.forgotBtn} onClick={() => { setShowReset(true); setResetMsg(''); setResetErr('') }}>
+              ¿Olvidaste tu contraseña?
             </button>
-          </form>
 
-          <div style={s.divider}>
-            <span style={s.dividerLine} />
-            <span style={s.dividerText}>¿No tienes cuenta?</span>
-            <span style={s.dividerLine} />
-          </div>
+            <div style={s.divider}>
+              <span style={s.dividerLine} />
+              <span style={s.dividerText}>¿No tienes cuenta?</span>
+              <span style={s.dividerLine} />
+            </div>
 
-          <button style={s.btnOutline} onClick={() => navigate('/registro')}>
-            Registrar empresa
-          </button>
+            <button style={s.btnOutline} onClick={() => navigate('/registro')}>
+              Registrar empresa
+            </button>
+          </>) : (<>
+            <button style={s.backBtn} onClick={() => setShowReset(false)}>← Volver</button>
+            <h1 style={s.cardTitle}>Recuperar contraseña</h1>
+            <p style={s.cardSub}>Te enviaremos una contraseña temporal a tu correo</p>
+
+            <form onSubmit={handleReset} style={s.form}>
+              <div style={s.field}>
+                <label style={s.label}>Correo electrónico</label>
+                <input
+                  style={s.input}
+                  type="email"
+                  placeholder="usuario@empresa.com"
+                  value={resetEmail}
+                  onChange={e => setResetEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              {resetErr && (
+                <div style={s.errorBox}>
+                  <span style={s.errorIcon}>!</span>
+                  {resetErr}
+                </div>
+              )}
+
+              {resetMsg && (
+                <div style={s.successBox}>{resetMsg}</div>
+              )}
+
+              <button style={s.btn} type="submit" disabled={resetLoading || !!resetMsg}>
+                {resetLoading ? 'Enviando...' : 'Enviar contraseña temporal'}
+              </button>
+            </form>
+          </>)}
         </div>
       </div>
     </div>
@@ -163,6 +230,15 @@ const s = {
   btn:         { padding: '12px', background: '#06175D', color: '#fff', border: 'none',
                  borderRadius: '9px', fontSize: '14px', fontWeight: '700',
                  cursor: 'pointer', marginTop: '0.25rem', letterSpacing: '.3px' },
+
+  forgotBtn:   { background: 'none', border: 'none', color: '#9599AE', fontSize: '12px',
+                 cursor: 'pointer', padding: '8px 0 0', textAlign: 'left' },
+
+  backBtn:     { background: 'none', border: 'none', color: '#06175D', fontSize: '13px',
+                 fontWeight: '700', cursor: 'pointer', padding: '0 0 12px', textAlign: 'left' },
+
+  successBox:  { background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px',
+                 padding: '10px 14px', fontSize: '13px', color: '#166534' },
 
   divider:     { display: 'flex', alignItems: 'center', gap: '10px', margin: '1.5rem 0 1rem' },
   dividerLine: { flex: 1, height: '1px', background: '#DDE0EE' },

@@ -13,6 +13,11 @@ async function request(path, options = {}) {
   }
   const res = await fetch(`${BASE}${path}`, { ...options, headers })
   if (res.status === 204) return null
+  if (res.status === 401) {
+    localStorage.removeItem('b2b_token')
+    window.location.href = '/login'
+    return
+  }
   const text = await res.text()
   if (!res.ok) {
     let msg = text

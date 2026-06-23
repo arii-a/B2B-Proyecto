@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 
-export default function Ordenes() {
-  const [ordenes, setOrdenes] = useState([])
-  const [rawOrdenes, setRawOrdenes] = useState([])
-  const [msg, setMsg] = useState('')
+const PAGE_SIZE = 15
 
-  const fetchOrdenes = async () => {
+export default function Ordenes() {
+  const [ordenes,     setOrdenes]     = useState([])
+  const [rawOrdenes,  setRawOrdenes]  = useState([])
+  const [msg,         setMsg]         = useState('')
+  const [page,        setPage]        = useState(0)
+  const [totalPages,  setTotalPages]  = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+
+  const fetchOrdenes = async (p = 0) => {
     try {
-      const data = await api.get('/api/v1/ordenes-compra')
-      setRawOrdenes(data || [])
-      setOrdenes(data || [])
+      const res = await api.get(`/api/v1/ordenes-compra/paged?page=${p}&size=${PAGE_SIZE}`)
+      const data = res?.content ?? []
+      setRawOrdenes(data)
+      setOrdenes(data)
+      setTotalPages(res?.totalPages ?? 0)
+      setTotalElements(res?.totalElements ?? 0)
+      setPage(p)
     } catch (e) {
       setMsg(`Error: ${e.message}`)
     }
   }
 
-  useEffect(() => { fetchOrdenes() }, [])
+  useEffect(() => { fetchOrdenes(0) }, [])
 
   const cambiarEstado = async (orden, nuevoEstado) => {
     setMsg('')
@@ -32,7 +41,7 @@ export default function Ordenes() {
         idUsuario: orden.idUsuario?.id,
       })
       setMsg(`Orden actualizada a "${nuevoEstado}". Trigger ejecutado.`)
-      fetchOrdenes()
+      fetchOrdenes(page)
     } catch (e) {
       setMsg(`Error: ${e.message}`)
     }
@@ -84,6 +93,27 @@ export default function Ordenes() {
           ))}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1rem' }}>
+          <span style={{ fontSize: '0.8rem', color: '#888' }}>
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalElements)} de {totalElements}
+          </span>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => fetchOrdenes(page - 1)} disabled={page === 0}
+              style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer' }}>‹</button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button key={i} onClick={() => fetchOrdenes(i)}
+                style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer',
+                  background: i === page ? '#0f172a' : '#fff', color: i === page ? '#fff' : '#333' }}>
+                {i + 1}
+              </button>
+            ))}
+            <button onClick={() => fetchOrdenes(page + 1)} disabled={page >= totalPages - 1}
+              style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer' }}>›</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

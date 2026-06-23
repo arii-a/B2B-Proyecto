@@ -21,6 +21,7 @@ export default function AdminProveedores() {
 
   const cargar = async () => {
     setLoading(true)
+    setFeedback(null)
     try {
       const [provData, empData] = await Promise.all([
         api.get('/api/v1/proveedores'),
@@ -30,7 +31,9 @@ export default function AdminProveedores() {
       const empArr  = Array.isArray(empData)  ? empData  : (empData?.content  ?? [])
       setProveedores(provArr)
       setEmpresas(empArr)
-    } catch {}
+    } catch (e) {
+      setFeedback({ ok: false, msg: `Error cargando datos: ${e.message}` })
+    }
     setLoading(false)
   }
 

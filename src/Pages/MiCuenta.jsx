@@ -21,8 +21,14 @@ export default function MiCuenta() {
   const [contactoForm, setContactoForm] = useState({ nombres: '', apellidos: '', idCargoEmpresa: '' })
   const [sucursalForm, setSucursalForm] = useState({ nombre: '', direccion: '' })
 
-  const [saving,   setSaving]   = useState('')
-  const [feedback, setFeedback] = useState({})
+  const [saving,    setSaving]    = useState('')
+  const [feedback,  setFeedback]  = useState({})
+  const [avatarUrl,     setAvatarUrl]     = useState('')
+  const [avatarPreview, setAvatarPreview] = useState('')
+  const [avatarFile,    setAvatarFile]    = useState(null)
+  const [logoUrl,      setLogoUrl]      = useState('')
+  const [logoPreview,  setLogoPreview]  = useState('')
+  const [logoFile,     setLogoFile]     = useState(null)
 
   // ── proveedor verification (empresa only) ────────────────────────────
   const [estadoProveedor, setEstadoProveedor] = useState(null)
@@ -30,6 +36,7 @@ export default function MiCuenta() {
   const [enviado,         setEnviado]         = useState(false)
   const [verLoading,      setVerLoading]      = useState(false)
   const [verError,        setVerError]        = useState('')
+  const [docs, setDocs] = useState({ matricula: null, ciFrontal: null, ciReverso: null })
   const [verForm, setVerForm] = useState({
     nombreComercial:     session?.nombreEmpresa          || '',
     razonSocial:         session?.idEmpresa?.razonSocial || '',
@@ -64,6 +71,12 @@ export default function MiCuenta() {
         const me = allUsers.find(u => u.id === session.id)
         setFullUser(me)
         setUserForm({ nombre: me?.nombre ?? '', email: me?.email ?? '' })
+        const avatarInit = me?.avatarUrl ?? ''
+        setAvatarUrl(avatarInit)
+        setAvatarPreview(avatarInit)
+        const logoInit = session?.idEmpresa?.logo_url ?? session?.idEmpresa?.logoUrl ?? ''
+        setLogoUrl(logoInit)
+        setLogoPreview(logoInit)
 
         const allContactos = Array.isArray(contactosRes) ? contactosRes : []
         const myContacto = allContactos.find(c => {
@@ -104,6 +117,39 @@ export default function MiCuenta() {
   // ── account saves ─────────────────────────────────────────────────────
   const setFb = (section, ok, msg) => setFeedback(f => ({ ...f, [section]: { ok, msg } }))
 
+  const uploadFile = async (file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/v1/upload`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('b2b_token')}` },
+      body: fd,
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Error al subir imagen')
+    return data.url
+  }
+
+  const saveLogo = async () => {
+    setSaving('logo')
+    try {
+      let url = logoUrl
+      if (logoFile) url = await uploadFile(logoFile)
+      await api.put(`/api/v1/empresas/${session.id_empresa}`, {
+        nombre:       session?.nombreEmpresa,
+        razon_social: session?.idEmpresa?.razonSocial,
+        nit:          session?.idEmpresa?.nit,
+        dominio:      session?.idEmpresa?.dominio,
+        logo_url:     url || null,
+      })
+      setLogoUrl(url)
+      setLogoPreview(url)
+      setLogoFile(null)
+      setFb('logo', true, 'Logo actualizado correctamente.')
+    } catch (e) { setFb('logo', false, e.message) }
+    setSaving('')
+  }
+
   const saveUser = async () => {
     setSaving('user')
     try {
@@ -112,12 +158,36 @@ export default function MiCuenta() {
         email:      userForm.email,
         password:   fullUser?.password ?? '',
         activo:     fullUser?.activo ?? true,
+        avatarUrl:  fullUser?.avatarUrl ?? null,
         idEmpresa:  session.id_empresa,
         idSucursal: session.idSucursal?.id ?? session.id_sucursal,
         idRol:      fullUser?.idRol?.id ?? fullUser?.idRol,
       })
       setFb('user', true, 'Datos actualizados correctamente.')
     } catch (e) { setFb('user', false, e.message) }
+    setSaving('')
+  }
+
+  const saveAvatar = async () => {
+    setSaving('avatar')
+    try {
+      let url = avatarUrl
+      if (avatarFile) url = await uploadFile(avatarFile)
+      await api.put(`/api/v1/usuarios/${session.id}`, {
+        nombre:     fullUser?.nombre,
+        email:      fullUser?.email,
+        password:   fullUser?.password ?? '',
+        activo:     fullUser?.activo ?? true,
+        avatarUrl:  url || null,
+        idEmpresa:  session.id_empresa,
+        idSucursal: session.idSucursal?.id ?? session.id_sucursal,
+        idRol:      fullUser?.idRol?.id ?? fullUser?.idRol,
+      })
+      setAvatarUrl(url)
+      setAvatarPreview(url)
+      setAvatarFile(null)
+      setFb('avatar', true, 'Foto de perfil actualizada.')
+    } catch (e) { setFb('avatar', false, e.message) }
     setSaving('')
   }
 
@@ -180,9 +250,23 @@ export default function MiCuenta() {
       setVerError('Completa los campos obligatorios: representante, número de documento, banco y número de cuenta.')
       return
     }
+    if (!docs.matricula || !docs.ciFrontal || !docs.ciReverso) {
+      setVerError('Debés subir los 3 documentos: Matrícula de Comercio, CI frontal y CI reverso.')
+      return
+    }
     setVerLoading(true)
     try {
-      await api.post(`/api/v1/proveedores/${session.id_empresa}`, { activo: false })
+      const [urlMatricula, urlCiFrontal, urlCiReverso] = await Promise.all([
+        uploadFile(docs.matricula),
+        uploadFile(docs.ciFrontal),
+        uploadFile(docs.ciReverso),
+      ])
+      await api.post(`/api/v1/proveedores/${session.id_empresa}`, {
+        activo: false,
+        urlMatricula,
+        urlCiFrontal,
+        urlCiReverso,
+      })
       setEnviado(true)
       setEstadoProveedor('pendiente')
       setShowVerForm(false)
@@ -207,6 +291,43 @@ export default function MiCuenta() {
         <SaveBtn onClick={saveUser} loading={saving === 'user'} />
       </Section>
 
+      {/* ── Foto de perfil ── */}
+      <Section title="Foto de perfil" feedback={feedback.avatar}>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px solid #DDE0EE', background: '#F7F8FC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+            ) : (
+              <span style={{ fontSize: 28, fontWeight: 700, color: '#9599AE' }}>{(fullUser?.nombre || session?.nombre || '?')[0].toUpperCase()}</span>
+            )}
+          </div>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <label style={s.label}>Foto de perfil</label>
+            <label style={s.fileLabel}>
+              <span style={s.fileBtn}>Elegir imagen</span>
+              <span style={s.fileName}>{avatarFile ? avatarFile.name : 'Ningún archivo seleccionado'}</span>
+              <input type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (!f) return
+                  setAvatarFile(f)
+                  setAvatarPreview(URL.createObjectURL(f))
+                }} />
+            </label>
+            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#9599AE' }}>JPG, PNG o WebP. Máx. 5 MB.</p>
+            <div style={{ marginTop: '1rem', display: 'flex', gap: 8 }}>
+              <SaveBtn onClick={saveAvatar} loading={saving === 'avatar'} label="Guardar foto" />
+              {(avatarPreview || avatarUrl) && (
+                <button style={{ padding: '9px 14px', border: '1.5px solid #DDE0EE', borderRadius: 8, background: '#fff', fontSize: 13, color: '#9599AE', cursor: 'pointer' }}
+                  onClick={() => { setAvatarFile(null); setAvatarUrl(''); setAvatarPreview('') }}>
+                  Quitar
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* ── Cambiar contraseña ── */}
       <Section title="Cambiar contraseña" feedback={feedback.pass}>
         <div style={s.grid2}>
@@ -223,6 +344,45 @@ export default function MiCuenta() {
           <ReadOnly label="Razón social"      value={session?.idEmpresa?.razonSocial} />
           <ReadOnly label="NIT"               value={session?.idEmpresa?.nit} />
           <ReadOnly label="Dominio"           value={session?.idEmpresa?.dominio} />
+        </div>
+      </Section>
+
+      {/* ── Logo de empresa ── */}
+      <Section title="Logo de empresa" feedback={feedback.logo}>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div style={{ width: 96, height: 96, borderRadius: 14, border: '1.5px solid #DDE0EE', background: '#F7F8FC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+            {logoPreview ? (
+              <img src={logoPreview} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: 8 }} onError={e => { e.target.style.display = 'none' }} />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DDE0EE" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            )}
+          </div>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <label style={s.label}>Logo de empresa</label>
+            <label style={s.fileLabel}>
+              <span style={s.fileBtn}>Elegir imagen</span>
+              <span style={s.fileName}>{logoFile ? logoFile.name : 'Ningún archivo seleccionado'}</span>
+              <input type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (!f) return
+                  setLogoFile(f)
+                  setLogoPreview(URL.createObjectURL(f))
+                }} />
+            </label>
+            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#9599AE' }}>
+              JPG, PNG o WebP. Máx. 5 MB. Se usará en la página de proveedores.
+            </p>
+            <div style={{ marginTop: '1rem', display: 'flex', gap: 8 }}>
+              <SaveBtn onClick={saveLogo} loading={saving === 'logo'} label="Guardar logo" />
+              {(logoPreview || logoUrl) && (
+                <button style={{ padding: '9px 14px', border: '1.5px solid #DDE0EE', borderRadius: 8, background: '#fff', fontSize: 13, color: '#9599AE', cursor: 'pointer' }}
+                  onClick={() => { setLogoFile(null); setLogoUrl(''); setLogoPreview('') }}>
+                  Quitar
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </Section>
 
@@ -315,7 +475,35 @@ export default function MiCuenta() {
             <FormField label="Número de documento *" value={verForm.numDocumento} onChange={setV('numDocumento')} placeholder="Ej: 12345678 SC" />
           </FormSection>
 
-          <FormSection number="3" title="Información Financiera y Bancaria">
+          <FormSection number="3" title="Documentos Requeridos">
+            <div style={{ gridColumn: '1 / -1' }}>
+              <p style={{ margin: '0 0 1rem', fontSize: 12, color: '#9599AE', lineHeight: 1.6 }}>
+                Subí los siguientes documentos para verificar tu empresa. Se aceptan imágenes (JPG, PNG) y PDF. Máx. 5 MB cada uno.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <DocUpload
+                  label="Matrícula de Comercio (SEPREC) *"
+                  file={docs.matricula}
+                  onChange={f => setDocs(d => ({ ...d, matricula: f }))}
+                  accept="image/*,application/pdf"
+                />
+                <DocUpload
+                  label="Carnet de Identidad del representante — cara frontal *"
+                  file={docs.ciFrontal}
+                  onChange={f => setDocs(d => ({ ...d, ciFrontal: f }))}
+                  accept="image/*,application/pdf"
+                />
+                <DocUpload
+                  label="Carnet de Identidad del representante — cara reverso *"
+                  file={docs.ciReverso}
+                  onChange={f => setDocs(d => ({ ...d, ciReverso: f }))}
+                  accept="image/*,application/pdf"
+                />
+              </div>
+            </div>
+          </FormSection>
+
+          <FormSection number="4" title="Información Financiera y Bancaria">
             <FormField label="Banco *"              value={verForm.banco}          onChange={setV('banco')}          placeholder="Ej: Banco Nacional de Bolivia" />
             <FormField label="Número de cuenta *"   value={verForm.numeroCuenta}   onChange={setV('numeroCuenta')}   placeholder="Ej: 1234567890" />
             <FormField label="Titular de la cuenta" value={verForm.titularCuenta}  onChange={setV('titularCuenta')}  placeholder="Ej: TechCorp S.R.L." />
@@ -397,6 +585,38 @@ function FormField({ label, value, onChange, placeholder, fullWidth }) {
   )
 }
 
+function DocUpload({ label, file, onChange, accept }) {
+  const isPdf  = file?.type === 'application/pdf'
+  const preview = file && !isPdf ? URL.createObjectURL(file) : null
+  return (
+    <div style={{ background: file ? '#f0fdf4' : '#F7F8FC', border: `1.5px solid ${file ? '#bbf7d0' : '#DDE0EE'}`, borderRadius: 10, padding: '12px 14px' }}>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#9599AE', marginBottom: 8 }}>{label}</label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        {preview && (
+          <img src={preview} alt="preview" style={{ height: 56, maxWidth: 100, objectFit: 'contain', borderRadius: 6, border: '1px solid #DDE0EE', background: '#fff', padding: 3 }} />
+        )}
+        {isPdf && (
+          <div style={{ width: 56, height: 56, borderRadius: 6, border: '1px solid #DDE0EE', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 20 }}>📄</span>
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <span style={{ padding: '7px 14px', background: file ? '#16a34a' : '#EEF1FB', color: file ? '#fff' : '#06175D', border: `1.5px solid ${file ? '#16a34a' : '#DDE0EE'}`, borderRadius: 7, fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+              {file ? '✓ Cambiar' : 'Elegir archivo'}
+            </span>
+            <span style={{ fontSize: 12, color: '#9599AE', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {file ? file.name : 'Ningún archivo seleccionado'}
+            </span>
+            <input type="file" accept={accept} style={{ display: 'none' }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) onChange(f) }} />
+          </label>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ReadOnly({ label, value }) {
   return (
     <div>
@@ -427,6 +647,9 @@ const s = {
   input:         { width: '100%', padding: '9px 12px', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 14, color: '#1A1D3B', outline: 'none', boxSizing: 'border-box', background: '#fff' },
   roValue:       { padding: '9px 12px', border: '1.5px solid #EEF1FB', borderRadius: 8, fontSize: 14, color: '#1A1D3B', background: '#F7F8FC', fontWeight: 600 },
   saveBtn:       { padding: '9px 20px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  fileLabel:     { display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' },
+  fileBtn:       { padding: '8px 14px', background: '#EEF1FB', color: '#06175D', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 13, fontWeight: 600, flexShrink: 0 },
+  fileName:      { fontSize: 13, color: '#9599AE', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
 
   sectionTitle:  { margin: '0 0 .75rem', fontWeight: 700, fontSize: 15, color: '#1A1D3B' },
   muted:         { margin: 0, fontSize: 14, color: '#9599AE', lineHeight: 1.5 },
