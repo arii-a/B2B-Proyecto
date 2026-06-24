@@ -45,4 +45,6 @@ public interface ProductoAlmacenRepository extends JpaRepository<ProductoAlmacen
             " pa.almacen.nombre, pa.producto.nombre)" +
             " FROM ProductoAlmacen pa")
     List<ProductoAlmacenDTO> findAllDTO();
+
+    void deleteById_IdProducto(UUID idProducto);
 }

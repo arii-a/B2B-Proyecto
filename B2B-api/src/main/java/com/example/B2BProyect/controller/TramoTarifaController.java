@@ -37,10 +37,9 @@ public class TramoTarifaController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody TramoTarifaRequest dto) {
+    public ResponseEntity<TramoTarifaDTO> save(@RequestBody TramoTarifaRequest dto) {
         try {
-            tramoTarifaService.save(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            return ResponseEntity.status(HttpStatus.CREATED).body(tramoTarifaService.save(dto));
         } catch (OperationException e) {
             log.error("OperationException: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

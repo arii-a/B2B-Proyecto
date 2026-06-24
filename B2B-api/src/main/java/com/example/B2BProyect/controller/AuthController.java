@@ -33,6 +33,8 @@ public class AuthController {
     private final UsuarioService userService;
     private final AuthenticationManager authenticationManager;
     private final PasswordResetService passwordResetService;
+    private final TotpService totpService;
+
 
     @PostMapping("/login")
     public ResponseEntity<?> token(
@@ -41,11 +43,11 @@ public class AuthController {
             OKAuthDto token = auth(data);
             return ok(token);
         } catch (BadCredentialsException e) {
-            log.error("Error BadCredentialsException al autenticar", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error al autenticar");
+            log.warn("Credenciales inválidas para: {}", data.email());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email o contraseña incorrectos");
         } catch (Exception e) {
             log.error("Error al autentificar el usuario: {}", data.email(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error al autenticar");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno al autenticar");
         }
     }
 
@@ -66,18 +68,25 @@ public class AuthController {
 
     @PostMapping("/password-reset/request")
     public ResponseEntity<String> requestReset(@RequestParam String email) {
-        passwordResetService.requestReset(email);
-        return ResponseEntity.ok("Código enviado al correo");
+        try {
+            passwordResetService.requestReset(email);
+            return ResponseEntity.ok("Código enviado al correo");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     @PostMapping("/password-reset/confirm")
     public ResponseEntity<String> confirmReset(@RequestParam String email,
                                                @RequestParam String code,
                                                @RequestParam String newPassword) {
-        passwordResetService.resetPassword(email, code, newPassword);
-        return ResponseEntity.ok("Contraseña actualizada correctamente");
+        try {
+            passwordResetService.resetPassword(email, code, newPassword);
+            return ResponseEntity.ok("Contraseña actualizada correctamente");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-
 
     public OKAuthDto auth(AuthenticationDTO data)  {
         String email = data.email();
@@ -111,8 +120,6 @@ public class AuthController {
             throw e;
         }
     }
-
-    private final TotpService totpService;
 
     public OKAuthDto auth2FA(String data, String code)  {
         String email = data;

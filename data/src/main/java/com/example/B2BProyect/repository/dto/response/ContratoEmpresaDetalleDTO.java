@@ -14,6 +14,7 @@ import java.util.UUID;
 public class ContratoEmpresaDetalleDTO {
     private UUID id;
     private BigDecimal porcentajeDescuento;
+    private BigDecimal montoFijo;
     private String nombreProducto;
     private String nombreContrato;
     private ProductoDTO idProducto;
@@ -22,6 +23,7 @@ public class ContratoEmpresaDetalleDTO {
     public ContratoEmpresaDetalleDTO(ContratoEmpresaDetalle detalle) {
         this.id = detalle.getId();
         this.porcentajeDescuento = detalle.getPorcentajeDescuento();
+        this.montoFijo = detalle.getMontoFijo();
         this.idProducto = new ProductoDTO(detalle.getIdProducto());
         this.idContrato = new ContratoEmpresaTarifasDTO(detalle.getIdContrato());
     }

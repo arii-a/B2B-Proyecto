@@ -36,6 +36,7 @@ public class EmpresaService {
         empresa.setActivo(true);
         empresa.setNit(empresaDTO.getNit());
         empresa.setRazonSocial(empresaDTO.getRazonSocial());
+        empresa.setLogoUrl(empresaDTO.getLogoUrl());
         return new EmpresaDTO(this.empresaRepository.save(empresa));
     }
 
@@ -66,6 +67,8 @@ public class EmpresaService {
             if (dto.getDominio() != null)     empresa.setDominio(dto.getDominio());
             if (dto.getNit() != null)         empresa.setNit(dto.getNit());
             if (dto.getRazonSocial() != null) empresa.setRazonSocial(dto.getRazonSocial());
+            if (dto.getActivo() != null)      empresa.setActivo(dto.getActivo());
+            if (dto.getLogoUrl() != null)     empresa.setLogoUrl(dto.getLogoUrl());
             return new EmpresaDTO(empresaRepository.save(empresa));
         });
     }

@@ -14,25 +14,33 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ProductoRepository extends JpaRepository<Producto, UUID> {
-    @Query("SELECT new " +
-            "com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
-            "p.id, p.sku, p.nombre, p.descripcion, p.unidadMedida, p.activo, " +
-            "p.idCategoria.nombre, p.idProveedor.idEmpresa.nombre) " +
-            "FROM Producto p WHERE p.sku = :pSku")
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
+            "p.id, p.sku, p.nombre, p.descripcion, p.activo, " +
+            "c.nombre, e.nombre, u.nombre) " +
+            "FROM Producto p " +
+            "LEFT JOIN p.idCategoria c " +
+            "LEFT JOIN p.idProveedor pr LEFT JOIN pr.idEmpresa e " +
+            "LEFT JOIN p.idUnidadMedida u " +
+            "WHERE p.sku = :pSku")
     Optional<ProductoDTO> findBySkuDTO(@Param("pSku") String pSku);
 
-    @Query("SELECT new" +
-            " com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
-            "p.id, p.sku, p.nombre, p.descripcion, p.unidadMedida, p.activo," +
-            " p.idCategoria.nombre, p.idProveedor.idEmpresa.nombre)" +
-            " FROM Producto p")
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
+            "p.id, p.sku, p.nombre, p.descripcion, p.activo, " +
+            "c.nombre, e.nombre, u.nombre) " +
+            "FROM Producto p " +
+            "LEFT JOIN p.idCategoria c " +
+            "LEFT JOIN p.idProveedor pr LEFT JOIN pr.idEmpresa e " +
+            "LEFT JOIN p.idUnidadMedida u")
     List<ProductoDTO> findAllDTO();
 
-    @Query("SELECT new " +
-            "com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
-            "p.id, p.sku, p.nombre, p.descripcion, p.unidadMedida, p.activo, " +
-            "p.idCategoria.nombre, p.idProveedor.idEmpresa.nombre)" +
-            " FROM Producto p WHERE p.id = :pId")
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
+            "p.id, p.sku, p.nombre, p.descripcion, p.activo, " +
+            "c.nombre, e.nombre, u.nombre) " +
+            "FROM Producto p " +
+            "LEFT JOIN p.idCategoria c " +
+            "LEFT JOIN p.idProveedor pr LEFT JOIN pr.idEmpresa e " +
+            "LEFT JOIN p.idUnidadMedida u " +
+            "WHERE p.id = :pId")
     Optional<ProductoDTO> findByIdDTO(@Param("pId") UUID pId);
 
     // proyección por interfaz: para catálogo y búsquedas
@@ -40,9 +48,13 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID> {
     List<ProductoProjection> findResumenProductos();
 
     @Query(value = "SELECT new com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
-            "p.id, p.sku, p.nombre, p.descripcion, p.unidadMedida, p.activo," +
-            " p.idCategoria.nombre, p.idProveedor.idEmpresa.nombre)" +
-            " FROM Producto p ORDER BY p.id DESC",
+            "p.id, p.sku, p.nombre, p.descripcion, p.activo, " +
+            "c.nombre, e.nombre, u.nombre) " +
+            "FROM Producto p " +
+            "LEFT JOIN p.idCategoria c " +
+            "LEFT JOIN p.idProveedor pr LEFT JOIN pr.idEmpresa e " +
+            "LEFT JOIN p.idUnidadMedida u " +
+            "ORDER BY p.id DESC",
             countQuery = "SELECT COUNT(p) FROM Producto p")
     Page<ProductoDTO> findAllPaged(Pageable pageable);
 

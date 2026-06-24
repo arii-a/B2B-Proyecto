@@ -13,7 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
-@RestController
+@Controller
 @RequestMapping("/api/v1/empresas")
 public class EmpresaController {
     private final EmpresaService empresaService;
