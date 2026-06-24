@@ -26,7 +26,10 @@
       "Bash(curl -s http://localhost:8080/api/v1/unidades-medida/activas)",
       "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(d.get\\('nombre','?'\\), '|', d.get\\('abreviatura','?'\\)\\) for d in data]\")",
       "Bash(curl -s http://localhost:8080/api/v1/categorias)",
-      "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\rodri\\\\AppData\\\\Local\\\\Temp\\\\gen_test_1k.py\")"
+      "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\rodri\\\\AppData\\\\Local\\\\Temp\\\\gen_test_1k.py\")",
+      "Bash(git commit *)",
+      "Bash(git pull *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "C:\\Universidad\\Semestre VII\\Certificacion III - Springboot\\B2B-Proyecto\\B2B-api\\src\\main\\java\\com\\example\\B2BProyect\\controller",

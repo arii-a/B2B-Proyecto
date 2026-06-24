@@ -210,7 +210,7 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
                   </thead>
                   <tbody>
                     {filasPage.map((f, i) => (
-                      <tr key={f._row} style={{ background: f._ok ? (i % 2 === 0 ? '#fff' : 'var(--c-bg-alt)') : '#fef2f2' }}>
+                      <tr key={f._row} style={{ background: f._ok ? (i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-alt)') : '#fef2f2' }}>
                         <td style={{ ...s.td, color: 'var(--c-muted)', fontSize: 11 }}>{f._row}</td>
                         <td style={{ ...s.td, fontFamily: 'monospace', fontWeight: 600 }}>{f.sku || '—'}</td>
                         <td style={s.td}>{f.nombre || '—'}</td>

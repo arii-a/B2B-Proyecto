@@ -144,7 +144,7 @@ export default function AdminProductos() {
                           key={p.id}
                           onClick={() => openPanel(p)}
                           style={{
-                            background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? '#fff' : 'var(--c-bg-subtle)',
+                            background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)',
                             cursor: 'pointer',
                             borderLeft: `3px solid ${sel ? 'var(--c-primary)' : 'transparent'}`,
                           }}

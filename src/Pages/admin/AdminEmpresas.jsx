@@ -238,7 +238,7 @@ export default function AdminEmpresas() {
                           <tr key={item.id}
                             onClick={() => openDetail(item)}
                             style={{
-                              background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? '#fff' : 'var(--c-bg-subtle)',
+                              background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)',
                               cursor: 'pointer',
                               borderLeft: `3px solid ${sel ? 'var(--c-primary)' : 'transparent'}`,
                             }}>
@@ -433,7 +433,7 @@ export default function AdminEmpresas() {
                           <tr key={prov.id}
                             onClick={() => { openDetailFromProv(prov); setFeedback(null) }}
                             style={{
-                              background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? '#fff' : 'var(--c-bg-subtle)',
+                              background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)',
                               cursor: 'pointer',
                               borderLeft: `3px solid ${sel ? 'var(--c-primary)' : 'transparent'}`,
                             }}>
@@ -667,7 +667,7 @@ const s = {
   panelScroll:  { flex: 1, overflowY: 'auto', padding: '1rem' },
   panelActions: { padding: '1rem', borderTop: '1px solid var(--c-border-light)', flexShrink: 0 },
 
-  input:        { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', boxSizing: 'border-box', outline: 'none' },
+  input:        { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', boxSizing: 'border-box', outline: 'none', background: 'var(--c-input-bg)' },
   toggleBtn:    { flex: 1, padding: '7px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--c-bg)', color: 'var(--c-muted)' },
   toggleBtnActive:{ background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 

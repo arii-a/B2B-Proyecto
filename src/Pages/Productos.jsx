@@ -213,7 +213,7 @@ export default function Productos() {
                 </thead>
                 <tbody>
                   {paginated.map((p, i) => (
-                    <tr key={p.id} style={{ background: i % 2 === 0 ? '#fff' : '#F7F8FC' }}>
+                    <tr key={p.id} style={{ background: i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)' }}>
                       <td style={styles.td}>{p.sku || '—'}</td>
                       <td style={styles.td}>{p.nombre}</td>
                       <td style={{ ...styles.td, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -271,7 +271,7 @@ export default function Productos() {
       {editModal.open && (
         <div style={styles.overlay} onClick={() => setEditModal({ open: false, id: null, form: emptyForm })}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 1rem', fontSize: '16px', color: '#1A1D3B' }}>Editar producto</h3>
+            <h3 style={{ margin: '0 0 1rem', fontSize: '16px', color: 'var(--c-text)' }}>Editar producto</h3>
             <div style={styles.grid}>
               <div>
                 <label style={styles.label}>SKU</label>
@@ -326,32 +326,32 @@ export default function Productos() {
 }
 
 const styles = {
-  refreshBtn: { background: '#fff', border: '1.5px solid #DDE0EE', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', color: '#9599AE', fontWeight: '600' },
+  refreshBtn: { background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', color: 'var(--c-muted)', fontWeight: '600' },
   msg: { border: '1px solid', borderRadius: '8px', padding: '10px 14px', marginBottom: '1rem', fontSize: '13px' },
-  card: { background: '#fff', border: '1px solid #DDE0EE', borderRadius: '12px', padding: '1.25rem', marginBottom: '1rem', boxShadow: '0 1px 4px rgba(6,23,93,0.06)' },
-  cardTitle: { margin: '0 0 1rem', fontSize: '14px', fontWeight: '700', color: '#06175D' },
+  card: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: '12px', padding: '1.25rem', marginBottom: '1rem', boxShadow: '0 1px 4px rgba(6,23,93,0.06)' },
+  cardTitle: { margin: '0 0 1rem', fontSize: '14px', fontWeight: '700', color: 'var(--c-primary)' },
   grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },
   full: { gridColumn: '1 / -1' },
-  label: { display: 'block', fontSize: '11px', fontWeight: '700', color: '#1A1D3B', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '.4px' },
-  input: { width: '100%', padding: '10px 12px', border: '1.5px solid #DDE0EE', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', background: '#fff', color: '#1A1D3B', outline: 'none' },
+  label: { display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--c-text)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '.4px' },
+  input: { width: '100%', padding: '10px 12px', border: '1.5px solid var(--c-border)', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)', outline: 'none' },
   actions: { marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '8px' },
-  clearBtn: { padding: '9px 16px', background: '#fff', color: '#9599AE', border: '1.5px solid #DDE0EE', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' },
-  saveBtn: { padding: '9px 16px', background: '#06175D', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
-  tableWrapper: { overflowX: 'auto', border: '1px solid #DDE0EE', borderRadius: '12px', background: '#fff', boxShadow: '0 1px 4px rgba(6,23,93,0.06)' },
+  clearBtn: { padding: '9px 16px', background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1.5px solid var(--c-border)', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' },
+  saveBtn: { padding: '9px 16px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
+  tableWrapper: { overflowX: 'auto', border: '1px solid var(--c-border)', borderRadius: '12px', background: 'var(--c-bg)', boxShadow: '0 1px 4px rgba(6,23,93,0.06)' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  th: { padding: '11px 14px', background: '#EEF1FB', color: '#06175D', fontWeight: '700', textAlign: 'left', whiteSpace: 'nowrap', borderBottom: '1px solid #DDE0EE', fontSize: '12px', letterSpacing: '.3px' },
-  td: { padding: '10px 14px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA', whiteSpace: 'nowrap' },
-  empty: { display: 'flex', alignItems: 'center', gap: '10px', padding: '2rem', color: '#9599AE', fontSize: '14px' },
-  emptyText: { color: '#9599AE', padding: '1.5rem', fontSize: '14px', margin: 0 },
-  spinner: { width: '16px', height: '16px', border: '2px solid #DDE0EE', borderTop: '2px solid #06175D', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
-  btnEdit: { padding: '5px 12px', fontSize: '12px', fontWeight: '600', background: '#EEF1FB', color: '#06175D', border: '1px solid #DDE0EE', borderRadius: '6px', cursor: 'pointer' },
-  btnDel: { padding: '5px 12px', fontSize: '12px', fontWeight: '600', background: '#fff', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer' },
+  th: { padding: '11px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: '700', textAlign: 'left', whiteSpace: 'nowrap', borderBottom: '1px solid var(--c-border)', fontSize: '12px', letterSpacing: '.3px' },
+  td: { padding: '10px 14px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)', whiteSpace: 'nowrap' },
+  empty: { display: 'flex', alignItems: 'center', gap: '10px', padding: '2rem', color: 'var(--c-muted)', fontSize: '14px' },
+  emptyText: { color: 'var(--c-muted)', padding: '1.5rem', fontSize: '14px', margin: 0 },
+  spinner: { width: '16px', height: '16px', border: '2px solid var(--c-border)', borderTop: '2px solid var(--c-primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
+  btnEdit: { padding: '5px 12px', fontSize: '12px', fontWeight: '600', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: '1px solid var(--c-border)', borderRadius: '6px', cursor: 'pointer' },
+  btnDel: { padding: '5px 12px', fontSize: '12px', fontWeight: '600', background: 'var(--c-bg)', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer' },
   btnDanger: { padding: '4px 10px', fontSize: '12px', fontWeight: '600', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' },
-  btnGhost: { padding: '4px 10px', fontSize: '12px', fontWeight: '600', background: '#F0F2FA', color: '#9599AE', border: '1px solid #DDE0EE', borderRadius: '6px', cursor: 'pointer' },
-  pagination: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid #F0F2FA' },
-  pageInfo: { fontSize: '12px', color: '#9599AE' },
-  pageBtn: { padding: '4px 10px', fontSize: '12px', fontWeight: '600', background: '#fff', color: '#9599AE', border: '1px solid #DDE0EE', borderRadius: '6px', cursor: 'pointer' },
-  pageBtnActive: { background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  btnGhost: { padding: '4px 10px', fontSize: '12px', fontWeight: '600', background: 'var(--c-border-light)', color: 'var(--c-muted)', border: '1px solid var(--c-border)', borderRadius: '6px', cursor: 'pointer' },
+  pagination: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid var(--c-border-light)' },
+  pageInfo: { fontSize: '12px', color: 'var(--c-muted)' },
+  pageBtn: { padding: '4px 10px', fontSize: '12px', fontWeight: '600', background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)', borderRadius: '6px', cursor: 'pointer' },
+  pageBtnActive: { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,83,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '14px', padding: '1.75rem', width: '560px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(6,23,93,0.2)' },
+  modal: { background: 'var(--c-bg)', borderRadius: '14px', padding: '1.75rem', width: '560px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(6,23,93,0.2)' },
 }

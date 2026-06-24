@@ -66,7 +66,7 @@ export default function Ordenes() {
         </thead>
         <tbody>
           {ordenes.map((o, i) => (
-            <tr key={o.id} style={{ background: i % 2 === 0 ? '#f8fafc' : '#fff' }}>
+            <tr key={o.id} style={{ background: i % 2 === 0 ? 'var(--c-bg-subtle)' : 'var(--c-bg)' }}>
               <td style={{ padding: '6px 8px', fontSize: '0.75rem', color: '#888' }}>{o.id}</td>
               <td style={{ padding: '6px 8px' }}>{Number(o.total || 0).toLocaleString('es-BO', { style: 'currency', currency: 'BOB' })}</td>
               <td style={{ padding: '6px 8px' }}>
@@ -105,7 +105,7 @@ export default function Ordenes() {
             {Array.from({ length: totalPages }, (_, i) => (
               <button key={i} onClick={() => fetchOrdenes(i)}
                 style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #ccc', cursor: 'pointer',
-                  background: i === page ? '#0f172a' : '#fff', color: i === page ? '#fff' : '#333' }}>
+                  background: i === page ? '#0f172a' : 'var(--c-bg)', color: i === page ? '#fff' : 'var(--c-text)' }}>
                 {i + 1}
               </button>
             ))}

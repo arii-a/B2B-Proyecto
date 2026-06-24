@@ -28,6 +28,7 @@
   --c-bg-subtle:      #F7F8FC;
   --c-bg-alt:         #FAFBFD;
   --c-border:         #DDE0EE;
+  --c-border-mid:     #C8CCE0;
   --c-border-light:   #F0F2FA;
   --c-shadow-sm:      0 1px 3px rgba(6,23,93,0.08);
   --c-shadow-md:      0 4px 16px rgba(6,23,93,0.12);
@@ -45,6 +46,7 @@
   --c-bg-subtle:      #162032;
   --c-bg-alt:         #1a2535;
   --c-border:         #334155;
+  --c-border-mid:     #475569;
   --c-border-light:   #1e293b;
   --c-shadow-sm:      0 1px 3px rgba(0,0,0,0.35);
   --c-shadow-md:      0 4px 16px rgba(0,0,0,0.45);

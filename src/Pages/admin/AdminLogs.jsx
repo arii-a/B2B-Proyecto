@@ -71,7 +71,7 @@ export default function AdminLogs() {
               </thead>
               <tbody>
                 {data.map((l, i) => (
-                  <tr key={l.id ?? i} style={{ background: i % 2 === 0 ? '#fff' : 'var(--c-bg-subtle)' }}>
+                  <tr key={l.id ?? i} style={{ background: i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)' }}>
                     <td style={styles.td}>
                       <span style={{ ...styles.badge, ...levelColor(l.level) }}>{l.level}</span>
                     </td>
@@ -113,7 +113,7 @@ const styles = {
   filtros: { display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '1rem', flexWrap: 'wrap' },
   filtroGroup: { display: 'flex', flexDirection: 'column', gap: 4 },
   label: { fontSize: '13px', fontWeight: '600', color: 'var(--c-muted)' },
-  input: { padding: '8px 12px', border: '1.5px solid var(--c-border)', borderRadius: '8px', fontSize: '14px', color: 'var(--c-text)' },
+  input: { padding: '8px 12px', border: '1.5px solid var(--c-border)', borderRadius: '8px', fontSize: '14px', color: 'var(--c-text)', background: 'var(--c-input-bg)' },
   btn: { padding: '8px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
   tableWrapper: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: '10px', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { api } from '../api/client'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '../ThemeContext'
 
 const STEPS = ['Empresa', 'Contacto', 'Sucursal', 'Usuario']
 
 export default function Registro() {
   const navigate = useNavigate()
+  const { dark, toggle } = useTheme()
 
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -119,6 +121,9 @@ export default function Registro() {
 
   return (
     <div style={styles.bg}>
+      <button onClick={toggle} style={styles.themeBtn} title={dark ? 'Modo claro' : 'Modo oscuro'}>
+        {dark ? '☀' : '☾'}
+      </button>
       <div style={styles.card}>
         <div style={styles.logoRow}>
           <div style={styles.logoCircle}>
@@ -266,6 +271,9 @@ const styles = {
                fontWeight: 600, color: 'var(--c-primary)', background: 'var(--c-primary-light)', whiteSpace: 'nowrap' },
   fileName:  { fontSize: 12, color: 'var(--c-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 },
   fileHint:  { margin: '7px 0 0', fontSize: 12, color: 'var(--c-muted)' },
+  themeBtn:  { position: 'fixed', top: '1rem', right: '1rem', background: 'var(--c-bg)',
+               border: '1.5px solid var(--c-border)', borderRadius: '8px', padding: '6px 11px',
+               fontSize: '15px', cursor: 'pointer', color: 'var(--c-muted)', boxShadow: 'var(--c-shadow-sm)' },
   successIcon: { width: '56px', height: '56px', borderRadius: '50%', background: '#dcfce7', color: '#166534', fontSize: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' },
   successTitle: { margin: '0 0 6px', fontWeight: '700', fontSize: '20px', color: 'var(--c-text)', textAlign: 'center' },
   successSub: { margin: '0 0 1.5rem', fontSize: '14px', color: 'var(--c-muted)', textAlign: 'center' },

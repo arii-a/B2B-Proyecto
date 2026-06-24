@@ -91,8 +91,8 @@ export default function Facturas() {
 }
 
 const styles = {
-  refreshBtn: { background: '#fff', border: '1px solid #DDE0EE', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', color: '#9599AE' },
-  msg: { background: '#F0F2FA', border: '1px solid #DDE0EE', borderRadius: '8px', padding: '10px 14px', marginBottom: '1rem', color: '#1A1D3B', fontSize: '13px' },
+  refreshBtn: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', color: 'var(--c-muted)' },
+  msg: { background: 'var(--c-bg-page)', border: '1px solid var(--c-border)', borderRadius: '8px', padding: '10px 14px', marginBottom: '1rem', color: 'var(--c-text)', fontSize: '13px' },
   payBtn: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
   anularBtn: { background: '#fee2e2', color: '#991b1b', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
   noActions: { color: '#9599AE', fontSize: '12px', fontWeight: '600' },

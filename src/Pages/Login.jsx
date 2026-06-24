@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { api, setToken } from '../api/client'
 import { useAuth, buildSession } from '../AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '../ThemeContext'
 
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const { dark, toggle } = useTheme()
 
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
@@ -81,6 +83,9 @@ export default function Login() {
 
   return (
     <div style={s.page}>
+      <button onClick={toggle} style={s.themeBtn} title={dark ? 'Modo claro' : 'Modo oscuro'}>
+        {dark ? '☀' : '☾'}
+      </button>
       {/* Left panel */}
       <div style={s.left}>
         <div style={s.leftInner}>
@@ -277,4 +282,8 @@ const s = {
   btnOutline:  { width: '100%', padding: '11px', background: 'transparent',
                  color: 'var(--c-primary)', border: '1.5px solid var(--c-primary)',
                  borderRadius: '9px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+
+  themeBtn:    { position: 'fixed', top: '1rem', right: '1rem', background: 'var(--c-bg)',
+                 border: '1.5px solid var(--c-border)', borderRadius: '8px', padding: '6px 11px',
+                 fontSize: '15px', cursor: 'pointer', color: 'var(--c-muted)', boxShadow: 'var(--c-shadow-sm)' },
 }
