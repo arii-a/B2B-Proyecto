@@ -17,6 +17,7 @@ public class EmpresaDTO {
     private Boolean activo = true;
     private String nit;
     private String razonSocial;
+    private String logoUrl;
 
     public EmpresaDTO(Empresa empresa) {
         this.id = empresa.getId();
@@ -25,6 +26,7 @@ public class EmpresaDTO {
         this.activo = empresa.getActivo();
         this.nit = empresa.getNit();
         this.razonSocial = empresa.getRazonSocial();
+        this.logoUrl = empresa.getLogoUrl();
     }
 
     public EmpresaDTO(UUID id, String nombre, String dominio, String nit, String razonSocial) {
@@ -33,6 +35,15 @@ public class EmpresaDTO {
         this.dominio = dominio;
         this.nit = nit;
         this.razonSocial = razonSocial;
+    }
+
+    public EmpresaDTO(UUID id, String nombre, String dominio, String nit, String razonSocial, String logoUrl) {
+        this.id = id;
+        this.nombre = nombre;
+        this.dominio = dominio;
+        this.nit = nit;
+        this.razonSocial = razonSocial;
+        this.logoUrl = logoUrl;
     }
 
     public EmpresaDTO(UUID id) {

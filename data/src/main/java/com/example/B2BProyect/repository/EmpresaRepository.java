@@ -19,17 +19,17 @@ public interface EmpresaRepository extends JpaRepository<Empresa, UUID> {
     List<Empresa> listarEmpresasProveedoras();
 
     @Query("SELECT new " +
-            "com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial) " +
+            "com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial, e.logoUrl) " +
             "FROM Empresa e WHERE e.nombre=:pNombre")
     Optional<EmpresaDTO> findByNameDTO(@Param("pNombre") String pNombre);
 
     @Query("SELECT new" +
-            " com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial)" +
+            " com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial, e.logoUrl)" +
             " FROM Empresa e")
     Page<EmpresaDTO> findAllDTO(Pageable pageable);
 
     @Query("SELECT new " +
-            "com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial)" +
+            "com.example.B2BProyect.repository.dto.response.EmpresaDTO(e.id, e.nombre, e.dominio, e.nit, e.razonSocial, e.logoUrl)" +
             " FROM Empresa e WHERE e.id=:pId")
     Optional<EmpresaDTO> findByIdDTO(@Param("pId") UUID pId);
 

@@ -62,10 +62,9 @@ public class ProductoController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> save(@RequestBody ProductoRequest producto) {
+    public ResponseEntity<ProductoDTO> save(@RequestBody ProductoRequest producto) {
         try {
-            productoService.save(producto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            return ResponseEntity.status(HttpStatus.CREATED).body(productoService.save(producto));
         } catch (OperationException e) {
             log.error("Error al guardar producto: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

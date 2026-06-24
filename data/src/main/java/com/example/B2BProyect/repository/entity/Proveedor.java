@@ -26,6 +26,15 @@ public class Proveedor extends AuditableEntity {
     @Column(name = "activo", nullable = false)
     private Boolean activo = false;
 
+    @Column(name = "url_matricula")
+    private String urlMatricula;
+
+    @Column(name = "url_ci_frontal")
+    private String urlCiFrontal;
+
+    @Column(name = "url_ci_reverso")
+    private String urlCiReverso;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_empresa", nullable = false)
@@ -48,9 +57,6 @@ public class Proveedor extends AuditableEntity {
 
     @OneToMany(mappedBy = "idProveedor")
     private Set<ReglasComision> reglasComisions = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "idProveedor")
-    private Set<TarifaRegla> tarifaReglas = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "idProveedor")
     private Set<Producto> productos = new LinkedHashSet<>();

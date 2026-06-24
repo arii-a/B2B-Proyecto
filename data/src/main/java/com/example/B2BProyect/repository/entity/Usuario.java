@@ -44,22 +44,25 @@ public class Usuario extends AuditableEntity implements UserDetails {
     @Column(name = "activo", nullable = false)
     private Boolean activo = false;
 
-    @Column(name = "recovery_key", length = 100)
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
+    @Column(name = "totp_secret", length = 500)
     private String totpSecret;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_empresa", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "id_empresa", nullable = true)
     private Empresa idEmpresa;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_sucursal", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "id_sucursal", nullable = true)
     private SucursalEmpresa idSucursal;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "id_rol", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "id_rol", nullable = true)
     private RolUsuario idRol;
 
     @OneToMany(mappedBy = "idUsuario")
@@ -68,7 +71,7 @@ public class Usuario extends AuditableEntity implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + idRol.getNombre()));
+        if (idRol != null) authorities.add(new SimpleGrantedAuthority("ROLE_" + idRol.getNombre()));
         return authorities;
     }
 

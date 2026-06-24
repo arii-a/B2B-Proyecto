@@ -27,19 +27,18 @@ DROP TABLE IF EXISTS cat_proveedor;
 DROP TABLE IF EXISTS detalle_orden;
 DROP TABLE IF EXISTS orden_compra;
 
+DROP TABLE IF EXISTS tramo_tarifa;
 DROP TABLE IF EXISTS contrato_empresa_detalle;
 DROP TABLE IF EXISTS contrato_empresa_tarifas;
 
 DROP TABLE IF EXISTS precio_base;
-
-DROP TABLE IF EXISTS tramo_tarifa;
-DROP TABLE IF EXISTS tarifa_regla;
 
 DROP TABLE IF EXISTS producto_almacen;
 
 DROP TABLE IF EXISTS almacen;
 
 DROP TABLE IF EXISTS producto;
+DROP TABLE IF EXISTS unidad_medida;
 
 DROP TABLE IF EXISTS reglas_comision;
 
@@ -61,8 +60,6 @@ DROP TABLE IF EXISTS rol_usuario;
 
 DROP TABLE IF EXISTS movimientos;
 
-DROP TABLE IF EXISTS password_reset_token;
-
 -- ------------------------------------------------------------
 -- ROL_USUARIO
 -- ------------------------------------------------------------
@@ -76,12 +73,13 @@ CREATE TABLE IF NOT EXISTS rol_usuario (
 -- EMPRESA
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS empresa (
-                                       id_empresa   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_empresa   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre       VARCHAR(150) NOT NULL,
     dominio      VARCHAR(100),
     activo       BOOLEAN      NOT NULL DEFAULT TRUE,
     nit          VARCHAR(50)  NOT NULL,
-    razon_social VARCHAR(200) NOT NULL
+    razon_social VARCHAR(200) NOT NULL,
+    logo_url     VARCHAR(500)
     );
 
 -- ------------------------------------------------------------
@@ -124,12 +122,12 @@ CREATE TABLE IF NOT EXISTS sucursal_empresa (
 -- USUARIO
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS usuario (
-                                       id_usuario    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_usuario    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre        VARCHAR(150) NOT NULL,
     email         VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     activo        BOOLEAN      NOT NULL DEFAULT TRUE,
-    recovery_key  VARCHAR(100),
+    avatar_url    VARCHAR(500),
     id_empresa    UUID          NOT NULL,
     id_sucursal   UUID          NOT NULL,
     id_rol        UUID          NOT NULL,
@@ -172,20 +170,48 @@ CREATE TABLE IF NOT EXISTS cat_proveedor (
     );
 
 -- ------------------------------------------------------------
+-- UNIDAD_MEDIDA
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS unidad_medida (
+    id_unidad_medida UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre           VARCHAR(100) NOT NULL,
+    abreviatura      VARCHAR(20)  NOT NULL,
+    activo           BOOLEAN      NOT NULL DEFAULT TRUE
+);
+
+INSERT INTO unidad_medida (nombre, abreviatura) VALUES
+    ('Unidad',        'und'),
+    ('Kilogramo',     'kg'),
+    ('Gramo',         'g'),
+    ('Tonelada',      'ton'),
+    ('Litro',         'L'),
+    ('Mililitro',     'ml'),
+    ('Metro',         'm'),
+    ('Metro cuadrado','m²'),
+    ('Metro cúbico',  'm³'),
+    ('Caja',          'caja'),
+    ('Saco',          'saco'),
+    ('Paquete',       'paq'),
+    ('Docena',        'doc'),
+    ('Rollo',         'rollo'),
+    ('Par',           'par');
+
+-- ------------------------------------------------------------
 -- PRODUCTO
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS producto (
-                                        id_producto            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sku           VARCHAR(100),
-    nombre        VARCHAR(200) NOT NULL,
-    descripcion   TEXT,
-    unidad_medida VARCHAR(50),
-    activo        BOOLEAN      NOT NULL DEFAULT TRUE,
-    id_categoria  UUID,
-    id_proveedor  UUID,
+    id_producto      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sku              VARCHAR(100),
+    nombre           VARCHAR(200) NOT NULL,
+    descripcion      TEXT,
+    activo           BOOLEAN      NOT NULL DEFAULT TRUE,
+    id_categoria     UUID,
+    id_proveedor     UUID,
+    id_unidad_medida UUID,
 
-    CONSTRAINT fk_producto_proveedor FOREIGN KEY (id_proveedor) REFERENCES proveedor (id_proveedor),
-    CONSTRAINT fk_producto_categoria FOREIGN KEY (id_categoria) REFERENCES categoria (id_categoria)
+    CONSTRAINT fk_producto_proveedor     FOREIGN KEY (id_proveedor)     REFERENCES proveedor     (id_proveedor),
+    CONSTRAINT fk_producto_categoria     FOREIGN KEY (id_categoria)     REFERENCES categoria     (id_categoria),
+    CONSTRAINT fk_producto_unidad_medida FOREIGN KEY (id_unidad_medida) REFERENCES unidad_medida (id_unidad_medida)
     );
 
 -- ------------------------------------------------------------
@@ -219,35 +245,6 @@ CREATE TABLE IF NOT EXISTS producto_almacen (
     );
 
 -- ------------------------------------------------------------
--- TARIFA_REGLA
--- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS tarifa_regla (
-                                            id_tarifa   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre      VARCHAR(250),
-    descripcion TEXT,
-    id_proveedor UUID         NOT NULL,
-    activo      BOOLEAN      NOT NULL DEFAULT TRUE,
-
-    CONSTRAINT fk_tarifaregla_proveedor FOREIGN KEY (id_proveedor) REFERENCES proveedor (id_proveedor)
-    );
-
--- ------------------------------------------------------------
--- TRAMO_TARIFA
--- CHECK: tipo solo puede ser 'volumen' o 'costo'
--- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS tramo_tarifa (
-                                            id_tramo         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tipo             VARCHAR(20)  NOT NULL,
-    cantidad_minima  DECIMAL(14,2) NOT NULL,
-    cantidad_maxima  DECIMAL(14,2),
-    porcentaje_desc  DECIMAL(14,2) NOT NULL,
-    id_regla         UUID          NOT NULL,
-
-    CONSTRAINT chk_tramo_tipo CHECK (tipo IN ('volumen', 'costo')),
-    CONSTRAINT fk_tramo_regla FOREIGN KEY (id_regla) REFERENCES tarifa_regla (id_tarifa)
-    );
-
--- ------------------------------------------------------------
 -- PRECIO_BASE
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS precio_base (
@@ -266,30 +263,48 @@ CREATE TABLE IF NOT EXISTS precio_base (
 -- CONTRATO_EMPRESA_TARIFAS
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS contrato_empresa_tarifas (
-                                                        id_contrato   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_empresa    UUID       NOT NULL,
-    id_proveedor  UUID       NOT NULL,
-    id_regla      UUID       NOT NULL,
+    id_contrato   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_empresa    UUID      NOT NULL,
+    id_proveedor  UUID      NOT NULL,
     vigente_desde TIMESTAMP NOT NULL,
     vigente_hasta TIMESTAMP,
     activo        BOOLEAN   NOT NULL DEFAULT TRUE,
 
     CONSTRAINT fk_contrato_empresa  FOREIGN KEY (id_empresa)   REFERENCES empresa (id_empresa),
-    CONSTRAINT fk_contrato_prov     FOREIGN KEY (id_proveedor) REFERENCES proveedor (id_proveedor),
-    CONSTRAINT fk_contrato_regla    FOREIGN KEY (id_regla)     REFERENCES tarifa_regla (id_tarifa)
+    CONSTRAINT fk_contrato_prov     FOREIGN KEY (id_proveedor) REFERENCES proveedor (id_proveedor)
+    );
+
+-- ------------------------------------------------------------
+-- TRAMO_TARIFA  (vinculado directamente al contrato)
+-- CHECK: tipo solo puede ser 'volumen' o 'costo'
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tramo_tarifa (
+    id_tramo         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tipo             VARCHAR(20)   NOT NULL,
+    cantidad_minima  DECIMAL(14,2) NOT NULL,
+    cantidad_maxima  DECIMAL(14,2),
+    porcentaje_desc  DECIMAL(14,2) NOT NULL DEFAULT 0,
+    tipo_descuento   VARCHAR(20)   NOT NULL DEFAULT 'porcentaje',
+    monto_fijo       DECIMAL(14,2),
+    id_contrato      UUID          NOT NULL,
+
+    CONSTRAINT chk_tramo_tipo          CHECK (tipo IN ('volumen', 'costo')),
+    CONSTRAINT chk_tramo_tipo_descuento CHECK (tipo_descuento IN ('porcentaje', 'fijo')),
+    CONSTRAINT fk_tramo_contrato FOREIGN KEY (id_contrato) REFERENCES contrato_empresa_tarifas (id_contrato)
     );
 
 -- ------------------------------------------------------------
 -- CONTRATO_EMPRESA_DETALLE
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS contrato_empresa_detalle (
-                                                        id_detalle           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    porcentaje_descuento DECIMAL(14,2) NOT NULL,
-    id_producto                  UUID NOT NULL,
-    id_contrato          UUID           NOT NULL,
+    id_detalle           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    porcentaje_descuento DECIMAL(14,2) NOT NULL DEFAULT 0,
+    monto_fijo           DECIMAL(14,2),
+    id_producto          UUID          NOT NULL,
+    id_contrato          UUID          NOT NULL,
 
     CONSTRAINT fk_contdetalle_contrato FOREIGN KEY (id_contrato) REFERENCES contrato_empresa_tarifas (id_contrato),
-    CONSTRAINT fk_contdetalle_producto FOREIGN KEY (id_producto)         REFERENCES producto (id_producto)
+    CONSTRAINT fk_contdetalle_producto FOREIGN KEY (id_producto) REFERENCES producto (id_producto)
     );
 
 -- ------------------------------------------------------------
@@ -385,7 +400,7 @@ CREATE TABLE IF NOT EXISTS factura (
 -- DETALLE_FACTURA
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS detalle_factura (
-    id_detalle      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                               id_detalle      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cantidad        INT           NOT NULL,
     precio_unitario DECIMAL(14,2) NOT NULL,
     subtotal        DECIMAL(14,2) NOT NULL,
@@ -396,17 +411,9 @@ CREATE TABLE IF NOT EXISTS detalle_factura (
     CONSTRAINT fk_detfactura_producto FOREIGN KEY (id_producto)        REFERENCES producto (id_producto)
     );
 
-CREATE TABLE IF NOT EXISTS password_reset_token (
-    id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    email         TEXT        NOT NULL,
-    code          VARCHAR(6)  NOT NULL,
-    expires_at    TIMESTAMP   NOT NULL,
-    used          BOOLEAN     DEFAULT false,
-)
 ------------------------------
 -- INDICES
 ------------------------------
-CREATE INDEX idx_password_reset_token  ON password_reset_token (id)
 -- empresa
 CREATE INDEX idx_nit_empresa    ON empresa (nit);
 
@@ -437,11 +444,8 @@ CREATE INDEX idx_almacen_proveedor             ON almacen (id_proveedor);
 -- producto_almacen
 CREATE INDEX idx_prodalmacen_id_producto               ON producto_almacen (id_producto);
 
--- tarifa_regla
-CREATE INDEX idx_tarifaregla_proveedor         ON tarifa_regla (id_proveedor);
-
 -- tramo_tarifa
-CREATE INDEX idx_tramo_regla                   ON tramo_tarifa (id_regla);
+CREATE INDEX idx_tramo_contrato                ON tramo_tarifa (id_contrato);
 
 -- precio_base
 CREATE INDEX idx_precio_proveedor              ON precio_base (id_proveedor);

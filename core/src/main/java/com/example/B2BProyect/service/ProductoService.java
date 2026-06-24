@@ -1,5 +1,7 @@
 package com.example.B2BProyect.service;
 
+import com.example.B2BProyect.repository.PrecioBaseRepository;
+import com.example.B2BProyect.repository.ProductoAlmacenRepository;
 import com.example.B2BProyect.repository.ProductoRepository;
 import com.example.B2BProyect.repository.dto.request.ProductoRequest;
 import com.example.B2BProyect.repository.dto.response.ProductoDTO;
@@ -20,23 +22,27 @@ import java.util.UUID;
 @Service
 public class ProductoService {
     private final ProductoRepository productoRepository;
+    private final PrecioBaseRepository precioBaseRepository;
+    private final ProductoAlmacenRepository productoAlmacenRepository;
     private final CategoriaService categoriaService;
     private final ProveedorService proveedorService;
+    private final UnidadMedidaService unidadMedidaService;
 
     @CacheEvict(cacheNames = "productos", allEntries = true)
     @Transactional
-    public void save(ProductoRequest request) {
+    public ProductoDTO save(ProductoRequest request) {
         Producto producto = new Producto();
         producto.setSku(request.getSku());
         producto.setNombre(request.getNombre());
         producto.setDescripcion(request.getDescripcion());
-        producto.setUnidadMedida(request.getUnidadMedida());
         producto.setActivo(request.getActivo());
         if (request.getIdCategoria() != null)
             categoriaService.findById(request.getIdCategoria()).ifPresent(producto::setIdCategoria);
         if (request.getIdProveedor() != null)
             proveedorService.findById(request.getIdProveedor()).ifPresent(producto::setIdProveedor);
-        productoRepository.save(producto);
+        if (request.getIdUnidadMedida() != null)
+            unidadMedidaService.findById(request.getIdUnidadMedida()).ifPresent(producto::setIdUnidadMedida);
+        return new ProductoDTO(productoRepository.save(producto));
     }
 
     @Cacheable(cacheNames = "productos")
@@ -59,15 +65,16 @@ public class ProductoService {
     @Transactional
     public Optional<ProductoDTO> update(UUID id, ProductoRequest dto) {
         return productoRepository.findById(id).map(producto -> {
-            if (dto.getSku() != null)          producto.setSku(dto.getSku());
-            if (dto.getNombre() != null)       producto.setNombre(dto.getNombre());
-            if (dto.getDescripcion() != null)  producto.setDescripcion(dto.getDescripcion());
-            if (dto.getUnidadMedida() != null) producto.setUnidadMedida(dto.getUnidadMedida());
-            if (dto.getActivo() != null)       producto.setActivo(dto.getActivo());
+            if (dto.getSku() != null)             producto.setSku(dto.getSku());
+            if (dto.getNombre() != null)          producto.setNombre(dto.getNombre());
+            if (dto.getDescripcion() != null)     producto.setDescripcion(dto.getDescripcion());
+            if (dto.getActivo() != null)          producto.setActivo(dto.getActivo());
             if (dto.getIdCategoria() != null)
                 categoriaService.findById(dto.getIdCategoria()).ifPresent(producto::setIdCategoria);
             if (dto.getIdProveedor() != null)
                 proveedorService.findById(dto.getIdProveedor()).ifPresent(producto::setIdProveedor);
+            if (dto.getIdUnidadMedida() != null)
+                unidadMedidaService.findById(dto.getIdUnidadMedida()).ifPresent(producto::setIdUnidadMedida);
             return new ProductoDTO(productoRepository.save(producto));
         });
     }
@@ -82,6 +89,8 @@ public class ProductoService {
     @Transactional
     public boolean delete(UUID id) {
         if (!productoRepository.existsById(id)) return false;
+        precioBaseRepository.deleteByIdProductoId(id);
+        productoAlmacenRepository.deleteById_IdProducto(id);
         productoRepository.deleteById(id);
         return true;
     }

@@ -34,8 +34,10 @@ public class Producto extends AuditableEntity {
     @Column(name = "descripcion", length = Integer.MAX_VALUE)
     private String descripcion;
 
-    @Column(name = "unidad_medida", length = 50)
-    private String unidadMedida;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_unidad_medida")
+    private UnidadMedida idUnidadMedida;
 
     @ColumnDefault("true")
     @Column(name = "activo", nullable = false)

@@ -27,6 +27,15 @@ public class MailContentBuilder {
         return templateEngine.process("mailTemplate", context);
     }
 
+    public String sendResetCode(String code) {
+        final Context ctx = new Context();
+        ctx.setVariable("code", code);
+        ctx.setVariable("imageResourceName", "banner");
+        ctx.setVariable("imageX", "imageX");
+        ctx.setVariable("imageLinkedin", "imageLinkedin");
+        return this.templateEngine.process("mailResetCode", ctx);
+    }
+
     public String sendPassword(String password) {
         final Context ctx = new Context();
         ctx.setVariable("password", password);
@@ -60,6 +69,31 @@ public class MailContentBuilder {
         ctx.setVariable("invoiceItems", items);
 
         return this.templateEngine.process("mailFactura", ctx);
+    }
+
+    public String sendSolicitudProveedor(String empresaNombre, String logoUrl, String nit) {
+        final Context ctx = new Context();
+        ctx.setVariable("empresaNombre", empresaNombre);
+        ctx.setVariable("logoUrl",       logoUrl);
+        ctx.setVariable("nit",           nit);
+        ctx.setVariable("inicial",       empresaNombre != null && !empresaNombre.isEmpty()
+                                             ? String.valueOf(empresaNombre.charAt(0)).toUpperCase() : "E");
+        ctx.setVariable("imageResourceName", "banner");
+        ctx.setVariable("imageX",            "imageX");
+        ctx.setVariable("imageLinkedin",     "imageLinkedin");
+        return this.templateEngine.process("mailSolicitudProveedor", ctx);
+    }
+
+    public String sendStockAlerta(String productoNombre, int stockActual, int stockMinimo, String almacenNombre) {
+        final Context ctx = new Context();
+        ctx.setVariable("productoNombre", productoNombre);
+        ctx.setVariable("stockActual",    stockActual);
+        ctx.setVariable("stockMinimo",    stockMinimo);
+        ctx.setVariable("almacenNombre",  almacenNombre);
+        ctx.setVariable("imageResourceName", "banner");
+        ctx.setVariable("imageX",            "imageX");
+        ctx.setVariable("imageLinkedin",     "imageLinkedin");
+        return this.templateEngine.process("mailStockAlerta", ctx);
     }
 
 }

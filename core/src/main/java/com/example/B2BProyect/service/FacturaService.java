@@ -1,10 +1,12 @@
 package com.example.B2BProyect.service;
 
 import com.example.B2BProyect.repository.FacturaRepository;
+import com.example.B2BProyect.repository.UsuarioRepository;
 import com.example.B2BProyect.repository.dto.request.FacturaRequest;
 import com.example.B2BProyect.repository.dto.response.FacturaDTO;
 import com.example.B2BProyect.repository.entity.Factura;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,11 +18,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class FacturaService {
     private final FacturaRepository facturaRepository;
     private final OrdenCompraService ordenCompraService;
+    private final EmailService emailService;
+    private final UsuarioRepository usuarioRepository;
 
     @Transactional
     public void save(FacturaRequest request) {
@@ -30,7 +35,17 @@ public class FacturaService {
         factura.setIdEstado(request.getIdEstado());
         if (request.getIdOrden() != null)
             ordenCompraService.findById(request.getIdOrden()).ifPresent(factura::setIdOrden);
-        facturaRepository.save(factura);
+        Factura saved = facturaRepository.save(factura);
+        try {
+            if (saved.getIdOrden() != null && saved.getIdOrden().getIdEmpresaCompradora() != null) {
+                UUID empresaId = saved.getIdOrden().getIdEmpresaCompradora().getId();
+                usuarioRepository.findByIdEmpresaId(empresaId).stream()
+                        .findFirst()
+                        .ifPresent(u -> emailService.sendFactura(u.getEmail(), saved));
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo enviar correo de factura: {}", e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)
