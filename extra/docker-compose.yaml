@@ -26,13 +26,11 @@ services:
       # JPA
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "false"
-      # Cache
-      SPRING_CACHE_TYPE: caffeine
-      SPRING_CACHE_CACHE_NAMES: usuarios,productos
-      SPRING_CACHE_CAFFEINE_SPEC: initialCapacity=100,maximumSize=500,expireAfterWrite=10m,recordStats
       # JWT
       SECURITY_JWT_TOKEN_SECRET_KEY: pQKOkAZ8j59Kb6QJC+LHL7viCOUvfhBZ7PjGeIznKbY=
       SECURITY_JWT_TOKEN_EXPIRE_LENGTH: 200
+      # TOTP
+      TOTP_ENCRYPTION_PASSWORD: B2BSecretTotp2024!
       # Stereum
       STEREUM_API_URL: https://api.stereum.tech
       STEREUM_API_KEY: e7edbae2-7026-4793-b185-f182fcc9e84b
