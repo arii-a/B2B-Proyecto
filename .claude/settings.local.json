@@ -16,7 +16,8 @@
       "Bash(xargs -I{} sh -c 'jar tf \"$1\" 2>/dev/null | grep -li health && echo \"$1\"' _ {})",
       "Bash(xargs head -1)",
       "Bash(ssh *)",
-      "Bash(scp *)"
+      "Bash(scp *)",
+      "Bash(grep -v \"import\\\\|//\")"
     ]
   }
 }

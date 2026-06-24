@@ -12,11 +12,18 @@ services:
     container_name: b2b_database
     ports:
       - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U owner -d b2b_proyecto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   spring-app:
     build:
       context: .
       dockerfile: Dockerfile.spring
+    restart: unless-stopped
     environment:
       # Datasource
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/b2b_proyecto
@@ -55,7 +62,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   pg_data:
