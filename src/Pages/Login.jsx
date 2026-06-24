@@ -13,26 +13,42 @@ export default function Login() {
   const [loading, setLoading]   = useState(false)
 
   const [showReset, setShowReset]       = useState(false)
+  const [resetStep, setResetStep]       = useState('email') // 'email' | 'code'
   const [resetEmail, setResetEmail]     = useState('')
+  const [resetCode, setResetCode]       = useState('')
+  const [resetNewPwd, setResetNewPwd]   = useState('')
   const [resetMsg, setResetMsg]         = useState('')
   const [resetErr, setResetErr]         = useState('')
   const [resetLoading, setResetLoading] = useState(false)
 
-  const handleReset = async (e) => {
+  const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
+  const handleResetRequest = async (e) => {
     e.preventDefault()
-    setResetMsg('')
     setResetErr('')
     setResetLoading(true)
     try {
-      const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-      const res = await fetch(`${BASE}/api/v1/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: resetEmail.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error al enviar')
-      setResetMsg(data.message)
+      const res = await fetch(`${BASE}/api/v1/auth/password-reset/request?email=${encodeURIComponent(resetEmail.trim())}`, { method: 'POST' })
+      const text = await res.text()
+      if (!res.ok) throw new Error(text || 'Error al enviar')
+      setResetStep('code')
+    } catch (err) {
+      setResetErr(err.message)
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
+  const handleResetConfirm = async (e) => {
+    e.preventDefault()
+    setResetErr('')
+    setResetLoading(true)
+    try {
+      const params = new URLSearchParams({ email: resetEmail.trim(), code: resetCode.trim(), newPassword: resetNewPwd })
+      const res = await fetch(`${BASE}/api/v1/auth/password-reset/confirm?${params}`, { method: 'POST' })
+      const text = await res.text()
+      if (!res.ok) throw new Error(text || 'Código inválido o expirado')
+      setResetMsg(text)
     } catch (err) {
       setResetErr(err.message)
     } finally {
@@ -136,7 +152,7 @@ export default function Login() {
               </button>
             </form>
 
-            <button style={s.forgotBtn} onClick={() => { setShowReset(true); setResetMsg(''); setResetErr('') }}>
+            <button style={s.forgotBtn} onClick={() => { setShowReset(true); setResetStep('email'); setResetMsg(''); setResetErr('') }}>
               ¿Olvidaste tu contraseña?
             </button>
 
@@ -150,38 +166,52 @@ export default function Login() {
               Registrar empresa
             </button>
           </>) : (<>
-            <button style={s.backBtn} onClick={() => setShowReset(false)}>← Volver</button>
-            <h1 style={s.cardTitle}>Recuperar contraseña</h1>
-            <p style={s.cardSub}>Te enviaremos una contraseña temporal a tu correo</p>
+            <button style={s.backBtn} onClick={() => { setShowReset(false); setResetStep('email'); setResetEmail(''); setResetCode(''); setResetNewPwd(''); setResetMsg(''); setResetErr('') }}>← Volver</button>
 
-            <form onSubmit={handleReset} style={s.form}>
-              <div style={s.field}>
-                <label style={s.label}>Correo electrónico</label>
-                <input
-                  style={s.input}
-                  type="email"
-                  placeholder="usuario@empresa.com"
-                  value={resetEmail}
-                  onChange={e => setResetEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              {resetErr && (
-                <div style={s.errorBox}>
-                  <span style={s.errorIcon}>!</span>
-                  {resetErr}
+            {resetStep === 'email' ? (<>
+              <h1 style={s.cardTitle}>Recuperar contraseña</h1>
+              <p style={s.cardSub}>Te enviaremos un código de 6 dígitos a tu correo</p>
+              <form onSubmit={handleResetRequest} style={s.form}>
+                <div style={s.field}>
+                  <label style={s.label}>Correo electrónico</label>
+                  <input style={s.input} type="email" placeholder="usuario@empresa.com"
+                    value={resetEmail} onChange={e => setResetEmail(e.target.value)} required />
                 </div>
-              )}
-
-              {resetMsg && (
-                <div style={s.successBox}>{resetMsg}</div>
-              )}
-
-              <button style={s.btn} type="submit" disabled={resetLoading || !!resetMsg}>
-                {resetLoading ? 'Enviando...' : 'Enviar contraseña temporal'}
+                {resetErr && <div style={s.errorBox}><span style={s.errorIcon}>!</span>{resetErr}</div>}
+                <button style={s.btn} type="submit" disabled={resetLoading}>
+                  {resetLoading ? 'Enviando...' : 'Enviar código'}
+                </button>
+              </form>
+            </>) : resetMsg ? (<>
+              <h1 style={s.cardTitle}>¡Listo!</h1>
+              <div style={s.successBox}>{resetMsg}</div>
+              <button style={{...s.btn, marginTop: '1.5rem'}} onClick={() => { setShowReset(false); setResetStep('email'); setResetMsg('') }}>
+                Iniciar sesión →
               </button>
-            </form>
+            </>) : (<>
+              <h1 style={s.cardTitle}>Ingresa el código</h1>
+              <p style={s.cardSub}>Revisa tu correo <strong>{resetEmail}</strong> y escribe el código de 6 dígitos</p>
+              <form onSubmit={handleResetConfirm} style={s.form}>
+                <div style={s.field}>
+                  <label style={s.label}>Código de verificación</label>
+                  <input style={{...s.input, letterSpacing: '4px', fontSize: '20px', textAlign: 'center'}}
+                    type="text" placeholder="000000" maxLength={6}
+                    value={resetCode} onChange={e => setResetCode(e.target.value.replace(/\D/g, ''))} required />
+                </div>
+                <div style={s.field}>
+                  <label style={s.label}>Nueva contraseña</label>
+                  <input style={s.input} type="password" placeholder="••••••••"
+                    value={resetNewPwd} onChange={e => setResetNewPwd(e.target.value)} required minLength={6} />
+                </div>
+                {resetErr && <div style={s.errorBox}><span style={s.errorIcon}>!</span>{resetErr}</div>}
+                <button style={s.btn} type="submit" disabled={resetLoading}>
+                  {resetLoading ? 'Verificando...' : 'Cambiar contraseña'}
+                </button>
+                <button type="button" style={s.forgotBtn} onClick={() => { setResetStep('email'); setResetErr('') }}>
+                  ¿No recibiste el código? Reenviar
+                </button>
+              </form>
+            </>)}
           </>)}
         </div>
       </div>
