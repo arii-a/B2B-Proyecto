@@ -12,11 +12,18 @@ services:
     container_name: b2b_database
     ports:
       - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U owner -d b2b_proyecto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   spring-app:
     build:
       context: .
       dockerfile: Dockerfile.spring
+    restart: unless-stopped
     environment:
       # Datasource
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/b2b_proyecto
@@ -26,13 +33,11 @@ services:
       # JPA
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "false"
-      # Cache
-      SPRING_CACHE_TYPE: caffeine
-      SPRING_CACHE_CACHE_NAMES: usuarios,productos
-      SPRING_CACHE_CAFFEINE_SPEC: initialCapacity=100,maximumSize=500,expireAfterWrite=10m,recordStats
       # JWT
       SECURITY_JWT_TOKEN_SECRET_KEY: pQKOkAZ8j59Kb6QJC+LHL7viCOUvfhBZ7PjGeIznKbY=
       SECURITY_JWT_TOKEN_EXPIRE_LENGTH: 200
+      # TOTP
+      TOTP_ENCRYPTION_PASSWORD: B2BSecretTotp2024!
       # Stereum
       STEREUM_API_URL: https://api.stereum.tech
       STEREUM_API_KEY: e7edbae2-7026-4793-b185-f182fcc9e84b
@@ -47,17 +52,18 @@ services:
       # Mail (set real values or remove if not used in prod)
       MAIL_HOST: smtp.gmail.com
       MAIL_SMTP_PORT: 587
-      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_AUTH: "true"
       MAIL_SMTP_STARTTLS_ENABLE: "true"
       MAIL_SMTP_PROTOCOL: smtp
-      MAIL_SMTP_USERNAME: ${MAIL_SMTP_USERNAME:-}
-      MAIL_SMTP_PASSWORD: ${MAIL_SMTP_PASSWORD:-}
-      MAIL_SMTP_FROM_MAIL: ${MAIL_SMTP_USERNAME:-}
-      MAIL_SMTP_MAIL_NOREPLY: noreply@gmail.com
+      MAIL_SMTP_USERNAME: rodriguezsanizofernando@gmail.com
+      MAIL_SMTP_PASSWORD: mcjaujmuwvrajtlh
+      MAIL_SMTP_FROM_MAIL: rodriguezsanizofernando@gmail.com
+      MAIL_SMTP_MAIL_NOREPLY: rodriguezsanizofernando@gmail.com
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   pg_data:
