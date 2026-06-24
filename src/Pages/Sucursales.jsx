@@ -19,6 +19,11 @@ export default function Sucursales() {
 
   const empresaId = session?.id_empresa
 
+  const showMsg = (ok, text) => {
+    setMsg({ ok, text })
+    setTimeout(() => setMsg(null), 8000)
+  }
+
   const cargar = async () => {
     setLoading(true)
     setMsg(null)
@@ -26,7 +31,7 @@ export default function Sucursales() {
       const res = await api.get('/api/v1/sucursales-empresa')
       setSucursales(norm(res).filter(s => s.idEmpresa?.id === empresaId))
     } catch (e) {
-      setMsg({ ok: false, text: e.message })
+      showMsg(false, e.message)
     }
     setLoading(false)
   }
@@ -50,21 +55,21 @@ export default function Sucursales() {
   const cancelar = () => { setShowForm(false); setEditando(null); setForm(BLANK) }
 
   const guardar = async () => {
-    if (!form.nombre || !form.direccion) { setMsg({ ok: false, text: 'Nombre y dirección son requeridos.' }); return }
+    if (!form.nombre || !form.direccion) { showMsg(false, 'Nombre y dirección son requeridos.'); return }
     setSaving(true); setMsg(null)
     try {
       const body = { nombre: form.nombre, direccion: form.direccion, coordenadas: form.coordenadas || null, activo: form.activo, idEmpresa: empresaId }
       if (editando) {
         await api.put(`/api/v1/sucursales-empresa/${editando.id}`, body)
-        setMsg({ ok: true, text: 'Sucursal actualizada.' })
+        showMsg(true, 'Sucursal actualizada.')
       } else {
         await api.post('/api/v1/sucursales-empresa', body)
-        setMsg({ ok: true, text: 'Sucursal creada.' })
+        showMsg(true, 'Sucursal creada.')
       }
       cancelar()
       cargar()
     } catch (e) {
-      setMsg({ ok: false, text: e.message || 'Error al guardar.' })
+      showMsg(false, e.message || 'Error al guardar.')
     }
     setSaving(false)
   }
@@ -77,7 +82,7 @@ export default function Sucursales() {
       })
       cargar()
     } catch (e) {
-      setMsg({ ok: false, text: e.message })
+      showMsg(false, e.message)
     }
   }
 
@@ -85,10 +90,10 @@ export default function Sucursales() {
     if (!window.confirm(`¿Eliminar la sucursal "${s.nombre}"?`)) return
     try {
       await api.delete(`/api/v1/sucursales-empresa/${s.id}`)
-      setMsg({ ok: true, text: 'Sucursal eliminada.' })
+      showMsg(true, 'Sucursal eliminada.')
       cargar()
     } catch (e) {
-      setMsg({ ok: false, text: e.message })
+      showMsg(false, e.message)
     }
   }
 

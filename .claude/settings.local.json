@@ -29,7 +29,8 @@
       "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\rodri\\\\AppData\\\\Local\\\\Temp\\\\gen_test_1k.py\")",
       "Bash(git commit *)",
       "Bash(git pull *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(npx vite *)"
     ],
     "additionalDirectories": [
       "C:\\Universidad\\Semestre VII\\Certificacion III - Springboot\\B2B-Proyecto\\B2B-api\\src\\main\\java\\com\\example\\B2BProyect\\controller",

@@ -24,6 +24,11 @@ export default function Contactos() {
 
   const empresaId = session?.id_empresa
 
+  const showMsg = (ok, text) => {
+    setMsg({ ok, text })
+    setTimeout(() => setMsg(null), 8000)
+  }
+
   const cargar = async () => {
     setLoading(true)
     setMsg(null)
@@ -35,7 +40,7 @@ export default function Contactos() {
       setContactos(norm(contRes).filter(c => c.idEmpresa?.id === empresaId))
       setCargos(norm(cargoRes))
     } catch (e) {
-      setMsg({ ok: false, text: e.message })
+      showMsg(false, e.message)
     }
     setLoading(false)
   }
@@ -59,22 +64,22 @@ export default function Contactos() {
   const cancelar = () => { setShowForm(false); setEditando(null); setForm(BLANK) }
 
   const guardar = async () => {
-    if (!form.nombres || !form.apellidos) { setMsg({ ok: false, text: 'Nombres y apellidos son requeridos.' }); return }
-    if (!form.idCargoEmpresa) { setMsg({ ok: false, text: 'Selecciona un cargo.' }); return }
+    if (!form.nombres || !form.apellidos) { showMsg(false, 'Nombres y apellidos son requeridos.'); return }
+    if (!form.idCargoEmpresa) { showMsg(false, 'Selecciona un cargo.'); return }
     setSaving(true); setMsg(null)
     try {
       const body = { nombres: form.nombres, apellidos: form.apellidos, idCargoEmpresa: form.idCargoEmpresa, idEmpresa: empresaId }
       if (editando) {
         await api.put(`/api/v1/contactos-empresa/${editando.id}`, body)
-        setMsg({ ok: true, text: 'Contacto actualizado.' })
+        showMsg(true, 'Contacto actualizado.')
       } else {
         await api.post('/api/v1/contactos-empresa', body)
-        setMsg({ ok: true, text: 'Contacto agregado.' })
+        showMsg(true, 'Contacto agregado.')
       }
       cancelar()
       cargar()
     } catch (e) {
-      setMsg({ ok: false, text: e.message || 'Error al guardar.' })
+      showMsg(false, e.message || 'Error al guardar.')
     }
     setSaving(false)
   }
@@ -83,10 +88,10 @@ export default function Contactos() {
     if (!window.confirm(`¿Eliminar el contacto "${c.nombres} ${c.apellidos}"?`)) return
     try {
       await api.delete(`/api/v1/contactos-empresa/${c.id}`)
-      setMsg({ ok: true, text: 'Contacto eliminado.' })
+      showMsg(true, 'Contacto eliminado.')
       cargar()
     } catch (e) {
-      setMsg({ ok: false, text: e.message })
+      showMsg(false, e.message)
     }
   }
 
