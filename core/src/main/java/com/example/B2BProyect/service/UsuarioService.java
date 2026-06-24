@@ -96,10 +96,15 @@ public class UsuarioService {
                                        SucursalEmpresaRepository sucursalRepository,
                                        RolUsuarioRepository rolRepository) {
         return usuarioRepository.findById(id).map(usuario -> {
-            if (dto.getNombre() != null)   usuario.setNombre(dto.getNombre());
-            if (dto.getEmail() != null)    usuario.setEmail(dto.getEmail());
-            if (dto.getActivo() != null)   usuario.setActivo(dto.getActivo());
+            if (dto.getNombre() != null && !dto.getNombre().isBlank())
+                usuario.setNombre(dto.getNombre());
+            if (dto.getEmail() != null && !dto.getEmail().isBlank())
+                usuario.setEmail(dto.getEmail());
+            if (dto.getActivo() != null)
+                usuario.setActivo(dto.getActivo());
             usuario.setAvatarUrl(dto.getAvatarUrl());
+            if (dto.getPassword() != null && !dto.getPassword().isBlank())
+                usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
             if (dto.getIdEmpresa() != null)
                 empresaRepository.findById(dto.getIdEmpresa()).ifPresent(usuario::setIdEmpresa);
             if (dto.getIdSucursal() != null)

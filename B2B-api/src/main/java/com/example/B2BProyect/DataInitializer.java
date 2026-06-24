@@ -95,6 +95,9 @@ public class DataInitializer implements CommandLineRunner {
         jdbcTemplate.execute(
             "ALTER TABLE contactos_empresa ADD COLUMN IF NOT EXISTS telefono VARCHAR(30)"
         );
+        jdbcTemplate.execute(
+            "ALTER TABLE detalle_orden ALTER COLUMN id_almacen DROP NOT NULL"
+        );
     }
 
     private void initCatalogos() {
