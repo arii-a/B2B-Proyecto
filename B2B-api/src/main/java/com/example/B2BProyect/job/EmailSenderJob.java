@@ -21,7 +21,7 @@ public class EmailSenderJob extends QuartzJobBean implements InterruptableJob {
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         JobKey key = jobExecutionContext.getJobDetail().getKey();
         JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        log.info("Fer estuvo aqui");
+//        log.info("Fer estuvo aqui");
     }
 
 
