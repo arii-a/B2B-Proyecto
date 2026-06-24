@@ -44,8 +44,8 @@ public class DetalleOrden {
     private Producto idProducto;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_almacen", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "id_almacen", nullable = true)
     private Almacen almacen;
 
     @OneToOne(mappedBy = "idDetalleOrden")

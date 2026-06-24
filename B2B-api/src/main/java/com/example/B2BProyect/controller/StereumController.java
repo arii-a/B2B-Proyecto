@@ -35,6 +35,9 @@ public class StereumController {
     @Value("${stereum.api.key}")
     private String secretKey;
 
+    @Value("${stereum.account.id}")
+    private String accountId;
+
     private final SistemaB2B sistemaB2B;
     private final OrdenCompraService ordenCompraService;
 
@@ -48,10 +51,11 @@ public class StereumController {
             customer.put("document_number", "76887344");
 
             JSONObject req = new JSONObject();
+            req.put("account_id", accountId);
             req.put("country", "BO");
-            req.put("amount", "100");
-            req.put("currency", "USDT");
-            req.put("network", "POLYGON");
+            req.put("amount", String.valueOf(ordenCompra.getTotal().intValue()));
+            req.put("currency", "BOB");
+            req.put("network", "CSL");
             req.put("charge_reason", "COMPRA A: " + ordenCompra.getIdProveedor().getIdEmpresa().getNombre());
             req.put("idempotency_key", ordenCompra.getId().toString());
             req.put("reservation_validity_time", "10");
