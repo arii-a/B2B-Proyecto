@@ -17,7 +17,9 @@ const proveedorLinks = [
   { to: '/mis-ordenes',     icon: 'orders',       label: 'Mis órdenes'         },
   { to: '/mis-productos',   icon: 'misproductos', label: 'Mis productos'       },
   { to: '/almacenes',       icon: 'almacenes',    label: 'Almacenes'           },
+  { to: '/sucursales',      icon: 'sucursales',   label: 'Sucursales'          },
   { to: '/contratos',       icon: 'contratos',    label: 'Contratos'           },
+  { to: '/mi-empresa',      icon: 'miempresa',    label: 'Mi empresa'          },
   { to: '/mi-cuenta',       icon: 'cuenta',       label: 'Mi cuenta'           },
 ]
 
@@ -28,6 +30,8 @@ const empresaLinks = [
   { to: '/facturas',    icon: 'facturas',   label: 'Facturas'           },
   { to: '/contratos',   icon: 'contratos',  label: 'Contratos'          },
   { to: '/proveedores', icon: 'truck',      label: 'Proveedores'        },
+  { to: '/sucursales',  icon: 'sucursales', label: 'Sucursales'         },
+  { to: '/mi-empresa',  icon: 'miempresa',  label: 'Mi empresa'         },
   { to: '/mi-cuenta',   icon: 'cuenta',     label: 'Mi cuenta'          },
 ]
 
@@ -137,6 +141,8 @@ function NavIcon({ type }) {
     misproductos:  <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><path d="M7 21h10"/><path d="M12 17v4"/><circle cx="7" cy="6" r="1"/></>,
     almacenes:     <><path d="M3 9l9-6 9 6v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="22" x2="15" y2="12"/><line x1="9" y1="12" x2="15" y2="12"/></>,
     cuenta:     <><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></>,
+    sucursales: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>,
+    miempresa:  <><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
   }
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>

@@ -21,6 +21,7 @@ import Catalogo from './Pages/Catalogo'
 import MisProductos from './Pages/MisProductos'
 import Almacenes from './Pages/Almacenes'
 import MiCuenta from './Pages/MiCuenta'
+import MiEmpresa from './Pages/MiEmpresa'
 import Admin from './Pages/Admin'
 import AdminProductos from './Pages/admin/AdminProductos'
 import AdminUsuarios from './Pages/admin/AdminUsuarios'
@@ -28,6 +29,8 @@ import AdminLogs from './Pages/admin/AdminLogs'
 import AdminEmpresas from './Pages/admin/AdminEmpresas'
 import AdminProveedores from './Pages/admin/AdminProveedores'
 import AdminOrdenes from './Pages/admin/AdminOrdenes'
+import Sucursales from './Pages/Sucursales'
+import Contactos from './Pages/Contactos'
 
 function ProtectedRoutes() {
   const { session } = useAuth()
@@ -56,7 +59,10 @@ function ProtectedRoutes() {
         <Route path="/catalogo"       element={<Catalogo />} />
         <Route path="/mis-productos"  element={<MisProductos />} />
         <Route path="/almacenes"      element={<Almacenes />} />
-        <Route path="/mi-cuenta"   element={<MiCuenta />} />
+        <Route path="/sucursales"     element={<Sucursales />} />
+        <Route path="/contactos"      element={<Contactos />} />
+        <Route path="/mi-empresa"     element={<MiEmpresa />} />
+        <Route path="/mi-cuenta"      element={<MiCuenta />} />
 
         <Route path="/admin/empresas"    element={<AdminEmpresas />} />
         <Route path="/admin/ordenes"     element={<AdminOrdenes />} />

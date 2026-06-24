@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api/client'
 import PageHeader from '../components/PageHeader'
 import { useAuth } from '../AuthContext'
@@ -8,10 +8,30 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-BO', { day: '2-dig
 const fmtMoney = (n) => `Bs. ${Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2 })}`
 const fmtNum = (n) => n == null ? '∞' : Number(n).toLocaleString('es-BO')
 
-const hoyLocal = () => {
-  const now = new Date()
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-  return now.toISOString().slice(0, 16)
+const hoyISO = () => new Date().toISOString().split('T')[0]  // yyyy-MM-dd
+
+function DateInput({ value, onChange, style, placeholder = 'dd/mm/aaaa' }) {
+  const fmt = (iso) => {
+    if (!iso) return ''
+    const [y, m, d] = iso.split('-')
+    return `${d}/${m}/${y}`
+  }
+  const [text, setText] = useState(() => fmt(value))
+  useEffect(() => { setText(fmt(value)) }, [value])
+
+  const handle = (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 8)
+    let display = digits
+    if (digits.length > 4) display = `${digits.slice(0,2)}/${digits.slice(2,4)}/${digits.slice(4)}`
+    else if (digits.length > 2) display = `${digits.slice(0,2)}/${digits.slice(2)}`
+    setText(display)
+    if (digits.length === 8)
+      onChange(`${digits.slice(4,8)}-${digits.slice(2,4)}-${digits.slice(0,2)}`)
+    else
+      onChange('')
+  }
+
+  return <input type="text" value={text} onChange={handle} placeholder={placeholder} maxLength={10} style={style} />
 }
 
 export default function Contratos() {
@@ -28,11 +48,10 @@ export default function Contratos() {
   const [msg, setMsg]         = useState(null)
   const [mostrarForm, setMostrarForm] = useState(false)
   const [vigenteDesdeManual, setVigenteDesdeManual] = useState(false)
-  const vigenteDesdeRef = useRef(null)
 
   const [form, setForm] = useState({
     idEmpresaCompradora: '',
-    vigenteDesde: hoyLocal(),
+    vigenteDesde: hoyISO(),
     vigenteHasta: '',
   })
 
@@ -173,8 +192,8 @@ export default function Contratos() {
     setSaving(true)
     try {
       const contrato = await api.post('/api/v1/contratos-tarifa', {
-        vigenteDesde: new Date(form.vigenteDesde).toISOString(),
-        vigenteHasta: form.vigenteHasta ? new Date(form.vigenteHasta).toISOString() : null,
+        vigenteDesde: new Date(form.vigenteDesde + 'T00:00:00').toISOString(),
+        vigenteHasta: form.vigenteHasta ? new Date(form.vigenteHasta + 'T23:59:59').toISOString() : null,
         activo: true,
         idEmpresa:   form.idEmpresaCompradora,
         idProveedor: proveedorActual.id,
@@ -200,7 +219,7 @@ export default function Contratos() {
 
       setMsg({ ok: true, text: 'Contrato creado correctamente.' })
       setMostrarForm(false); setVigenteDesdeManual(false)
-      setForm({ idEmpresaCompradora: '', vigenteDesde: hoyLocal(), vigenteHasta: '' })
+      setForm({ idEmpresaCompradora: '', vigenteDesde: hoyISO(), vigenteHasta: '' })
       setLineas([])
       setTramos([{ tipo: 'volumen', cantidadMinima: '', cantidadMaxima: '', tipoDescuento: 'porcentaje', valor: '' }])
       setBusquedaProducto('')
@@ -286,12 +305,11 @@ export default function Contratos() {
               <div>
                 <label style={s.label}>Vigente desde *</label>
                 {vigenteDesdeManual ? (
-                  <input ref={vigenteDesdeRef} style={s.input} type="datetime-local"
-                    value={form.vigenteDesde}
-                    onChange={e => setForm(f => ({ ...f, vigenteDesde: e.target.value }))} />
+                  <DateInput style={s.input} value={form.vigenteDesde}
+                    onChange={v => setForm(f => ({ ...f, vigenteDesde: v }))} />
                 ) : (
                   <button type="button" style={s.dateChip}
-                    onClick={() => { setVigenteDesdeManual(true); setTimeout(() => vigenteDesdeRef.current?.showPicker?.(), 50) }}>
+                    onClick={() => setVigenteDesdeManual(true)}>
                     <span style={s.dateChipLabel}>Hoy</span>
                     <span style={s.dateChipDate}>{fmtDate(new Date())}</span>
                     <span style={s.dateChipEdit}>cambiar</span>
@@ -300,8 +318,8 @@ export default function Contratos() {
               </div>
               <div>
                 <label style={s.label}>Vigente hasta</label>
-                <input style={s.input} type="datetime-local" value={form.vigenteHasta}
-                  onChange={e => setForm(f => ({ ...f, vigenteHasta: e.target.value }))} />
+                <DateInput style={s.input} value={form.vigenteHasta}
+                  onChange={v => setForm(f => ({ ...f, vigenteHasta: v }))} />
                 <p style={s.hint}>Vacío = sin fecha de fin</p>
               </div>
             </div>
@@ -665,7 +683,7 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
                       : null
                     const descLabel = mf > 0 ? `−Bs. ${mf.toLocaleString('es-BO', { minimumFractionDigits: 2 })}` : `−${pct}%`
                     return (
-                      <tr key={d.id ?? i} style={i % 2 === 1 ? { background: '#F8F9FF' } : {}}>
+                      <tr key={d.id ?? i} style={{ background: i % 2 === 1 ? 'var(--c-bg-subtle)' : 'var(--c-bg)' }}>
                         <td style={s.td}>
                           {prod
                             ? <><span style={s.skuBadge}>{d.idProducto?.sku ?? ''}</span>{prod}</>
@@ -821,7 +839,7 @@ const s = {
   twoColForm:{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginBottom: '1rem' },
   twoCol:    { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
   label:     { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: .4 },
-  input:     { width: '100%', padding: '9px 12px', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box' },
+  input:     { width: '100%', padding: '9px 12px', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box', background: 'var(--c-input-bg)' },
   hint:      { margin: '4px 0 0', fontSize: 11, color: 'var(--c-muted)' },
 
   dateChip:      { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '9px 12px', border: '1.5px solid var(--c-border)', borderRadius: 8, background: 'var(--c-bg-page)', cursor: 'pointer', boxSizing: 'border-box' },
@@ -829,7 +847,7 @@ const s = {
   dateChipDate:  { color: 'var(--c-text)', fontWeight: 600, fontSize: 13, flex: 1 },
   dateChipEdit:  { fontSize: 11, color: 'var(--c-muted)' },
 
-  seccionWrap:  { background: '#F8F9FF', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem', marginBottom: '1rem' },
+  seccionWrap:  { background: 'var(--c-bg-subtle)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem', marginBottom: '1rem' },
   seccionHead:  { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
   sectionLabel: { margin: 0, fontWeight: 700, fontSize: 13, color: 'var(--c-text)' },
   sectionHint:  { margin: '2px 0 0', fontSize: 11, color: 'var(--c-muted)', lineHeight: 1.5 },
@@ -837,7 +855,7 @@ const s = {
 
   tramoHeaderNew: { display: 'grid', gridTemplateColumns: '160px 90px 100px 1fr 32px', gap: 8, fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', padding: '0 0 6px', borderBottom: '1px solid var(--c-border)', marginBottom: 8 },
   tramoRowNew:    { display: 'grid', gridTemplateColumns: '160px 90px 100px 1fr 32px', gap: 8, marginBottom: 8, alignItems: 'center' },
-  inputSm:     { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box' },
+  inputSm:     { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box', background: 'var(--c-input-bg)' },
 
   previewBox:   { marginTop: 10, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '10px 12px' },
   previewTitle: { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 },
@@ -893,7 +911,7 @@ const s = {
   precioFinal:{ fontWeight: 700, color: '#16a34a', fontSize: 13 },
 
   simToggleBtn: { padding: '5px 12px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  simBox:       { marginTop: 12, background: '#F8F9FF', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem' },
+  simBox:       { marginTop: 12, background: 'var(--c-bg-subtle)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem' },
   simInputRow:  { display: 'flex', gap: 12, marginBottom: 12 },
   simResult:    { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden', marginTop: 4 },
   simResultTitle:{ margin: 0, padding: '10px 14px', fontWeight: 800, fontSize: 13, color: 'var(--c-text)', background: 'var(--c-primary-light)', borderBottom: '1px solid var(--c-border)' },

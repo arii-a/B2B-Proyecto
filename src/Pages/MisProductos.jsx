@@ -21,6 +21,7 @@ export default function MisProductos() {
   // ── Datos maestros ──
   const [proveedor,  setProveedor]  = useState(null)
   const [almacen,    setAlmacen]    = useState(null)
+  const [almacenes,  setAlmacenes]  = useState([])
   const [categorias, setCategorias] = useState([])
   const [unidades,   setUnidades]   = useState([])
 
@@ -74,8 +75,10 @@ export default function MisProductos() {
       const hoy  = new Date()
       const prods = norm(prodRes)
       const precios = norm(precRes).filter(p => p.idProveedor?.id === prov.id)
-      const alm   = norm(almRes).find(a => a.idProveedor?.id === prov.id)
-      setAlmacen(alm ?? null)
+      const almsArr = norm(almRes).filter(a => a.idProveedor?.id === prov.id)
+      const alm     = almsArr[0] ?? null
+      setAlmacen(alm)
+      setAlmacenes(almsArr)
 
       let inventario = []
       if (alm) {
@@ -347,6 +350,7 @@ export default function MisProductos() {
           proveedorId={proveedor.id}
           categorias={categorias}
           unidades={unidades}
+          almacenes={almacenes}
           onClose={() => setShowImport(false)}
           onDone={() => { setShowImport(false); cargar() }}
         />
