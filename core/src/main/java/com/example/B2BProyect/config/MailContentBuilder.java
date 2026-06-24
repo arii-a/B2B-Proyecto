@@ -27,6 +27,15 @@ public class MailContentBuilder {
         return templateEngine.process("mailTemplate", context);
     }
 
+    public String sendResetCode(String code) {
+        final Context ctx = new Context();
+        ctx.setVariable("code", code);
+        ctx.setVariable("imageResourceName", "banner");
+        ctx.setVariable("imageX", "imageX");
+        ctx.setVariable("imageLinkedin", "imageLinkedin");
+        return this.templateEngine.process("mailResetCode", ctx);
+    }
+
     public String sendPassword(String password) {
         final Context ctx = new Context();
         ctx.setVariable("password", password);
