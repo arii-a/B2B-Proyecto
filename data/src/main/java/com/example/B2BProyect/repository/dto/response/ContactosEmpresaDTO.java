@@ -14,6 +14,8 @@ public class ContactosEmpresaDTO {
     private UUID id;
     private String nombres;
     private String apellidos;
+    private String telefono;
+    private UUID idCargoEmpresa;
     private String nombreCargoEmpresa;
     private String nombreEmpresa;
     private EmpresaDTO idEmpresa;
@@ -22,7 +24,11 @@ public class ContactosEmpresaDTO {
         this.id = contacto.getId();
         this.nombres = contacto.getNombres();
         this.apellidos = contacto.getApellidos();
-        this.nombreCargoEmpresa = contacto.getIdCargoEmpresa().getNombre();
+        this.telefono = contacto.getTelefono();
+        if (contacto.getIdCargoEmpresa() != null) {
+            this.idCargoEmpresa = contacto.getIdCargoEmpresa().getId();
+            this.nombreCargoEmpresa = contacto.getIdCargoEmpresa().getNombre();
+        }
         this.idEmpresa = new EmpresaDTO(contacto.getIdEmpresa());
     }
 
@@ -40,7 +46,10 @@ public class ContactosEmpresaDTO {
         this.id = id;
         this.nombres = nombres;
         this.apellidos = apellidos;
-        this.nombreCargoEmpresa = idCargoEmpresa.getNombre();
+        if (idCargoEmpresa != null) {
+            this.idCargoEmpresa = idCargoEmpresa.getId();
+            this.nombreCargoEmpresa = idCargoEmpresa.getNombre();
+        }
         this.idEmpresa = new EmpresaDTO(idEmpresa);
     }
 }
