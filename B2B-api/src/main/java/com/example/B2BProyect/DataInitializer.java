@@ -18,6 +18,7 @@ import com.example.B2BProyect.service.EmailService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -40,9 +41,11 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JobService jobService;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void run(String... args) throws Exception {
+        initSchema();
         initCatalogos();
         init();
 
@@ -86,6 +89,12 @@ public class DataInitializer implements CommandLineRunner {
         factura.setIdOrden(orden);
 
 //        emailService.sendFactura("santiagovillanueva1@upb.edu", factura);
+    }
+
+    private void initSchema() {
+        jdbcTemplate.execute(
+            "ALTER TABLE contactos_empresa ADD COLUMN IF NOT EXISTS telefono VARCHAR(30)"
+        );
     }
 
     private void initCatalogos() {

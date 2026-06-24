@@ -28,9 +28,12 @@ public class ContactosEmpresa {
     @Column(name = "apellidos", nullable = false, length = 150)
     private String apellidos;
 
+    @Column(name = "telefono", length = 30)
+    private String telefono;
+
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_cargo_empresa", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "id_cargo_empresa", nullable = true)
     private CargoEmpresa idCargoEmpresa;
 
     @JsonIgnore

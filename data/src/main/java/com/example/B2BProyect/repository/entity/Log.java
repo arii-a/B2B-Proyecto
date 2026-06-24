@@ -4,10 +4,12 @@ import com.example.B2BProyect.repository.enums.LogLevel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 @Builder
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 

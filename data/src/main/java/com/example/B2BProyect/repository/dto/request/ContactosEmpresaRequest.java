@@ -12,6 +12,7 @@ import java.util.UUID;
 public class ContactosEmpresaRequest {
     private String nombres;
     private String apellidos;
+    private String telefono;
     private UUID idCargoEmpresa;
     private UUID idEmpresa;
 }

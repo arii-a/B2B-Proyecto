@@ -24,6 +24,7 @@ public class ContactosEmpresaService {
         ContactosEmpresa contacto = new ContactosEmpresa();
         contacto.setNombres(request.getNombres());
         contacto.setApellidos(request.getApellidos());
+        contacto.setTelefono(request.getTelefono());
         if (request.getIdCargoEmpresa() != null)
             cargoEmpresaService.findById(request.getIdCargoEmpresa()).ifPresent(contacto::setIdCargoEmpresa);
         if (request.getIdEmpresa() != null)
@@ -46,6 +47,7 @@ public class ContactosEmpresaService {
         return contactosEmpresaRepository.findById(id).map(contacto -> {
             if (dto.getNombres() != null)    contacto.setNombres(dto.getNombres());
             if (dto.getApellidos() != null)  contacto.setApellidos(dto.getApellidos());
+            if (dto.getTelefono() != null)   contacto.setTelefono(dto.getTelefono());
             if (dto.getIdCargoEmpresa() != null)
                 cargoEmpresaService.findById(dto.getIdCargoEmpresa()).ifPresent(contacto::setIdCargoEmpresa);
             if (dto.getIdEmpresa() != null)
