@@ -16,6 +16,39 @@
   --shadow-sm:  0 1px 3px rgba(6,23,93,0.08);
   --shadow-md:  0 4px 16px rgba(6,23,93,0.12);
   --radius:     10px;
+
+  /* Theme tokens */
+  --c-primary:        #06175D;
+  --c-primary-mid:    #1A3A8F;
+  --c-primary-light:  #EEF1FB;
+  --c-text:           #1A1D3B;
+  --c-muted:          #9599AE;
+  --c-bg:             #ffffff;
+  --c-bg-page:        #F0F2FA;
+  --c-bg-subtle:      #F7F8FC;
+  --c-bg-alt:         #FAFBFD;
+  --c-border:         #DDE0EE;
+  --c-border-light:   #F0F2FA;
+  --c-shadow-sm:      0 1px 3px rgba(6,23,93,0.08);
+  --c-shadow-md:      0 4px 16px rgba(6,23,93,0.12);
+  --c-input-bg:       #ffffff;
+}
+
+[data-theme="dark"] {
+  --c-primary:        #60a5fa;
+  --c-primary-mid:    #93c5fd;
+  --c-primary-light:  #1e3358;
+  --c-text:           #e2e8f0;
+  --c-muted:          #94a3b8;
+  --c-bg:             #1e293b;
+  --c-bg-page:        #0f172a;
+  --c-bg-subtle:      #162032;
+  --c-bg-alt:         #1a2535;
+  --c-border:         #334155;
+  --c-border-light:   #1e293b;
+  --c-shadow-sm:      0 1px 3px rgba(0,0,0,0.35);
+  --c-shadow-md:      0 4px 16px rgba(0,0,0,0.45);
+  --c-input-bg:       #1e293b;
 }
 
 html, body {
@@ -24,8 +57,8 @@ html, body {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--c-bg-page);
+  color: var(--c-text);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;

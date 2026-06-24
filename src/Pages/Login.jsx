@@ -206,18 +206,18 @@ const s = {
   featureDot:  { width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', flexShrink: 0 },
   featureText: { fontSize: '13px', color: 'rgba(255,255,255,0.65)' },
 
-  right:       { width: '440px', flexShrink: 0, background: '#F0F2FA',
+  right:       { width: '440px', flexShrink: 0, background: 'var(--c-bg-page)',
                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' },
-  card:        { background: '#fff', borderRadius: '16px', padding: '2.25rem',
-                 width: '100%', boxShadow: '0 4px 24px rgba(6,23,93,0.10)' },
-  cardTitle:   { fontSize: '22px', fontWeight: '800', color: '#06175D', marginBottom: '4px' },
-  cardSub:     { fontSize: '13px', color: '#9599AE', marginBottom: '1.75rem' },
+  card:        { background: 'var(--c-bg)', borderRadius: '16px', padding: '2.25rem',
+                 width: '100%', boxShadow: 'var(--c-shadow-md)' },
+  cardTitle:   { fontSize: '22px', fontWeight: '800', color: 'var(--c-primary)', marginBottom: '4px' },
+  cardSub:     { fontSize: '13px', color: 'var(--c-muted)', marginBottom: '1.75rem' },
 
   form:        { display: 'flex', flexDirection: 'column', gap: '1rem' },
   field:       { display: 'flex', flexDirection: 'column', gap: '5px' },
-  label:       { fontSize: '12px', fontWeight: '700', color: '#1A1D3B', textTransform: 'uppercase', letterSpacing: '.5px' },
-  input:       { padding: '10px 14px', border: '1.5px solid #DDE0EE', borderRadius: '8px',
-                 fontSize: '14px', color: '#1A1D3B', background: '#fff', outline: 'none',
+  label:       { fontSize: '12px', fontWeight: '700', color: 'var(--c-text)', textTransform: 'uppercase', letterSpacing: '.5px' },
+  input:       { padding: '10px 14px', border: '1.5px solid var(--c-border)', borderRadius: '8px',
+                 fontSize: '14px', color: 'var(--c-text)', background: 'var(--c-input-bg)', outline: 'none',
                  transition: 'border-color .15s' },
 
   errorBox:    { display: 'flex', alignItems: 'center', gap: '8px', background: '#FEF2F2',
@@ -227,24 +227,24 @@ const s = {
                  color: '#B91C1C', display: 'flex', alignItems: 'center', justifyContent: 'center',
                  fontWeight: '700', fontSize: '11px', flexShrink: 0 },
 
-  btn:         { padding: '12px', background: '#06175D', color: '#fff', border: 'none',
+  btn:         { padding: '12px', background: 'var(--c-primary)', color: '#fff', border: 'none',
                  borderRadius: '9px', fontSize: '14px', fontWeight: '700',
                  cursor: 'pointer', marginTop: '0.25rem', letterSpacing: '.3px' },
 
-  forgotBtn:   { background: 'none', border: 'none', color: '#9599AE', fontSize: '12px',
+  forgotBtn:   { background: 'none', border: 'none', color: 'var(--c-muted)', fontSize: '12px',
                  cursor: 'pointer', padding: '8px 0 0', textAlign: 'left' },
 
-  backBtn:     { background: 'none', border: 'none', color: '#06175D', fontSize: '13px',
+  backBtn:     { background: 'none', border: 'none', color: 'var(--c-primary)', fontSize: '13px',
                  fontWeight: '700', cursor: 'pointer', padding: '0 0 12px', textAlign: 'left' },
 
   successBox:  { background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px',
                  padding: '10px 14px', fontSize: '13px', color: '#166534' },
 
   divider:     { display: 'flex', alignItems: 'center', gap: '10px', margin: '1.5rem 0 1rem' },
-  dividerLine: { flex: 1, height: '1px', background: '#DDE0EE' },
-  dividerText: { fontSize: '12px', color: '#9599AE', whiteSpace: 'nowrap' },
+  dividerLine: { flex: 1, height: '1px', background: 'var(--c-border)' },
+  dividerText: { fontSize: '12px', color: 'var(--c-muted)', whiteSpace: 'nowrap' },
 
   btnOutline:  { width: '100%', padding: '11px', background: 'transparent',
-                 color: '#06175D', border: '1.5px solid #06175D',
+                 color: 'var(--c-primary)', border: '1.5px solid var(--c-primary)',
                  borderRadius: '9px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
 }

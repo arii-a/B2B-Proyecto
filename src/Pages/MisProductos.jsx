@@ -8,7 +8,7 @@ const norm = (d) => Array.isArray(d) ? d : (d?.content ?? [])
 const toInput = (iso) => iso ? new Date(iso).toISOString().slice(0, 16) : ''
 const toISO   = (str) => str ? new Date(str).toISOString() : null
 const fmtMoney = (n) => `Bs. ${Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2 })}`
-const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: '2-digit' }) : null
+const fmtDate  = (d) => { if (!d) return null; const dt = new Date(d); const dd = String(dt.getDate()).padStart(2,'0'); const mm = String(dt.getMonth()+1).padStart(2,'0'); const yy = String(dt.getFullYear()).slice(-2); return `${dd}/${mm}/${yy}` }
 const todayInput = () => {
   const now = new Date()
   const pad = (n) => String(n).padStart(2, '0')
@@ -296,18 +296,18 @@ export default function MisProductos() {
                         style={{ ...s.tr, ...(isSel ? s.trSelected : i % 2 === 1 ? s.trAlt : {}), cursor: 'pointer' }}
                         onClick={() => setSel(isSel ? null : p)}>
                         <td style={s.td}><span style={s.skuBadge}>{p.sku || '—'}</span></td>
-                        <td style={{ ...s.td, fontWeight: 600, color: '#1A1D3B' }}>{p.nombre}</td>
+                        <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)' }}>{p.nombre}</td>
                         <td style={s.td}><span style={s.catBadge}>{p.idCategoria?.nombre ?? '—'}</span></td>
                         <td style={s.td}>
                           {sinPrecio
                             ? <span style={s.warnBadge}>Sin precio</span>
-                            : <span style={{ fontWeight: 700, color: '#06175D' }}>{fmtMoney(p.precioActual.precioBase)}</span>
+                            : <span style={{ fontWeight: 700, color: 'var(--c-primary)' }}>{fmtMoney(p.precioActual.precioBase)}</span>
                           }
                         </td>
                         <td style={s.td}>
                           {!p.stockActual
                             ? <span style={s.warnBadge}>Sin stock</span>
-                            : <span style={{ fontWeight: 600, color: bajo ? '#dc2626' : '#1A1D3B' }}>
+                            : <span style={{ fontWeight: 600, color: bajo ? '#dc2626' : 'var(--c-text)' }}>
                                 {p.stockActual.stock}
                                 {bajo && <span style={{ fontSize: 10, marginLeft: 4, color: '#dc2626' }}>↓ bajo</span>}
                               </span>
@@ -379,7 +379,7 @@ function ProductoPanel({ producto: p, categorias, unidades, proveedor, almacen, 
       </div>
 
       <div style={s.panelBody}>
-        {tab === 'datos'  && <TabDatos  p={p} categorias={categorias} unidades={unidades} proveedor={proveedor} onRefresh={onRefresh} setMsg={setMsg} />}
+        {tab === 'datos'  && <TabDatos  p={p} categorias={categorias} unidades={unidades} proveedor={proveedor} onRefresh={onRefresh} onDelete={() => { onClose(); onRefresh() }} setMsg={setMsg} />}
         {tab === 'precio' && <TabPrecio p={p} proveedor={proveedor} onRefresh={onRefresh} setMsg={setMsg} />}
         {tab === 'stock'  && <TabStock  p={p} almacen={almacen} onRefresh={onRefresh} setMsg={setMsg} />}
       </div>
@@ -388,12 +388,14 @@ function ProductoPanel({ producto: p, categorias, unidades, proveedor, almacen, 
 }
 
 /* ─── Tab: Datos ─────────────────────────────────────────────────────────── */
-function TabDatos({ p, categorias, unidades, proveedor, onRefresh, setMsg }) {
+function TabDatos({ p, categorias, unidades, proveedor, onRefresh, onDelete, setMsg }) {
   const [form, setForm] = useState({
     sku: p.sku ?? '', nombre: p.nombre ?? '', descripcion: p.descripcion ?? '',
     idUnidadMedida: p.idUnidadMedida?.id ?? '', idCategoria: p.idCategoria?.id ?? '', activo: p.activo,
   })
-  const [saving, setSaving] = useState(false)
+  const [saving,    setSaving]    = useState(false)
+  const [deleting,  setDeleting]  = useState(false)
+  const [confirmDel, setConfirmDel] = useState(false)
 
   const guardar = async () => {
     setSaving(true)
@@ -411,6 +413,19 @@ function TabDatos({ p, categorias, unidades, proveedor, onRefresh, setMsg }) {
       setMsg({ ok: false, text: `Error: ${e.message}` })
     }
     setSaving(false)
+  }
+
+  const borrar = async () => {
+    setDeleting(true)
+    setMsg(null)
+    try {
+      await api.delete(`/api/v1/products/${p.id}`)
+      onDelete()
+    } catch (e) {
+      setMsg({ ok: false, text: `Error al eliminar: ${e.message}` })
+      setDeleting(false)
+      setConfirmDel(false)
+    }
   }
 
   return (
@@ -438,13 +453,33 @@ function TabDatos({ p, categorias, unidades, proveedor, onRefresh, setMsg }) {
         <textarea style={{ ...s.input, minHeight: 70, resize: 'vertical' }} value={form.descripcion}
           onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))} />
       </Field>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#1A1D3B', cursor: 'pointer' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--c-text)', cursor: 'pointer' }}>
         <input type="checkbox" checked={form.activo} onChange={e => setForm(f => ({ ...f, activo: e.target.checked }))} />
         Activo en el catálogo
       </label>
-      <button style={s.saveBtn} onClick={guardar} disabled={saving}>
+      <button style={s.saveBtn} onClick={guardar} disabled={saving || deleting}>
         {saving ? 'Guardando...' : 'Guardar cambios'}
       </button>
+
+      <div style={{ borderTop: '1px solid var(--c-border-light)', marginTop: 8, paddingTop: 12 }}>
+        {!confirmDel ? (
+          <button style={s.delProductoBtn} onClick={() => setConfirmDel(true)} disabled={deleting}>
+            Eliminar producto
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <p style={{ margin: 0, fontSize: 12, color: '#dc2626', fontWeight: 600 }}>¿Eliminar "{p.nombre}"? Esta acción no se puede deshacer.</p>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button style={{ ...s.delProductoBtn, flex: 1 }} onClick={borrar} disabled={deleting}>
+                {deleting ? 'Eliminando...' : 'Sí, eliminar'}
+              </button>
+              <button style={{ ...s.cancelBtn, flex: 1 }} onClick={() => setConfirmDel(false)} disabled={deleting}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -552,8 +587,8 @@ function TabPrecio({ p, proveedor, onRefresh, setMsg }) {
               return (
                 <div key={pr.id} style={{ ...s.histRow, ...(isVigente ? s.histRowActive : {}) }}>
                   <div style={{ flex: 1 }}>
-                    <span style={{ fontWeight: 700, color: '#1A1D3B', fontSize: 13 }}>{fmtMoney(pr.precioBase)}</span>
-                    <span style={{ fontSize: 11, color: '#9599AE', marginLeft: 8 }}>
+                    <span style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13 }}>{fmtMoney(pr.precioBase)}</span>
+                    <span style={{ fontSize: 11, color: 'var(--c-muted)', marginLeft: 8 }}>
                       {fmtDate(pr.vigenteDesde)} → {fmtDate(pr.vigenteHasta) ?? 'sin vencimiento'}
                     </span>
                   </div>
@@ -632,7 +667,7 @@ function TabStock({ p, almacen, onRefresh, setMsg }) {
         {stock ? (
           <>
             <p style={s.precioCardLabel}>{almacen.nombre}</p>
-            <p style={{ ...s.precioCardVal, color: bajo ? '#dc2626' : '#06175D' }}>
+            <p style={{ ...s.precioCardVal, color: bajo ? '#dc2626' : 'var(--c-primary)' }}>
               {stock.stock} {p.idUnidadMedida?.abreviatura || 'unidades'}
             </p>
             <p style={s.precioCardSub}>
@@ -665,7 +700,7 @@ function TabStock({ p, almacen, onRefresh, setMsg }) {
               onChange={e => setForm(f => ({ ...f, max: e.target.value }))} placeholder="Sin límite" />
           </Field>
         </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#1A1D3B', cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--c-text)', cursor: 'pointer' }}>
           <input type="checkbox" checked={form.activo} onChange={e => setForm(f => ({ ...f, activo: e.target.checked }))} />
           Disponible para venta
         </label>
@@ -693,70 +728,71 @@ const s = {
   alert:      { borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13 },
   alertOk:    { background: '#f0fdf4', border: '1px solid #86efac', color: '#15803d' },
   alertErr:   { background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626' },
-  newBtn:    { background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  importBtn: { background: '#fff', color: '#06175D', border: '1.5px solid #06175D', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  newBtn:    { background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  importBtn: { background: 'var(--c-bg)', color: 'var(--c-primary)', border: '1.5px solid var(--c-primary)', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
 
-  formCard:   { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, padding: '1.25rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(6,23,93,0.05)' },
-  formTitle:  { margin: '0 0 1rem', fontWeight: 800, fontSize: 15, color: '#1A1D3B' },
+  formCard:   { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '1.25rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(6,23,93,0.05)' },
+  formTitle:  { margin: '0 0 1rem', fontWeight: 800, fontSize: 15, color: 'var(--c-text)' },
   formGrid:   { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px 12px' },
 
   toolbar:    { display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.75rem', flexWrap: 'wrap' },
-  searchWrap: { display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: '1.5px solid #DDE0EE', borderRadius: 8, padding: '8px 12px', flex: 1, maxWidth: 320 },
-  searchInput:{ border: 'none', outline: 'none', fontSize: 13, color: '#1A1D3B', flex: 1, background: 'transparent' },
-  chip:       { padding: '6px 12px', border: '1.5px solid #DDE0EE', borderRadius: 20, fontSize: 12, fontWeight: 600, color: '#9599AE', background: '#fff', cursor: 'pointer' },
-  chipActive: { background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  searchWrap: { display: 'flex', alignItems: 'center', gap: 8, background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 8, padding: '8px 12px', flex: 1, maxWidth: 320 },
+  searchInput:{ border: 'none', outline: 'none', fontSize: 13, color: 'var(--c-text)', flex: 1, background: 'transparent' },
+  chip:       { padding: '6px 12px', border: '1.5px solid var(--c-border)', borderRadius: 20, fontSize: 12, fontWeight: 600, color: 'var(--c-muted)', background: 'var(--c-bg)', cursor: 'pointer' },
+  chipActive: { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
   chipWarn:   { borderColor: '#fcd34d', color: '#92400e' },
 
   layout:     { display: 'grid', gridTemplateColumns: '1fr' },
   layoutSplit:{ gridTemplateColumns: '1fr 360px', gap: '1rem' },
 
   listWrap:   {},
-  tableWrap:  { overflowX: 'auto', border: '1px solid #E8EBF5', borderRadius: 12, background: '#fff', boxShadow: '0 2px 8px rgba(6,23,93,0.04)' },
+  tableWrap:  { overflowX: 'auto', border: '1px solid var(--c-border)', borderRadius: 12, background: 'var(--c-bg)', boxShadow: 'var(--c-shadow-sm)' },
   table:      { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  th:         { padding: '10px 14px', background: '#EEF1FB', color: '#06175D', fontWeight: 700, textAlign: 'left', whiteSpace: 'nowrap', borderBottom: '1px solid #DDE0EE', fontSize: 11, letterSpacing: .3 },
+  th:         { padding: '10px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 700, textAlign: 'left', whiteSpace: 'nowrap', borderBottom: '1px solid var(--c-border)', fontSize: 11, letterSpacing: .3 },
   tr:         { transition: 'background .1s' },
-  trAlt:      { background: '#F7F8FC' },
-  trSelected: { background: '#EEF1FB' },
-  td:         { padding: '10px 14px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA', whiteSpace: 'nowrap' },
-  skuBadge:   { fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 5, background: '#F0F2FA', color: '#9599AE', fontFamily: 'monospace' },
-  catBadge:   { fontSize: 11, padding: '2px 8px', borderRadius: 20, background: '#EEF1FB', color: '#06175D', fontWeight: 600 },
+  trAlt:      { background: 'var(--c-bg-subtle)' },
+  trSelected: { background: 'var(--c-primary-light)' },
+  td:         { padding: '10px 14px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)', whiteSpace: 'nowrap' },
+  skuBadge:   { fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 5, background: 'var(--c-bg-page)', color: 'var(--c-muted)', fontFamily: 'monospace' },
+  catBadge:   { fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 600 },
   warnBadge:  { fontSize: 11, padding: '2px 8px', borderRadius: 20, background: '#fef3c7', color: '#92400e', fontWeight: 600 },
   badge:      { fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20 },
   badgeOk:    { background: '#dcfce7', color: '#15803d' },
   badgeOff:   { background: '#fee2e2', color: '#991b1b' },
   badge2:     { fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: '#dcfce7', color: '#15803d' },
-  badge3:     { fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: '#F0F2FA', color: '#9599AE' },
+  badge3:     { fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'var(--c-bg-page)', color: 'var(--c-muted)' },
 
-  muted:      { color: '#9599AE', fontSize: 13 },
-  emptyBox:   { textAlign: 'center', padding: '3rem', background: '#fff', borderRadius: 14, border: '1px solid #E8EBF5' },
-  emptyTitle: { margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#1A1D3B' },
-  emptySub:   { margin: 0, fontSize: 13, color: '#9599AE' },
+  muted:      { color: 'var(--c-muted)', fontSize: 13 },
+  emptyBox:   { textAlign: 'center', padding: '3rem', background: 'var(--c-bg)', borderRadius: 14, border: '1px solid var(--c-border)' },
+  emptyTitle: { margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--c-text)' },
+  emptySub:   { margin: 0, fontSize: 13, color: 'var(--c-muted)' },
 
-  panel:      { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, display: 'flex', flexDirection: 'column', height: 'fit-content', position: 'sticky', top: 24, maxHeight: 'calc(100vh - 120px)', overflow: 'hidden', boxShadow: '0 4px 16px rgba(6,23,93,0.08)' },
-  panelHead:  { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '1.1rem 1.25rem', borderBottom: '1px solid #F0F2FA', flexShrink: 0 },
-  panelNombre:{ margin: '4px 0 2px', fontSize: 15, fontWeight: 800, color: '#1A1D3B' },
-  panelSub:   { margin: 0, fontSize: 11, color: '#9599AE' },
-  closeBtn:   { background: 'none', border: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 16, padding: 4, flexShrink: 0 },
+  panel:      { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, display: 'flex', flexDirection: 'column', height: 'fit-content', position: 'sticky', top: 24, maxHeight: 'calc(100vh - 120px)', overflow: 'hidden', boxShadow: 'var(--c-shadow-md)' },
+  panelHead:  { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--c-border-light)', flexShrink: 0 },
+  panelNombre:{ margin: '4px 0 2px', fontSize: 15, fontWeight: 800, color: 'var(--c-text)' },
+  panelSub:   { margin: 0, fontSize: 11, color: 'var(--c-muted)' },
+  closeBtn:   { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 16, padding: 4, flexShrink: 0 },
 
-  tabs:       { display: 'flex', borderBottom: '1px solid #F0F2FA', flexShrink: 0 },
-  tab:        { flex: 1, padding: '9px', border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: '#9599AE', cursor: 'pointer', borderBottom: '2px solid transparent' },
-  tabActive:  { color: '#06175D', borderBottom: '2px solid #06175D' },
+  tabs:       { display: 'flex', borderBottom: '1px solid var(--c-border-light)', flexShrink: 0 },
+  tab:        { flex: 1, padding: '9px', border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--c-muted)', cursor: 'pointer', borderBottom: '2px solid transparent' },
+  tabActive:  { color: 'var(--c-primary)', borderBottom: '2px solid var(--c-primary)' },
   panelBody:  { flex: 1, overflowY: 'auto', padding: '1rem 1.25rem' },
 
-  label:      { display: 'block', fontSize: 11, fontWeight: 700, color: '#9599AE', marginBottom: 4, textTransform: 'uppercase', letterSpacing: .4 },
-  hint:       { margin: '3px 0 0', fontSize: 10, color: '#9599AE' },
-  input:      { width: '100%', padding: '9px 11px', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 13, color: '#1A1D3B', outline: 'none', boxSizing: 'border-box', background: '#fff' },
-  saveBtn:    { width: '100%', padding: '9px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
-  cancelBtn:  { padding: '9px 16px', background: '#fff', border: '1.5px solid #DDE0EE', borderRadius: 8, cursor: 'pointer', color: '#9599AE', fontSize: 13 },
+  label:      { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: .4 },
+  hint:       { margin: '3px 0 0', fontSize: 10, color: 'var(--c-muted)' },
+  input:      { width: '100%', padding: '9px 11px', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box', background: 'var(--c-bg)' },
+  saveBtn:    { width: '100%', padding: '9px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
+  cancelBtn:       { padding: '9px 16px', background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 8, cursor: 'pointer', color: 'var(--c-muted)', fontSize: 13 },
+  delProductoBtn:  { width: '100%', padding: '8px', background: 'var(--c-bg)', color: '#dc2626', border: '1.5px solid #fca5a5', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
 
-  precioCard:      { background: '#EEF1FB', border: '1px solid #DDE0EE', borderRadius: 10, padding: '12px 14px' },
+  precioCard:      { background: 'var(--c-primary-light)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '12px 14px' },
   precioClearCard: { background: '#fef9ec', border: '1px solid #fcd34d', borderRadius: 10, padding: '12px 14px' },
-  precioCardLabel: { margin: '0 0 2px', fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 },
-  precioCardVal:   { margin: '0 0 2px', fontSize: 22, fontWeight: 800, color: '#06175D' },
-  precioCardSub:   { margin: 0, fontSize: 11, color: '#9599AE' },
-  sectionLabel:    { margin: '0 0 8px', fontWeight: 700, fontSize: 12, color: '#1A1D3B' },
+  precioCardLabel: { margin: '0 0 2px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 },
+  precioCardVal:   { margin: '0 0 2px', fontSize: 22, fontWeight: 800, color: 'var(--c-primary)' },
+  precioCardSub:   { margin: 0, fontSize: 11, color: 'var(--c-muted)' },
+  sectionLabel:    { margin: '0 0 8px', fontWeight: 700, fontSize: 12, color: 'var(--c-text)' },
 
-  histRow:         { display: 'flex', alignItems: 'center', gap: 8, background: '#F8F9FF', borderRadius: 8, padding: '7px 10px', border: '1px solid #E8EBF5' },
-  histRowActive:   { background: '#EEF1FB', border: '1px solid #DDE0EE' },
+  histRow:         { display: 'flex', alignItems: 'center', gap: 8, background: '#F8F9FF', borderRadius: 8, padding: '7px 10px', border: '1px solid var(--c-border)' },
+  histRowActive:   { background: 'var(--c-primary-light)', border: '1px solid var(--c-border)' },
   delBtn:          { background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '4px 8px', fontSize: 11, cursor: 'pointer', fontWeight: 700, flexShrink: 0 },
 }

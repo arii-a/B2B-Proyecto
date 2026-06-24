@@ -71,7 +71,7 @@ export default function AdminLogs() {
               </thead>
               <tbody>
                 {data.map((l, i) => (
-                  <tr key={l.id ?? i} style={{ background: i % 2 === 0 ? '#fff' : '#F7F8FC' }}>
+                  <tr key={l.id ?? i} style={{ background: i % 2 === 0 ? '#fff' : 'var(--c-bg-subtle)' }}>
                     <td style={styles.td}>
                       <span style={{ ...styles.badge, ...levelColor(l.level) }}>{l.level}</span>
                     </td>
@@ -91,7 +91,7 @@ export default function AdminLogs() {
 
 function levelColor(level) {
   const map = { ERROR: { background: '#fef2f2', color: '#b91c1c' }, WARN: { background: '#fffbeb', color: '#b45309' }, INFO: { background: '#f0fdf4', color: '#15803d' }, DEBUG: { background: '#eff6ff', color: '#1d4ed8' }, TRACE: { background: '#f5f3ff', color: '#6d28d9' } }
-  return map[level] ?? { background: '#EEF1FB', color: '#9599AE' }
+  return map[level] ?? { background: 'var(--c-primary-light)', color: 'var(--c-muted)' }
 }
 
 function Paginacion({ page, totalPages, totalElements, pageSize, onChange }) {
@@ -112,17 +112,17 @@ function Paginacion({ page, totalPages, totalElements, pageSize, onChange }) {
 const styles = {
   filtros: { display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '1rem', flexWrap: 'wrap' },
   filtroGroup: { display: 'flex', flexDirection: 'column', gap: 4 },
-  label: { fontSize: '13px', fontWeight: '600', color: '#9599AE' },
-  input: { padding: '8px 12px', border: '1.5px solid #DDE0EE', borderRadius: '8px', fontSize: '14px', color: '#1A1D3B' },
-  btn: { padding: '8px 20px', background: '#06175D', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
-  tableWrapper: { background: '#fff', border: '1px solid #DDE0EE', borderRadius: '10px', overflow: 'hidden' },
+  label: { fontSize: '13px', fontWeight: '600', color: 'var(--c-muted)' },
+  input: { padding: '8px 12px', border: '1.5px solid var(--c-border)', borderRadius: '8px', fontSize: '14px', color: 'var(--c-text)' },
+  btn: { padding: '8px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
+  tableWrapper: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: '10px', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  th: { padding: '10px 14px', background: '#EEF1FB', color: '#06175D', fontWeight: '700', textAlign: 'left', borderBottom: '1px solid #DDE0EE' },
-  td: { padding: '9px 14px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA' },
+  th: { padding: '10px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: '700', textAlign: 'left', borderBottom: '1px solid var(--c-border)' },
+  td: { padding: '9px 14px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)' },
   badge: { padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' },
-  empty: { padding: '2rem', color: '#9599AE', fontSize: '14px' },
-  pagination: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid #F0F2FA' },
-  pageInfo: { fontSize: '12px', color: '#9599AE' },
-  pageBtn: { padding: '4px 10px', fontSize: '12px', fontWeight: '600', background: '#fff', color: '#9599AE', border: '1px solid #DDE0EE', borderRadius: '6px', cursor: 'pointer' },
-  pageBtnActive: { background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  empty: { padding: '2rem', color: 'var(--c-muted)', fontSize: '14px' },
+  pagination: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid var(--c-border-light)' },
+  pageInfo: { fontSize: '12px', color: 'var(--c-muted)' },
+  pageBtn: { padding: '4px 10px', fontSize: '12px', fontWeight: '600', background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)', borderRadius: '6px', cursor: 'pointer' },
+  pageBtnActive: { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 }

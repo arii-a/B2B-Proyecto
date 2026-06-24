@@ -22,13 +22,18 @@
       "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" -m pip install pyvis networkx --quiet 2>&1)",
       "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" -c \"import openpyxl; print\\('ok'\\)\" 2>&1)",
       "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" -m pip install openpyxl --quiet 2>&1)",
-      "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\rodri\\\\AppData\\\\Local\\\\Temp\\\\gen_excel.py\")"
+      "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\rodri\\\\AppData\\\\Local\\\\Temp\\\\gen_excel.py\")",
+      "Bash(curl -s http://localhost:8080/api/v1/unidades-medida/activas)",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(d.get\\('nombre','?'\\), '|', d.get\\('abreviatura','?'\\)\\) for d in data]\")",
+      "Bash(curl -s http://localhost:8080/api/v1/categorias)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Python312\\\\python.exe\" \"C:\\\\Users\\\\rodri\\\\AppData\\\\Local\\\\Temp\\\\gen_test_1k.py\")"
     ],
     "additionalDirectories": [
       "C:\\Universidad\\Semestre VII\\Certificacion III - Springboot\\B2B-Proyecto\\B2B-api\\src\\main\\java\\com\\example\\B2BProyect\\controller",
       "C:\\Universidad\\Semestre VII\\Certificacion III - Springboot\\B2B-Proyecto\\B2B-api\\src\\main\\java\\com\\example\\B2BProyect\\config",
       "C:\\Universidad\\Semestre VII\\Certificacion III - Springboot\\B2B-Proyecto\\B2B-api\\src\\main\\resources",
-      "C:\\Users\\rodri\\AppData\\Local\\Temp"
+      "C:\\Users\\rodri\\AppData\\Local\\Temp",
+      "C:\\Universidad\\Semestre VII\\Certificacion III - Springboot\\B2B-Proyecto"
     ]
   }
 }

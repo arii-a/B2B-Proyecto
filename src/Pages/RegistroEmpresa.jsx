@@ -136,11 +136,11 @@ export default function Registro() {
         <div style={styles.stepper}>
           {STEPS.map((s, i) => (
             <div key={s} style={styles.stepItem}>
-              <div style={{ ...styles.stepCircle, background: i <= step ? '#06175D' : '#DDE0EE', color: i <= step ? '#fff' : '#9599AE' }}>
+              <div style={{ ...styles.stepCircle, background: i <= step ? 'var(--c-primary)' : 'var(--c-border-mid)', color: i <= step ? '#fff' : 'var(--c-muted)' }}>
                 {i < step ? '✓' : i + 1}
               </div>
-              <span style={{ ...styles.stepLabel, color: i <= step ? '#1A1D3B' : '#9599AE' }}>{s}</span>
-              {i < STEPS.length - 1 && <div style={{ ...styles.stepLine, background: i < step ? '#06175D' : '#DDE0EE' }} />}
+              <span style={{ ...styles.stepLabel, color: i <= step ? 'var(--c-text)' : 'var(--c-muted)' }}>{s}</span>
+              {i < STEPS.length - 1 && <div style={{ ...styles.stepLine, background: i < step ? 'var(--c-primary)' : 'var(--c-border-mid)' }} />}
             </div>
           ))}
         </div>
@@ -172,8 +172,8 @@ export default function Registro() {
               </label>
               {logoPreview && (
                 <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <img src={logoPreview} alt="preview" style={{ height: 48, maxWidth: 120, objectFit: 'contain', border: '1px solid #DDE0EE', borderRadius: 6, padding: 4, background: '#F7F8FC' }} />
-                  <span style={{ fontSize: 11, color: '#9599AE' }}>Vista previa · máx. 2 MB</span>
+                  <img src={logoPreview} alt="preview" style={{ height: 48, maxWidth: 120, objectFit: 'contain', border: '1px solid var(--c-border-mid)', borderRadius: 6, padding: 4, background: 'var(--c-bg-subtle)' }} />
+                  <span style={{ fontSize: 11, color: 'var(--c-muted)' }}>Vista previa · máx. 2 MB</span>
                 </div>
               )}
               <p style={styles.fileHint}>Podés saltear este paso y agregar el logo después desde <strong>Mi Cuenta</strong>.</p>
@@ -203,7 +203,7 @@ export default function Registro() {
             <Field label="Nombre completo" value={usuario.nombre} onChange={(v) => setUsuario({ ...usuario, nombre: v })} placeholder="Ej: Ana García" />
             <Field label="Email" value={usuario.email} onChange={(v) => setUsuario({ ...usuario, email: v })} placeholder="Ej: ana@techcorp.com" type="email" />
             <Field label="Contraseña" value={usuario.password} onChange={(v) => setUsuario({ ...usuario, password: v })} placeholder="••••••••" type="password" />
-            <p style={{ margin: 0, fontSize: '12px', color: '#9599AE' }}>
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--c-muted)' }}>
               Tu cuenta será creada con rol de empresa compradora.
             </p>
           </div>
@@ -221,7 +221,7 @@ export default function Registro() {
 
         <p style={styles.loginLink}>
           ¿Ya tenés cuenta?{' '}
-          <span style={{ color: '#06175D', cursor: 'pointer', fontWeight: 600 }} onClick={() => navigate('/login')}>
+          <span style={{ color: 'var(--c-primary)', cursor: 'pointer', fontWeight: 600 }} onClick={() => navigate('/login')}>
             Iniciá sesión
           </span>
         </p>
@@ -240,33 +240,33 @@ function Field({ label, value, onChange, placeholder, type = 'text' }) {
 }
 
 const styles = {
-  bg: { minHeight: '100vh', background: '#F0F2FA', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  card: { background: '#fff', borderRadius: '16px', padding: '2.5rem', width: '100%', maxWidth: '440px', boxShadow: '0 4px 24px rgba(6,23,93,0.10)' },
+  bg: { minHeight: '100vh', background: 'var(--c-bg-page)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  card: { background: 'var(--c-bg)', borderRadius: '16px', padding: '2.5rem', width: '100%', maxWidth: '440px', boxShadow: '0 4px 24px rgba(6,23,93,0.10)' },
   logoRow: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' },
   logoCircle: { width: '44px', height: '44px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0 },
-  logoTitle: { margin: 0, fontWeight: '700', fontSize: '15px', color: '#06175D' },
-  logoSub: { margin: 0, fontSize: '12px', color: '#9599AE' },
+  logoTitle: { margin: 0, fontWeight: '700', fontSize: '15px', color: 'var(--c-primary)' },
+  logoSub: { margin: 0, fontSize: '12px', color: 'var(--c-muted)' },
   stepper: { display: 'flex', alignItems: 'center', marginBottom: '1.75rem' },
   stepItem: { display: 'flex', alignItems: 'center', flex: 1 },
   stepCircle: { width: '26px', height: '26px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', flexShrink: 0 },
   stepLabel: { fontSize: '11px', fontWeight: '500', marginLeft: '5px', whiteSpace: 'nowrap' },
   stepLine: { flex: 1, height: '2px', margin: '0 6px' },
-  stepTitle: { margin: '0 0 1rem', fontWeight: '600', fontSize: '15px', color: '#1A1D3B' },
+  stepTitle: { margin: '0 0 1rem', fontWeight: '600', fontSize: '15px', color: 'var(--c-text)' },
   form: { display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' },
-  label: { display: 'block', fontSize: '13px', fontWeight: '500', color: '#9599AE', marginBottom: '5px' },
-  input: { width: '100%', padding: '10px 12px', border: '1.5px solid #DDE0EE', borderRadius: '8px', fontSize: '14px', color: '#1A1D3B', outline: 'none', boxSizing: 'border-box', background: '#fff' },
+  label: { display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--c-muted)', marginBottom: '5px' },
+  input: { width: '100%', padding: '10px 12px', border: '1.5px solid var(--c-border-mid)', borderRadius: '8px', fontSize: '14px', color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box', background: 'var(--c-input-bg)' },
   error: { color: '#dc2626', fontSize: '13px', marginBottom: '0.75rem', background: '#fef2f2', padding: '8px 12px', borderRadius: '6px' },
   navRow: { display: 'flex', gap: '8px', justifyContent: 'flex-end' },
-  backBtn: { padding: '10px 18px', border: '1.5px solid #DDE0EE', borderRadius: '8px', background: '#fff', fontSize: '14px', fontWeight: '500', color: '#9599AE', cursor: 'pointer' },
-  submit: { padding: '10px 18px', background: '#06175D', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', marginTop: '0.5rem' },
-  loginLink: { marginTop: '1.25rem', fontSize: '13px', color: '#9599AE', textAlign: 'center' },
+  backBtn: { padding: '10px 18px', border: '1.5px solid var(--c-border-mid)', borderRadius: '8px', background: 'var(--c-bg)', fontSize: '14px', fontWeight: '500', color: 'var(--c-muted)', cursor: 'pointer' },
+  submit: { padding: '10px 18px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', marginTop: '0.5rem' },
+  loginLink: { marginTop: '1.25rem', fontSize: '13px', color: 'var(--c-muted)', textAlign: 'center' },
 
   fileLabel: { display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginTop: 2 },
-  fileBtn:   { padding: '8px 14px', border: '1.5px solid #06175D', borderRadius: 7, fontSize: 13,
-               fontWeight: 600, color: '#06175D', background: '#EEF1FB', whiteSpace: 'nowrap' },
-  fileName:  { fontSize: 12, color: '#9599AE', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 },
-  fileHint:  { margin: '7px 0 0', fontSize: 12, color: '#9599AE' },
+  fileBtn:   { padding: '8px 14px', border: '1.5px solid var(--c-primary)', borderRadius: 7, fontSize: 13,
+               fontWeight: 600, color: 'var(--c-primary)', background: 'var(--c-primary-light)', whiteSpace: 'nowrap' },
+  fileName:  { fontSize: 12, color: 'var(--c-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 },
+  fileHint:  { margin: '7px 0 0', fontSize: 12, color: 'var(--c-muted)' },
   successIcon: { width: '56px', height: '56px', borderRadius: '50%', background: '#dcfce7', color: '#166534', fontSize: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' },
-  successTitle: { margin: '0 0 6px', fontWeight: '700', fontSize: '20px', color: '#1A1D3B', textAlign: 'center' },
-  successSub: { margin: '0 0 1.5rem', fontSize: '14px', color: '#9599AE', textAlign: 'center' },
+  successTitle: { margin: '0 0 6px', fontWeight: '700', fontSize: '20px', color: 'var(--c-text)', textAlign: 'center' },
+  successSub: { margin: '0 0 1.5rem', fontSize: '14px', color: 'var(--c-muted)', textAlign: 'center' },
 }

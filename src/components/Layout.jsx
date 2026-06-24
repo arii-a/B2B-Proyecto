@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { useTheme } from '../ThemeContext'
 
 const C = {
   primary:  '#06175D',
@@ -42,6 +43,7 @@ const rolLabel = { admin: 'Administrador', proveedor: 'Proveedor', empresa: 'Emp
 
 export default function Layout({ children }) {
   const { session, logout } = useAuth()
+  const { dark, toggle } = useTheme()
   const links = session?.rol === 'admin' ? adminLinks
     : session?.rol === 'proveedor' ? proveedorLinks
     : empresaLinks
@@ -101,6 +103,9 @@ export default function Layout({ children }) {
             <p style={s.topbarTitle}>{session?.nombreEmpresa ?? 'Mi empresa'}</p>
             <div style={s.topbarBadge}>{rolLabel[session?.rol]}</div>
           </div>
+          <button onClick={toggle} style={s.themeBtn} title={dark ? 'Modo claro' : 'Modo oscuro'}>
+            {dark ? '☀' : '☾'}
+          </button>
         </header>
 
         <div style={s.content} className="animate-in">
@@ -140,24 +145,24 @@ function NavIcon({ type }) {
 }
 
 const s = {
-  shell:      { display: 'flex', minHeight: '100vh', background: '#F0F2FA' },
+  shell:      { display: 'flex', minHeight: '100vh', background: 'var(--c-bg-page)' },
 
-  sidebar:    { width: '248px', flexShrink: 0, background: C.primary, display: 'flex',
+  sidebar:    { width: '248px', flexShrink: 0, background: '#06175D', display: 'flex',
                 flexDirection: 'column', padding: '1.25rem 1rem', gap: '0',
                 height: '100vh', position: 'sticky', top: 0, overflowY: 'auto' },
 
   brand:      { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' },
   brandLogo:  { width: '38px', height: '38px', borderRadius: '9px', background: 'rgba(255,255,255,0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  brandName:  { fontSize: '13px', fontWeight: '800', color: C.white, letterSpacing: '.3px' },
+  brandName:  { fontSize: '13px', fontWeight: '800', color: '#fff', letterSpacing: '.3px' },
   brandSub:   { fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginTop: '1px' },
 
   userPill:   { display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.08)',
                 borderRadius: '10px', padding: '10px 12px', marginBottom: '1rem', overflow: 'hidden' },
   avatar:     { width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)',
-                color: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: '700', fontSize: '14px', flexShrink: 0 },
-  userName:   { fontSize: '13px', fontWeight: '600', color: C.white,
+  userName:   { fontSize: '13px', fontWeight: '600', color: '#fff',
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   userEmail:  { fontSize: '11px', color: 'rgba(255,255,255,0.4)',
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '1px' },
@@ -168,7 +173,7 @@ const s = {
   link:       { display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px',
                 borderRadius: '8px', fontSize: '13px', fontWeight: '500',
                 color: 'rgba(255,255,255,0.55)', textDecoration: 'none', transition: 'all .15s' },
-  linkActive: { background: 'rgba(255,255,255,0.12)', color: C.white },
+  linkActive: { background: 'rgba(255,255,255,0.12)', color: '#fff' },
   linkIcon:   { fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0 },
 
   logout:     { display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent',
@@ -178,13 +183,16 @@ const s = {
 
   main:       { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
 
-  topbar:     { background: C.white, borderBottom: '1px solid #DDE0EE',
+  topbar:     { background: 'var(--c-bg)', borderBottom: '1px solid var(--c-border)',
                 padding: '0 2rem', height: '52px', display: 'flex', alignItems: 'center',
-                boxShadow: '0 1px 3px rgba(6,23,93,0.06)' },
+                justifyContent: 'space-between', boxShadow: 'var(--c-shadow-sm)' },
   topbarInner:{ display: 'flex', alignItems: 'center', gap: '12px' },
-  topbarTitle:{ fontSize: '14px', fontWeight: '600', color: C.text },
+  topbarTitle:{ fontSize: '14px', fontWeight: '600', color: 'var(--c-text)' },
   topbarBadge:{ fontSize: '11px', fontWeight: '600', padding: '3px 10px',
-                background: '#EEF1FB', color: C.primary, borderRadius: '20px' },
+                background: 'var(--c-primary-light)', color: 'var(--c-primary)', borderRadius: '20px' },
+  themeBtn:   { background: 'none', border: '1.5px solid var(--c-border)', borderRadius: '8px',
+                padding: '5px 10px', fontSize: '15px', cursor: 'pointer', color: 'var(--c-muted)',
+                lineHeight: 1, transition: 'all .15s' },
 
   content:    { padding: '1.75rem 2rem', flex: 1 },
 }

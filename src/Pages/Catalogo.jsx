@@ -9,7 +9,7 @@ const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('es-BO', { day: '2-di
 const fmtNum   = (n) => n == null ? '∞' : Number(n).toLocaleString('es-BO')
 
 const CAT_GRADIENTS = [
-  ['#06175D','#1e40af'], ['#065f46','#047857'], ['#78350f','#b45309'],
+  ['var(--c-primary)','#1e40af'], ['#065f46','#047857'], ['#78350f','#b45309'],
   ['#4a1d96','#7c3aed'], ['#7f1d1d','#b91c1c'], ['#134e4a','#0f766e'],
   ['#1e3a5f','#1d4ed8'], ['#713f12','#a16207'], ['#14532d','#15803d'],
   ['#1e1b4b','#4338ca'],
@@ -226,7 +226,7 @@ export default function Catalogo() {
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <input style={s.priceInput} type="number" min="0" placeholder="Mín"
                 value={precioMin} onChange={e => setPrecioMin(e.target.value)} />
-              <span style={{ color: '#9599AE', fontSize: 12 }}>—</span>
+              <span style={{ color: 'var(--c-muted)', fontSize: 12 }}>—</span>
               <input style={s.priceInput} type="number" min="0" placeholder="Máx"
                 value={precioMax} onChange={e => setPrecioMax(e.target.value)} />
             </div>
@@ -426,7 +426,7 @@ function ProductModal({ product, onClose, navigate, catNames, getPrecioEfectivo,
                       ) : (
                         <>
                           <p style={s.ofertaPrecio}>{fmtMoney(o.precio)}</p>
-                          <p style={{ fontSize: 10, color: '#9599AE', margin: 0 }}>/ {product.unidad || 'unidad'}</p>
+                          <p style={{ fontSize: 10, color: 'var(--c-muted)', margin: 0 }}>/ {product.unidad || 'unidad'}</p>
                         </>
                       )}
                     </div>
@@ -451,7 +451,7 @@ function ProductModal({ product, onClose, navigate, catNames, getPrecioEfectivo,
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {ef.tramos.map((t, ti) => (
                           <div key={ti} style={s.tramoMiniChip}>
-                            <span style={{ fontSize: 10, color: '#9599AE' }}>
+                            <span style={{ fontSize: 10, color: 'var(--c-muted)' }}>
                               {t.tipo === 'volumen' ? '📦' : '💰'} {fmtNum(t.cantidadMinima)}–{fmtNum(t.cantidadMaxima)}{t.tipo === 'volumen' ? ' uds.' : ' Bs.'}
                             </span>
                             <span style={{ fontSize: 13, fontWeight: 800, color: '#065f46' }}>−{t.porcentajeDesc}%</span>
@@ -475,13 +475,13 @@ function ProductModal({ product, onClose, navigate, catNames, getPrecioEfectivo,
 
 /* ─── Styles ─────────────────────────────────────────────────────────────── */
 const s = {
-  hero:          { background: 'linear-gradient(135deg, #06175D 0%, #1e3a8a 60%, #1d4ed8 100%)', borderRadius: 16, padding: '2rem', marginBottom: '1.25rem' },
+  hero:          { background: 'linear-gradient(135deg, var(--c-primary) 0%, #1e3a8a 60%, #1d4ed8 100%)', borderRadius: 16, padding: '2rem', marginBottom: '1.25rem' },
   heroContent:   { maxWidth: 640 },
   heroTitle:     { margin: '0 0 4px', fontSize: 24, fontWeight: 800, color: '#fff' },
   heroSub:       { margin: '0 0 1rem', fontSize: 13, color: 'rgba(255,255,255,0.65)' },
-  heroSearch:    { display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 10, padding: '12px 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' },
-  heroSearchInput:{ border: 'none', outline: 'none', fontSize: 14, color: '#1A1D3B', flex: 1, background: 'transparent' },
-  clearBtn:      { border: 'none', background: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 14, padding: 0 },
+  heroSearch:    { display: 'flex', alignItems: 'center', gap: 10, background: 'var(--c-bg)', borderRadius: 10, padding: '12px 16px', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' },
+  heroSearchInput:{ border: 'none', outline: 'none', fontSize: 14, color: 'var(--c-text)', flex: 1, background: 'transparent' },
+  clearBtn:      { border: 'none', background: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 14, padding: 0 },
   heroBadge:     { display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: '0.75rem', fontSize: 12, color: '#86efac', fontWeight: 600 },
   heroDot:       { width: 7, height: 7, borderRadius: '50%', background: '#4ade80', flexShrink: 0 },
 
@@ -489,38 +489,38 @@ const s = {
 
   layout:        { display: 'grid', gridTemplateColumns: '220px 1fr', gap: '1.5rem' },
 
-  sidebar:       { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, padding: '1.1rem', height: 'fit-content', position: 'sticky', top: 24, boxShadow: '0 2px 8px rgba(6,23,93,0.04)' },
+  sidebar:       { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '1.1rem', height: 'fit-content', position: 'sticky', top: 24, boxShadow: 'var(--c-shadow-sm)' },
   sideHead:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
-  sideTitle:     { fontSize: 14, fontWeight: 800, color: '#1A1D3B' },
-  clearFiltersBtn:{ background: 'none', border: 'none', color: '#06175D', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 },
-  filterSection: { borderTop: '1px solid #F0F2FA', paddingTop: '0.75rem', marginBottom: '0.75rem' },
-  filterLabel:   { margin: '0 0 8px', fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 },
-  checkRow:      { display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', cursor: 'pointer', fontSize: 12, color: '#1A1D3B' },
-  check:         { accentColor: '#06175D', width: 14, height: 14, flexShrink: 0 },
+  sideTitle:     { fontSize: 14, fontWeight: 800, color: 'var(--c-text)' },
+  clearFiltersBtn:{ background: 'none', border: 'none', color: 'var(--c-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 },
+  filterSection: { borderTop: '1px solid var(--c-border-light)', paddingTop: '0.75rem', marginBottom: '0.75rem' },
+  filterLabel:   { margin: '0 0 8px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 },
+  checkRow:      { display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', cursor: 'pointer', fontSize: 12, color: 'var(--c-text)' },
+  check:         { accentColor: 'var(--c-primary)', width: 14, height: 14, flexShrink: 0 },
   checkText:     { flex: 1 },
-  checkCount:    { fontSize: 10, color: '#9599AE', background: '#F0F2FA', borderRadius: 10, padding: '1px 6px' },
-  priceInput:    { flex: 1, padding: '6px 8px', border: '1.5px solid #DDE0EE', borderRadius: 7, fontSize: 12, color: '#1A1D3B', outline: 'none', minWidth: 0 },
+  checkCount:    { fontSize: 10, color: 'var(--c-muted)', background: 'var(--c-bg-page)', borderRadius: 10, padding: '1px 6px' },
+  priceInput:    { flex: 1, padding: '6px 8px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 12, color: 'var(--c-text)', outline: 'none', minWidth: 0 },
 
   resultsBar:    { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' },
-  resultsCount:  { fontSize: 13, fontWeight: 600, color: '#1A1D3B' },
-  filteredLabel: { color: '#9599AE', fontWeight: 400 },
-  sortSelect:    { border: '1.5px solid #DDE0EE', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: '#1A1D3B', outline: 'none', cursor: 'pointer', background: '#fff' },
+  resultsCount:  { fontSize: 13, fontWeight: 600, color: 'var(--c-text)' },
+  filteredLabel: { color: 'var(--c-muted)', fontWeight: 400 },
+  sortSelect:    { border: '1.5px solid var(--c-border)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'var(--c-text)', outline: 'none', cursor: 'pointer', background: 'var(--c-bg)' },
 
   pillRow:       { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: '1rem' },
-  pill:          { padding: '5px 12px', border: '1.5px solid #DDE0EE', borderRadius: 20, fontSize: 11, fontWeight: 600, color: '#9599AE', background: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' },
-  pillActive:    { background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  pill:          { padding: '5px 12px', border: '1.5px solid var(--c-border)', borderRadius: 20, fontSize: 11, fontWeight: 600, color: 'var(--c-muted)', background: 'var(--c-bg)', cursor: 'pointer', whiteSpace: 'nowrap' },
+  pillActive:    { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
   loadWrap:      { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' },
-  skeleton:      { height: 280, background: 'linear-gradient(90deg, #F0F2FA 25%, #E8EBF5 50%, #F0F2FA 75%)', borderRadius: 14, animation: 'pulse 1.5s ease-in-out infinite' },
+  skeleton:      { height: 280, background: 'linear-gradient(90deg, var(--c-bg-page) 25%, var(--c-border) 50%, var(--c-bg-page) 75%)', borderRadius: 14, animation: 'pulse 1.5s ease-in-out infinite' },
 
-  emptyWrap:     { textAlign: 'center', padding: '4rem 2rem', background: '#fff', borderRadius: 14, border: '1px solid #E8EBF5' },
+  emptyWrap:     { textAlign: 'center', padding: '4rem 2rem', background: 'var(--c-bg)', borderRadius: 14, border: '1px solid var(--c-border)' },
   emptyIcon:     { fontSize: 40, marginBottom: 12 },
-  emptyTitle:    { fontSize: 16, fontWeight: 700, color: '#1A1D3B', marginBottom: 6 },
-  emptySub:      { fontSize: 13, color: '#9599AE', marginBottom: 16 },
-  emptyBtn:      { padding: '8px 20px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
+  emptyTitle:    { fontSize: 16, fontWeight: 700, color: 'var(--c-text)', marginBottom: 6 },
+  emptySub:      { fontSize: 13, color: 'var(--c-muted)', marginBottom: 16 },
+  emptyBtn:      { padding: '8px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
 
   grid:          { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' },
-  card:          { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform .15s, box-shadow .15s', boxShadow: '0 2px 8px rgba(6,23,93,0.05)' },
+  card:          { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform .15s, box-shadow .15s', boxShadow: '0 2px 8px rgba(6,23,93,0.05)' },
   cardNeg:       { border: '1.5px solid #86efac', boxShadow: '0 4px 16px rgba(22,163,74,0.12)' },
 
   imgArea:       { height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 },
@@ -530,22 +530,22 @@ const s = {
 
   cardBody:      { padding: '0.85rem', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 },
   catPill:       { fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, display: 'inline-block', textTransform: 'uppercase', letterSpacing: .4, alignSelf: 'flex-start' },
-  cardNombre:    { margin: 0, fontSize: 13, fontWeight: 700, color: '#1A1D3B', lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
-  cardDesc:      { margin: 0, fontSize: 11, color: '#9599AE', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  cardNombre:    { margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--c-text)', lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  cardDesc:      { margin: 0, fontSize: 11, color: 'var(--c-muted)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
   priceRow:      { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' },
-  strikePrice:   { margin: 0, fontSize: 10, color: '#9599AE', textDecoration: 'line-through', lineHeight: 1 },
-  mainPrice:     { margin: 0, fontSize: 18, fontWeight: 800, color: '#06175D', lineHeight: 1 },
+  strikePrice:   { margin: 0, fontSize: 10, color: 'var(--c-muted)', textDecoration: 'line-through', lineHeight: 1 },
+  mainPrice:     { margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1 },
   mainPriceNeg:  { color: '#15803d' },
-  perUnit:       { margin: 0, fontSize: 10, color: '#9599AE' },
-  provBadge:     { display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#EEF1FB', borderRadius: 8, padding: '4px 8px', flexShrink: 0 },
-  provCount:     { fontSize: 14, fontWeight: 800, color: '#06175D', lineHeight: 1 },
-  provLabel:     { fontSize: 9, color: '#9599AE', fontWeight: 600 },
+  perUnit:       { margin: 0, fontSize: 10, color: 'var(--c-muted)' },
+  provBadge:     { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--c-primary-light)', borderRadius: 8, padding: '4px 8px', flexShrink: 0 },
+  provCount:     { fontSize: 14, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1 },
+  provLabel:     { fontSize: 9, color: 'var(--c-muted)', fontWeight: 600 },
 
-  ctaBtn:        { margin: '0 0.85rem 0.85rem', padding: '8px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'center' },
+  ctaBtn:        { margin: '0 0.85rem 0.85rem', padding: '8px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'center' },
   ctaBtnNeg:     { background: '#15803d' },
 
   overlay:       { position: 'fixed', inset: 0, background: 'rgba(6,23,93,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' },
-  modalBox:      { background: '#fff', borderRadius: 16, width: '100%', maxWidth: 580, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(6,23,93,0.3)' },
+  modalBox:      { background: 'var(--c-bg)', borderRadius: 16, width: '100%', maxWidth: 580, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(6,23,93,0.3)' },
   modalHero:     { padding: '1.5rem', display: 'flex', gap: 12, flexShrink: 0 },
   modalCatTag:   { fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: .5 },
   modalNombre:   { margin: '4px 0 6px', fontSize: 20, fontWeight: 800, color: '#fff' },
@@ -553,29 +553,29 @@ const s = {
   modalMeta:     { margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.5)' },
   modalCloseBtn: { background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 16, width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start' },
   modalBody:     { flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem' },
-  modalSection:  { margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .5 },
+  modalSection:  { margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .5 },
 
-  ofertaRow:     { border: '1px solid #E8EBF5', borderRadius: 12, padding: '1rem', position: 'relative', display: 'flex', flexDirection: 'column', gap: 8 },
-  ofertaRowBest: { border: '1.5px solid #06175D', background: '#F8F9FF' },
+  ofertaRow:     { border: '1px solid var(--c-border)', borderRadius: 12, padding: '1rem', position: 'relative', display: 'flex', flexDirection: 'column', gap: 8 },
+  ofertaRowBest: { border: '1.5px solid var(--c-primary)', background: '#F8F9FF' },
   ofertaRowContract: { border: '1.5px solid #86efac', background: '#f0fdf4' },
-  bestBadge:     { position: 'absolute', top: -10, left: 14, background: '#06175D', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 10px', borderRadius: 20 },
+  bestBadge:     { position: 'absolute', top: -10, left: 14, background: 'var(--c-primary)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 10px', borderRadius: 20 },
   contractBadge: { position: 'absolute', top: -10, left: 14, background: '#16a34a', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 10px', borderRadius: 20 },
   provAvatar:    { width: 38, height: 38, borderRadius: 10, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 },
-  provNombre:    { margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D3B' },
-  provVigencia:  { margin: '2px 0 0', fontSize: 11, color: '#9599AE' },
-  ofertaPrecio:  { margin: 0, fontSize: 18, fontWeight: 800, color: '#06175D', lineHeight: 1 },
-  precioTachado: { margin: 0, fontSize: 12, color: '#9599AE', textDecoration: 'line-through', lineHeight: 1 },
+  provNombre:    { margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--c-text)' },
+  provVigencia:  { margin: '2px 0 0', fontSize: 11, color: 'var(--c-muted)' },
+  ofertaPrecio:  { margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1 },
+  precioTachado: { margin: 0, fontSize: 12, color: 'var(--c-muted)', textDecoration: 'line-through', lineHeight: 1 },
   precioContract:{ margin: '2px 0 0', fontSize: 20, fontWeight: 800, color: '#15803d', lineHeight: 1 },
   descuentoBadge:{ margin: '2px 0 0', fontSize: 10, fontWeight: 700, color: '#15803d' },
 
   desglose:      { background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 12px' },
   desgloseTitle: { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#065f46', textTransform: 'uppercase', letterSpacing: .4 },
-  desgloseRow:   { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#1A1D3B', padding: '3px 0' },
+  desgloseRow:   { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--c-text)', padding: '3px 0' },
 
   tramosSection:     { paddingTop: 8, borderTop: '1px dashed #D1FAE5' },
   tramosSectionTitle:{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#065f46' },
   tramoMiniChip:     { display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '5px 10px', minWidth: 80 },
 
   ordenBtn:      { width: '100%', padding: '9px', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
-  skuHint:       { margin: '6px 0 0', fontSize: 11, color: '#9599AE', textAlign: 'center' },
+  skuHint:       { margin: '6px 0 0', fontSize: 11, color: 'var(--c-muted)', textAlign: 'center' },
 }

@@ -169,9 +169,9 @@ export default function AdminUsuarios() {
                           key={u.id}
                           onClick={() => openPanel(u)}
                           style={{
-                            background: sel ? '#EEF1FB' : i % 2 === 0 ? '#fff' : '#F7F8FC',
+                            background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)',
                             cursor: 'pointer',
-                            borderLeft: `3px solid ${sel ? '#06175D' : 'transparent'}`,
+                            borderLeft: `3px solid ${sel ? 'var(--c-primary)' : 'transparent'}`,
                           }}
                         >
                           <td style={{ ...s.td, fontWeight: 600 }}>
@@ -184,7 +184,7 @@ export default function AdminUsuarios() {
                               {u.nombre}
                             </div>
                           </td>
-                          <td style={{ ...s.td, color: '#9599AE' }}>{u.email}</td>
+                          <td style={{ ...s.td, color: 'var(--c-muted)' }}>{u.email}</td>
                           <td style={s.td}>{u.nombreEmpresa || '—'}</td>
                           <td style={s.td}><RolChip rol={u.nombreRol} /></td>
                           <td style={s.td}>
@@ -379,26 +379,26 @@ export default function AdminUsuarios() {
 
 /* ─── Helpers ─── */
 
-const PALETTE = ['#06175D','#065f46','#78350f','#4a1d96','#7f1d1d','#134e4a']
+const PALETTE = ['var(--c-primary)','#065f46','#78350f','#4a1d96','#7f1d1d','#134e4a']
 const strColor = (s) => PALETTE[(s?.charCodeAt(0) ?? 0) % PALETTE.length]
 
 function RolChip({ rol }) {
   const map = {
     admin:     { bg: '#fef3c7', color: '#92400e' },
-    proveedor: { bg: '#EEF1FB', color: '#06175D' },
+    proveedor: { bg: 'var(--c-primary-light)', color: 'var(--c-primary)' },
     empresa:   { bg: '#F0FDF4', color: '#15803d' },
   }
   const key = rol?.toLowerCase()
-  const { bg, color } = map[key] ?? { bg: '#F0F2FA', color: '#9599AE' }
+  const { bg, color } = map[key] ?? { bg: 'var(--c-bg-page)', color: 'var(--c-muted)' }
   return <span style={{ padding: '2px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: bg, color }}>{rol || '—'}</span>
 }
 
 function InfoRow({ label, value, valueColor }) {
   const empty = value == null || value === ''
   return (
-    <div style={{ background: '#F7F8FC', borderRadius: 8, padding: '9px 11px' }}>
-      <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
-      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: empty ? '#C4C7D6' : valueColor ?? '#1A1D3B', fontStyle: empty ? 'italic' : 'normal' }}>
+    <div style={{ background: 'var(--c-bg-subtle)', borderRadius: 8, padding: '9px 11px' }}>
+      <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: empty ? '#C4C7D6' : valueColor ?? 'var(--c-text)', fontStyle: empty ? 'italic' : 'normal' }}>
         {empty ? 'No disponible' : value}
       </p>
     </div>
@@ -408,7 +408,7 @@ function InfoRow({ label, value, valueColor }) {
 function FieldWrap({ label, children }) {
   return (
     <div>
-      <p style={{ margin: '0 0 5px', fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
+      <p style={{ margin: '0 0 5px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
       {children}
     </div>
   )
@@ -416,8 +416,8 @@ function FieldWrap({ label, children }) {
 
 function Paginacion({ page, totalPages, totalElements, pageSize, onChange }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid #F0F2FA' }}>
-      <span style={{ fontSize: 12, color: '#9599AE' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid var(--c-border-light)' }}>
+      <span style={{ fontSize: 12, color: 'var(--c-muted)' }}>
         {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalElements)} de {totalElements}
       </span>
       <div style={{ display: 'flex', gap: 4 }}>
@@ -434,35 +434,35 @@ function Paginacion({ page, totalPages, totalElements, pageSize, onChange }) {
 /* ─── Styles ─── */
 const s = {
   toolbar:       { display: 'flex', gap: 12, marginBottom: '1rem', alignItems: 'center' },
-  searchWrap:    { display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: '1.5px solid #DDE0EE', borderRadius: 8, padding: '8px 12px', flex: 1, maxWidth: 400 },
-  searchInput:   { border: 'none', outline: 'none', fontSize: 13, color: '#1A1D3B', flex: 1, background: 'transparent' },
-  clearBtn:      { border: 'none', background: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 12 },
-  btnNew:        { padding: '9px 18px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' },
+  searchWrap:    { display: 'flex', alignItems: 'center', gap: 8, background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 8, padding: '8px 12px', flex: 1, maxWidth: 400 },
+  searchInput:   { border: 'none', outline: 'none', fontSize: 13, color: 'var(--c-text)', flex: 1, background: 'transparent' },
+  clearBtn:      { border: 'none', background: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 12 },
+  btnNew:        { padding: '9px 18px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' },
 
-  tableWrap:     { background: '#fff', border: '1px solid #DDE0EE', borderRadius: 10, overflow: 'hidden' },
+  tableWrap:     { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden' },
   table:         { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  th:            { padding: '10px 14px', background: '#EEF1FB', color: '#06175D', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid #DDE0EE', whiteSpace: 'nowrap' },
-  td:            { padding: '9px 14px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA', whiteSpace: 'nowrap' },
-  empty:         { padding: '2.5rem', color: '#9599AE', fontSize: 14, textAlign: 'center', margin: 0 },
+  th:            { padding: '10px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid var(--c-border)', whiteSpace: 'nowrap' },
+  td:            { padding: '9px 14px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)', whiteSpace: 'nowrap' },
+  empty:         { padding: '2.5rem', color: 'var(--c-muted)', fontSize: 14, textAlign: 'center', margin: 0 },
   avatar:        { width: 28, height: 28, borderRadius: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, flexShrink: 0 },
 
-  pageBtn:       { padding: '4px 10px', fontSize: 12, fontWeight: 600, background: '#fff', color: '#9599AE', border: '1px solid #DDE0EE', borderRadius: 6, cursor: 'pointer' },
-  pageBtnActive: { background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  pageBtn:       { padding: '4px 10px', fontSize: 12, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)', borderRadius: 6, cursor: 'pointer' },
+  pageBtnActive: { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
-  panel:         { width: 296, flexShrink: 0, background: '#fff', border: '1px solid #DDE0EE', borderRadius: 12, display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 200px)', overflow: 'hidden', boxShadow: '0 4px 16px rgba(6,23,93,0.08)', position: 'sticky', top: 20 },
-  panelHead:     { display: 'flex', alignItems: 'center', gap: 10, padding: '1rem', borderBottom: '1px solid #F0F2FA', flexShrink: 0 },
+  panel:         { width: 296, flexShrink: 0, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 12, display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 200px)', overflow: 'hidden', boxShadow: 'var(--c-shadow-md)', position: 'sticky', top: 20 },
+  panelHead:     { display: 'flex', alignItems: 'center', gap: 10, padding: '1rem', borderBottom: '1px solid var(--c-border-light)', flexShrink: 0 },
   panelAvatar:   { width: 42, height: 42, borderRadius: 10, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18, flexShrink: 0 },
-  panelNombre:   { margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D3B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  panelSub:      { margin: '2px 0 0', fontSize: 11, color: '#9599AE', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  closeBtn:      { background: 'none', border: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 14, flexShrink: 0, padding: 4 },
+  panelNombre:   { margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--c-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  panelSub:      { margin: '2px 0 0', fontSize: 11, color: 'var(--c-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  closeBtn:      { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 14, flexShrink: 0, padding: 4 },
 
   panelScroll:   { flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: 8 },
-  panelActions:  { padding: '1rem', borderTop: '1px solid #F0F2FA', flexShrink: 0 },
+  panelActions:  { padding: '1rem', borderTop: '1px solid var(--c-border-light)', flexShrink: 0 },
 
-  input:         { width: '100%', padding: '8px 10px', border: '1.5px solid #DDE0EE', borderRadius: 7, fontSize: 13, color: '#1A1D3B', boxSizing: 'border-box', outline: 'none', background: '#fff' },
-  toggleBtn:     { flex: 1, padding: '8px', border: '1.5px solid #DDE0EE', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: '#fff', color: '#9599AE' },
-  toggleBtnActive:{ background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  input:         { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', boxSizing: 'border-box', outline: 'none', background: 'var(--c-bg)' },
+  toggleBtn:     { flex: 1, padding: '8px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--c-bg)', color: 'var(--c-muted)' },
+  toggleBtnActive:{ background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
-  btn:           { padding: '10px 14px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  btnSecondary:  { background: '#fff', color: '#1A1D3B', border: '1.5px solid #DDE0EE' },
+  btn:           { padding: '10px 14px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  btnSecondary:  { background: 'var(--c-bg)', color: 'var(--c-text)', border: '1.5px solid var(--c-border)' },
 }

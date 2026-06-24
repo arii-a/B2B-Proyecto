@@ -5,7 +5,7 @@ import PageHeader from '../components/PageHeader'
 
 const norm = (d) => Array.isArray(d) ? d : (d?.content ?? [])
 
-const PALETTE = ['#06175D','#065f46','#78350f','#4a1d96','#7f1d1d','#134e4a','#1e3a5f','#713f12']
+const PALETTE = ['var(--c-primary)','#065f46','#78350f','#4a1d96','#7f1d1d','#134e4a','#1e3a5f','#713f12']
 const colorFallback = (s) => PALETTE[s?.charCodeAt(0) % PALETTE.length] ?? PALETTE[0]
 
 async function extraerColor(url) {
@@ -165,8 +165,8 @@ export default function Proveedores() {
           <div style={s.grid}>{[1,2,3,4,5,6,7,8].map(i => <div key={i} style={s.skeleton}/>)}</div>
         ) : filtrados.length === 0 ? (
           <div style={s.empty}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DDE0EE" strokeWidth="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            <p style={{ margin: '8px 0 0', color: '#9599AE', fontSize: 13 }}>Sin resultados para "{busqueda}"</p>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--c-border)" strokeWidth="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <p style={{ margin: '8px 0 0', color: 'var(--c-muted)', fontSize: 13 }}>Sin resultados para "{busqueda}"</p>
           </div>
         ) : (
           <div style={s.grid}>
@@ -304,57 +304,57 @@ export default function Proveedores() {
 }
 
 const s = {
-  iconBtn:      { background: '#fff', border: '1px solid #DDE0EE', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', color: '#9599AE', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  iconBtn:      { background: 'var(--c-bg)', border: '1px solid var(--c-border-mid)', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', color: 'var(--c-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   msgErr:       { background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', marginBottom: '1rem', color: '#dc2626', fontSize: 13 },
 
-  searchBar:    { display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: '1.5px solid #DDE0EE', borderRadius: 10, padding: '0 12px', marginBottom: '1.25rem', maxWidth: 340, height: 40 },
-  searchInput:  { flex: 1, border: 'none', outline: 'none', fontSize: 13, color: '#1A1D3B', background: 'transparent' },
-  clearBtn:     { background: 'none', border: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 12, padding: '0 2px' },
+  searchBar:    { display: 'flex', alignItems: 'center', gap: 8, background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 10, padding: '0 12px', marginBottom: '1.25rem', maxWidth: 340, height: 40 },
+  searchInput:  { flex: 1, border: 'none', outline: 'none', fontSize: 13, color: 'var(--c-text)', background: 'transparent' },
+  clearBtn:     { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 12, padding: '0 2px' },
 
   empty:        { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 1rem' },
 
   grid:         { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 },
-  skeleton:     { height: 158, borderRadius: 14, background: 'linear-gradient(90deg, #F0F2FA 25%, #E8EBF5 50%, #F0F2FA 75%)', backgroundSize: '200%' },
+  skeleton:     { height: 158, borderRadius: 14, background: 'linear-gradient(90deg, var(--c-bg-page) 25%, var(--c-border) 50%, var(--c-bg-page) 75%)', backgroundSize: '200%' },
 
-  card:         { background: '#fff', border: '1.5px solid #E8EBF5', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow .15s', boxShadow: '0 1px 4px rgba(6,23,93,0.05)', userSelect: 'none' },
+  card:         { background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow .15s', boxShadow: '0 1px 4px rgba(6,23,93,0.05)', userSelect: 'none' },
 
   strip:        { height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   stripLogo:    { maxHeight: 44, maxWidth: '75%', objectFit: 'contain' },
   stripInitial: { fontSize: 28, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: -1 },
 
   cardBody:     { padding: '10px 12px 13px' },
-  cardNombre:   { margin: '0 0 7px', fontWeight: 700, fontSize: 13, color: '#1A1D3B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  cardNombre:   { margin: '0 0 7px', fontWeight: 700, fontSize: 13, color: 'var(--c-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   pillRow:      { display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' },
   prodBadge:    { display: 'inline-flex', alignItems: 'center', fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 20 },
   catBadge:     { fontSize: 10, background: '#F0FDF4', color: '#15803d', padding: '2px 7px', borderRadius: 20, fontWeight: 600 },
-  moreBadge:    { fontSize: 10, color: '#9599AE', padding: '2px 3px' },
+  moreBadge:    { fontSize: 10, color: 'var(--c-muted)', padding: '2px 3px' },
 
-  panel:        { width: 296, flexShrink: 0, background: '#fff', border: '1px solid #E8EBF5', borderRadius: 16, overflow: 'hidden', boxShadow: '0 6px 24px rgba(6,23,93,0.12)', position: 'sticky', top: 20 },
+  panel:        { width: 296, flexShrink: 0, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 6px 24px rgba(6,23,93,0.12)', position: 'sticky', top: 20 },
 
   panelHdr:     { position: 'relative', padding: '1.25rem 1rem 1rem', minHeight: 100, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' },
   panelBg:      { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.18, filter: 'blur(12px)', transform: 'scale(1.1)' },
   closeBtn:     { position: 'absolute', top: 10, right: 10, zIndex: 2, background: 'rgba(0,0,0,0.25)', border: 'none', color: '#fff', borderRadius: 6, width: 26, height: 26, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   panelHdrContent: { position: 'relative', zIndex: 1, display: 'flex', gap: 12, alignItems: 'center' },
-  panelLogoBox: { width: 54, height: 54, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 4, boxSizing: 'border-box' },
+  panelLogoBox: { width: 54, height: 54, borderRadius: 10, background: 'var(--c-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 4, boxSizing: 'border-box' },
   panelLogo:    { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' },
   panelInitial: { width: 54, height: 54, borderRadius: 10, background: 'rgba(255,255,255,0.2)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, flexShrink: 0 },
   panelNombre:  { margin: 0, fontWeight: 800, fontSize: 15, color: '#fff', lineHeight: 1.2 },
   panelNit:     { margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.65)' },
 
-  statsRow:     { display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid #F0F2FA' },
-  statBox:      { padding: '14px 10px', textAlign: 'center', borderRight: '1px solid #F0F2FA' },
+  statsRow:     { display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid var(--c-border-light)' },
+  statBox:      { padding: '14px 10px', textAlign: 'center', borderRight: '1px solid var(--c-bg-page)' },
   statNum:      { display: 'block', fontSize: 26, fontWeight: 900, lineHeight: 1 },
-  statLabel:    { fontSize: 10, color: '#9599AE', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 },
+  statLabel:    { fontSize: 10, color: 'var(--c-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 },
 
   panelBody:    { padding: '1rem' },
   tagCloud:     { display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: '0.875rem' },
   tag:          { fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 20, border: '1px solid' },
 
-  prodList:     { borderTop: '1px solid #F0F2FA', paddingTop: 10, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 7 },
+  prodList:     { borderTop: '1px solid var(--c-border-light)', paddingTop: 10, marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 7 },
   prodRow:      { display: 'flex', gap: 8, alignItems: 'center' },
   dot:          { width: 5, height: 5, borderRadius: '50%', flexShrink: 0 },
-  prodNombre:   { fontSize: 12, color: '#1A1D3B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  masMsg:       { fontSize: 11, color: '#9599AE', margin: '2px 0 0', fontStyle: 'italic' },
+  prodNombre:   { fontSize: 12, color: 'var(--c-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  masMsg:       { fontSize: 11, color: 'var(--c-muted)', margin: '2px 0 0', fontStyle: 'italic' },
 
   ctaBtn:       { width: '100%', color: '#fff', border: 'none', borderRadius: 10, padding: '11px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
 }

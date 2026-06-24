@@ -131,9 +131,9 @@ export default function AdminProveedores() {
                           key={item.provId ?? item.empresa?.id}
                           onClick={() => { setSelected(item); setFeedback(null) }}
                           style={{
-                            background: isSelected ? '#EEF1FB' : i % 2 === 0 ? '#fff' : '#F7F8FC',
+                            background: isSelected ? 'var(--c-primary-light)' : i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)',
                             cursor:     'pointer',
-                            borderLeft: `3px solid ${isSelected ? '#06175D' : 'transparent'}`,
+                            borderLeft: `3px solid ${isSelected ? 'var(--c-primary)' : 'transparent'}`,
                           }}
                         >
                           <td style={{ ...s.td, fontWeight: 600 }}>{item.empresa?.nombre || '—'}</td>
@@ -143,7 +143,7 @@ export default function AdminProveedores() {
                           <td style={s.td}>
                             {tab === 0 && <Chip color="#d97706" bg="#fffbeb">Pendiente</Chip>}
                             {tab === 1 && <Chip color="#16a34a" bg="#f0fdf4">Aprobado</Chip>}
-                            {tab === 2 && <Chip color="#9599AE" bg="#F7F8FC">Sin solicitud</Chip>}
+                            {tab === 2 && <Chip color="var(--c-muted)" bg="var(--c-bg-subtle)">Sin solicitud</Chip>}
                           </td>
                         </tr>
                       )
@@ -188,7 +188,7 @@ function DetailPanel({ item, feedback, loading, onAprobar, onDesaprobar, onClose
                     : 'Sin solicitud'
   const statusColor = activo === true  ? '#16a34a'
                     : activo === false ? '#d97706'
-                    : '#9599AE'
+                    : 'var(--c-muted)'
 
   return (
     <div style={s.panel}>
@@ -247,7 +247,7 @@ function DetailPanel({ item, feedback, loading, onAprobar, onDesaprobar, onClose
           </button>
         )}
         {type === 'empresa' && (
-          <p style={{ margin: 0, fontSize: 13, color: '#9599AE' }}>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--c-muted)' }}>
             Esta empresa no ha enviado solicitud de verificación.
           </p>
         )}
@@ -275,7 +275,7 @@ function PanelRow({ label, value }) {
   return (
     <div>
       <p style={s.pLabel}>{label}</p>
-      <p style={{ ...s.pValue, color: isEmpty ? '#C4C7D6' : '#1A1D3B', fontStyle: isEmpty ? 'italic' : 'normal' }}>
+      <p style={{ ...s.pValue, color: isEmpty ? '#C4C7D6' : 'var(--c-text)', fontStyle: isEmpty ? 'italic' : 'normal' }}>
         {isEmpty ? 'No proporcionado' : value}
       </p>
     </div>
@@ -307,38 +307,38 @@ function Paginacion({ page, totalPages, totalElements, pageSize, onChange }) {
 
 /* ─── Styles ────────────────────────────────────────────────────────────────── */
 const s = {
-  tabBar:       { display: 'flex', gap: 4, marginBottom: '1rem', background: '#fff', border: '1px solid #DDE0EE', borderRadius: 10, padding: 4 },
-  tab:          { flex: 1, padding: '8px 14px', border: 'none', borderRadius: 7, background: 'transparent', fontSize: 13, fontWeight: 500, color: '#9599AE', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all .15s' },
-  tabActive:    { background: '#EEF1FB', color: '#06175D', fontWeight: 700 },
-  tabBadge:     { padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: '#EEF1FB', color: '#9599AE' },
-  tabBadgeActive:{ background: '#06175D', color: '#fff' },
+  tabBar:       { display: 'flex', gap: 4, marginBottom: '1rem', background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, padding: 4 },
+  tab:          { flex: 1, padding: '8px 14px', border: 'none', borderRadius: 7, background: 'transparent', fontSize: 13, fontWeight: 500, color: 'var(--c-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all .15s' },
+  tabActive:    { background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 700 },
+  tabBadge:     { padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: 'var(--c-primary-light)', color: 'var(--c-muted)' },
+  tabBadgeActive:{ background: 'var(--c-primary)', color: '#fff' },
 
-  tableWrapper: { background: '#fff', border: '1px solid #DDE0EE', borderRadius: 10, overflow: 'hidden' },
+  tableWrapper: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden' },
   table:        { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  th:           { padding: '10px 14px', background: '#EEF1FB', color: '#06175D', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid #DDE0EE', whiteSpace: 'nowrap' },
-  td:           { padding: '10px 14px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA', whiteSpace: 'nowrap' },
-  empty:        { padding: '2rem', color: '#9599AE', fontSize: 14, textAlign: 'center' },
-  pagination:   { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid #F0F2FA' },
-  pageInfo:     { fontSize: 12, color: '#9599AE' },
-  pageBtn:      { padding: '4px 10px', fontSize: 12, fontWeight: 600, background: '#fff', color: '#9599AE', border: '1px solid #DDE0EE', borderRadius: 6, cursor: 'pointer' },
-  pageBtnActive:{ background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  th:           { padding: '10px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid var(--c-border)', whiteSpace: 'nowrap' },
+  td:           { padding: '10px 14px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)', whiteSpace: 'nowrap' },
+  empty:        { padding: '2rem', color: 'var(--c-muted)', fontSize: 14, textAlign: 'center' },
+  pagination:   { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid var(--c-border-light)' },
+  pageInfo:     { fontSize: 12, color: 'var(--c-muted)' },
+  pageBtn:      { padding: '4px 10px', fontSize: 12, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)', borderRadius: 6, cursor: 'pointer' },
+  pageBtnActive:{ background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
-  panel:        { width: 320, flexShrink: 0, background: '#fff', border: '1px solid #DDE0EE', borderRadius: 10, display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 200px)', overflow: 'hidden' },
-  panelHead:    { display: 'flex', alignItems: 'center', gap: 10, padding: '1rem', borderBottom: '1px solid #F0F2FA', flexShrink: 0 },
-  panelAvatar:  { width: 42, height: 42, borderRadius: 10, background: '#06175D', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 },
-  panelNombre:  { margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D3B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  closeBtn:     { background: 'none', border: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 14, flexShrink: 0, padding: 4 },
+  panel:        { width: 320, flexShrink: 0, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 200px)', overflow: 'hidden' },
+  panelHead:    { display: 'flex', alignItems: 'center', gap: 10, padding: '1rem', borderBottom: '1px solid var(--c-border-light)', flexShrink: 0 },
+  panelAvatar:  { width: 42, height: 42, borderRadius: 10, background: 'var(--c-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 },
+  panelNombre:  { margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--c-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  closeBtn:     { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 14, flexShrink: 0, padding: 4 },
   panelScroll:  { flex: 1, overflowY: 'auto', padding: '1rem' },
 
   pSection:     { marginBottom: '1.25rem' },
   pSectionHead: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: '0.75rem' },
-  pSectionNum:  { width: 22, height: 22, borderRadius: '50%', background: '#EEF1FB', color: '#06175D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, flexShrink: 0 },
-  pSectionTitle:{ margin: 0, fontWeight: 700, fontSize: 12, color: '#1A1D3B' },
+  pSectionNum:  { width: 22, height: 22, borderRadius: '50%', background: 'var(--c-primary-light)', color: 'var(--c-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, flexShrink: 0 },
+  pSectionTitle:{ margin: 0, fontWeight: 700, fontSize: 12, color: 'var(--c-text)' },
   pGrid:        { display: 'flex', flexDirection: 'column', gap: '0.6rem' },
-  pLabel:       { margin: 0, fontSize: 11, fontWeight: 600, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 },
+  pLabel:       { margin: 0, fontSize: 11, fontWeight: 600, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 },
   pValue:       { margin: '2px 0 0', fontSize: 13, fontWeight: 600 },
 
-  panelActions: { padding: '1rem', borderTop: '1px solid #F0F2FA', flexShrink: 0 },
-  approveBtn:   { width: '100%', padding: '10px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
-  rejectBtn:    { width: '100%', padding: '10px', background: '#fff', color: '#dc2626', border: '1.5px solid #fca5a5', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  panelActions: { padding: '1rem', borderTop: '1px solid var(--c-border-light)', flexShrink: 0 },
+  approveBtn:   { width: '100%', padding: '10px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  rejectBtn:    { width: '100%', padding: '10px', background: 'var(--c-bg)', color: '#dc2626', border: '1.5px solid #fca5a5', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
 }

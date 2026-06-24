@@ -276,7 +276,7 @@ export default function MiCuenta() {
 
   const setV = key => e => setVerForm(f => ({ ...f, [key]: e.target.value }))
 
-  if (loading) return <p style={{ color: '#9599AE', padding: '2rem' }}>Cargando...</p>
+  if (loading) return <p style={{ color: 'var(--c-muted)', padding: '2rem' }}>Cargando...</p>
 
   return (
     <div>
@@ -294,11 +294,11 @@ export default function MiCuenta() {
       {/* ── Foto de perfil ── */}
       <Section title="Foto de perfil" feedback={feedback.avatar}>
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px solid #DDE0EE', background: '#F7F8FC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px solid var(--c-border-mid)', background: 'var(--c-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
             {avatarPreview ? (
               <img src={avatarPreview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
             ) : (
-              <span style={{ fontSize: 28, fontWeight: 700, color: '#9599AE' }}>{(fullUser?.nombre || session?.nombre || '?')[0].toUpperCase()}</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-muted)' }}>{(fullUser?.nombre || session?.nombre || '?')[0].toUpperCase()}</span>
             )}
           </div>
           <div style={{ flex: 1, minWidth: 220 }}>
@@ -314,11 +314,11 @@ export default function MiCuenta() {
                   setAvatarPreview(URL.createObjectURL(f))
                 }} />
             </label>
-            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#9599AE' }}>JPG, PNG o WebP. Máx. 5 MB.</p>
+            <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--c-muted)' }}>JPG, PNG o WebP. Máx. 5 MB.</p>
             <div style={{ marginTop: '1rem', display: 'flex', gap: 8 }}>
               <SaveBtn onClick={saveAvatar} loading={saving === 'avatar'} label="Guardar foto" />
               {(avatarPreview || avatarUrl) && (
-                <button style={{ padding: '9px 14px', border: '1.5px solid #DDE0EE', borderRadius: 8, background: '#fff', fontSize: 13, color: '#9599AE', cursor: 'pointer' }}
+                <button style={{ padding: '9px 14px', border: '1.5px solid var(--c-border-mid)', borderRadius: 8, background: 'var(--c-bg)', fontSize: 13, color: 'var(--c-muted)', cursor: 'pointer' }}
                   onClick={() => { setAvatarFile(null); setAvatarUrl(''); setAvatarPreview('') }}>
                   Quitar
                 </button>
@@ -350,11 +350,11 @@ export default function MiCuenta() {
       {/* ── Logo de empresa ── */}
       <Section title="Logo de empresa" feedback={feedback.logo}>
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <div style={{ width: 96, height: 96, borderRadius: 14, border: '1.5px solid #DDE0EE', background: '#F7F8FC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+          <div style={{ width: 96, height: 96, borderRadius: 14, border: '1.5px solid var(--c-border-mid)', background: 'var(--c-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
             {logoPreview ? (
               <img src={logoPreview} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: 8 }} onError={e => { e.target.style.display = 'none' }} />
             ) : (
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DDE0EE" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--c-border-mid)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             )}
           </div>
           <div style={{ flex: 1, minWidth: 220 }}>
@@ -370,13 +370,13 @@ export default function MiCuenta() {
                   setLogoPreview(URL.createObjectURL(f))
                 }} />
             </label>
-            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#9599AE' }}>
+            <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--c-muted)' }}>
               JPG, PNG o WebP. Máx. 5 MB. Se usará en la página de proveedores.
             </p>
             <div style={{ marginTop: '1rem', display: 'flex', gap: 8 }}>
               <SaveBtn onClick={saveLogo} loading={saving === 'logo'} label="Guardar logo" />
               {(logoPreview || logoUrl) && (
-                <button style={{ padding: '9px 14px', border: '1.5px solid #DDE0EE', borderRadius: 8, background: '#fff', fontSize: 13, color: '#9599AE', cursor: 'pointer' }}
+                <button style={{ padding: '9px 14px', border: '1.5px solid var(--c-border-mid)', borderRadius: 8, background: 'var(--c-bg)', fontSize: 13, color: 'var(--c-muted)', cursor: 'pointer' }}
                   onClick={() => { setLogoFile(null); setLogoUrl(''); setLogoPreview('') }}>
                   Quitar
                 </button>
@@ -477,7 +477,7 @@ export default function MiCuenta() {
 
           <FormSection number="3" title="Documentos Requeridos">
             <div style={{ gridColumn: '1 / -1' }}>
-              <p style={{ margin: '0 0 1rem', fontSize: 12, color: '#9599AE', lineHeight: 1.6 }}>
+              <p style={{ margin: '0 0 1rem', fontSize: 12, color: 'var(--c-muted)', lineHeight: 1.6 }}>
                 Subí los siguientes documentos para verificar tu empresa. Se aceptan imágenes (JPG, PNG) y PDF. Máx. 5 MB cada uno.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -589,23 +589,23 @@ function DocUpload({ label, file, onChange, accept }) {
   const isPdf  = file?.type === 'application/pdf'
   const preview = file && !isPdf ? URL.createObjectURL(file) : null
   return (
-    <div style={{ background: file ? '#f0fdf4' : '#F7F8FC', border: `1.5px solid ${file ? '#bbf7d0' : '#DDE0EE'}`, borderRadius: 10, padding: '12px 14px' }}>
-      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#9599AE', marginBottom: 8 }}>{label}</label>
+    <div style={{ background: file ? '#f0fdf4' : 'var(--c-bg-subtle)', border: `1.5px solid ${file ? '#bbf7d0' : 'var(--c-border-mid)'}`, borderRadius: 10, padding: '12px 14px' }}>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--c-muted)', marginBottom: 8 }}>{label}</label>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         {preview && (
-          <img src={preview} alt="preview" style={{ height: 56, maxWidth: 100, objectFit: 'contain', borderRadius: 6, border: '1px solid #DDE0EE', background: '#fff', padding: 3 }} />
+          <img src={preview} alt="preview" style={{ height: 56, maxWidth: 100, objectFit: 'contain', borderRadius: 6, border: '1px solid var(--c-border-mid)', background: 'var(--c-bg)', padding: 3 }} />
         )}
         {isPdf && (
-          <div style={{ width: 56, height: 56, borderRadius: 6, border: '1px solid #DDE0EE', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 56, height: 56, borderRadius: 6, border: '1px solid var(--c-border-mid)', background: 'var(--c-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: 20 }}>📄</span>
           </div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <span style={{ padding: '7px 14px', background: file ? '#16a34a' : '#EEF1FB', color: file ? '#fff' : '#06175D', border: `1.5px solid ${file ? '#16a34a' : '#DDE0EE'}`, borderRadius: 7, fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+            <span style={{ padding: '7px 14px', background: file ? '#16a34a' : 'var(--c-primary-light)', color: file ? '#fff' : 'var(--c-primary)', border: `1.5px solid ${file ? '#16a34a' : 'var(--c-border-mid)'}`, borderRadius: 7, fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
               {file ? '✓ Cambiar' : 'Elegir archivo'}
             </span>
-            <span style={{ fontSize: 12, color: '#9599AE', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 12, color: 'var(--c-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {file ? file.name : 'Ningún archivo seleccionado'}
             </span>
             <input type="file" accept={accept} style={{ display: 'none' }}
@@ -638,35 +638,35 @@ function SaveBtn({ onClick, loading, label = 'Guardar cambios' }) {
 
 /* ─── Styles ─── */
 const s = {
-  card:          { background: '#fff', border: '1px solid #DDE0EE', borderRadius: 12, padding: '1.5rem', marginBottom: '1rem' },
+  card:          { background: 'var(--c-bg)', border: '1px solid var(--c-border-mid)', borderRadius: 12, padding: '1.5rem', marginBottom: '1rem' },
   cardHeader:    { display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.25rem' },
-  cardTitle:     { margin: 0, fontWeight: 700, fontSize: 15, color: '#1A1D3B' },
-  readOnlyBadge: { fontSize: 11, fontWeight: 600, padding: '2px 8px', background: '#EEF1FB', color: '#06175D', borderRadius: 20 },
+  cardTitle:     { margin: 0, fontWeight: 700, fontSize: 15, color: 'var(--c-text)' },
+  readOnlyBadge: { fontSize: 11, fontWeight: 600, padding: '2px 8px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', borderRadius: 20 },
   grid2:         { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' },
-  label:         { display: 'block', fontSize: 13, fontWeight: 500, color: '#9599AE', marginBottom: 5 },
-  input:         { width: '100%', padding: '9px 12px', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 14, color: '#1A1D3B', outline: 'none', boxSizing: 'border-box', background: '#fff' },
-  roValue:       { padding: '9px 12px', border: '1.5px solid #EEF1FB', borderRadius: 8, fontSize: 14, color: '#1A1D3B', background: '#F7F8FC', fontWeight: 600 },
-  saveBtn:       { padding: '9px 20px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  label:         { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--c-muted)', marginBottom: 5 },
+  input:         { width: '100%', padding: '9px 12px', border: '1.5px solid var(--c-border-mid)', borderRadius: 8, fontSize: 14, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box', background: 'var(--c-input-bg)' },
+  roValue:       { padding: '9px 12px', border: '1.5px solid var(--c-primary-light)', borderRadius: 8, fontSize: 14, color: 'var(--c-text)', background: 'var(--c-bg-subtle)', fontWeight: 600 },
+  saveBtn:       { padding: '9px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
   fileLabel:     { display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' },
-  fileBtn:       { padding: '8px 14px', background: '#EEF1FB', color: '#06175D', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 13, fontWeight: 600, flexShrink: 0 },
-  fileName:      { fontSize: 13, color: '#9599AE', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  fileBtn:       { padding: '8px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: '1.5px solid var(--c-border-mid)', borderRadius: 8, fontSize: 13, fontWeight: 600, flexShrink: 0 },
+  fileName:      { fontSize: 13, color: 'var(--c-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
 
-  sectionTitle:  { margin: '0 0 .75rem', fontWeight: 700, fontSize: 15, color: '#1A1D3B' },
-  muted:         { margin: 0, fontSize: 14, color: '#9599AE', lineHeight: 1.5 },
-  verifyBtn:     { marginTop: '1rem', padding: '10px 20px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  sectionTitle:  { margin: '0 0 .75rem', fontWeight: 700, fontSize: 15, color: 'var(--c-text)' },
+  muted:         { margin: 0, fontSize: 14, color: 'var(--c-muted)', lineHeight: 1.5 },
+  verifyBtn:     { marginTop: '1rem', padding: '10px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
 
-  formCard:      { background: '#fff', border: '1px solid #DDE0EE', borderRadius: 12, padding: '1.75rem', marginBottom: '1rem' },
-  formTitle:     { margin: '0 0 6px', fontWeight: 700, fontSize: 17, color: '#06175D' },
-  formDesc:      { margin: '0 0 1.5rem', fontSize: 13, color: '#9599AE', lineHeight: 1.6 },
+  formCard:      { background: 'var(--c-bg)', border: '1px solid var(--c-border-mid)', borderRadius: 12, padding: '1.75rem', marginBottom: '1rem' },
+  formTitle:     { margin: '0 0 6px', fontWeight: 700, fontSize: 17, color: 'var(--c-primary)' },
+  formDesc:      { margin: '0 0 1.5rem', fontSize: 13, color: 'var(--c-muted)', lineHeight: 1.6 },
 
-  fsection:      { marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #F0F2FA' },
+  fsection:      { marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--c-border-light)' },
   fsectionHeader:{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1rem' },
-  fsectionNum:   { width: 26, height: 26, borderRadius: '50%', background: '#EEF1FB', color: '#06175D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, flexShrink: 0 },
-  fsectionName:  { margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D3B' },
+  fsectionNum:   { width: 26, height: 26, borderRadius: '50%', background: 'var(--c-primary-light)', color: 'var(--c-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, flexShrink: 0 },
+  fsectionName:  { margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--c-text)' },
   fieldsGrid:    { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' },
 
   errorBox:      { background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', marginBottom: '1.25rem', color: '#dc2626', fontSize: 13 },
   formActions:   { display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: '0.5rem' },
-  cancelBtn:     { padding: '10px 18px', border: '1.5px solid #DDE0EE', borderRadius: 8, background: '#fff', fontSize: 14, fontWeight: 500, color: '#9599AE', cursor: 'pointer' },
-  submitBtn:     { padding: '10px 22px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  cancelBtn:     { padding: '10px 18px', border: '1.5px solid var(--c-border-mid)', borderRadius: 8, background: 'var(--c-bg)', fontSize: 14, fontWeight: 500, color: 'var(--c-muted)', cursor: 'pointer' },
+  submitBtn:     { padding: '10px 22px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
 }

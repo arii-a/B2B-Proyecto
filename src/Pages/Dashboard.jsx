@@ -29,7 +29,7 @@ const ESTADO = {
   rechazado:  { bg: '#fef2f2', color: '#dc2626', label: 'Rechazado'  },
 }
 const estadoStyle = (e) =>
-  ESTADO[e?.toLowerCase()] ?? { bg: '#F0F2FA', color: '#9599AE', label: e ?? '—' }
+  ESTADO[e?.toLowerCase()] ?? { bg: 'var(--c-border-light)', color: 'var(--c-muted)', label: e ?? '—' }
 
 /* ─── Icon ─────────────────────────────────────────────────────────────────── */
 function Ic({ n, size = 20 }) {
@@ -116,7 +116,7 @@ function AdminDashboard({ session }) {
     {
       key: 'volumen', label: 'Volumen operado', icon: 'zap',
       value: fmtMoney(totalVolumen), sub: `en ${totalOrdenes} órdenes totales`,
-      grad: 'linear-gradient(135deg,#06175D,#1a3a8f)',
+      grad: 'linear-gradient(135deg,var(--c-primary),var(--c-primary-mid))',
     },
     {
       key: '24h', label: 'Comisiones últimas 24h', icon: 'zap',
@@ -194,7 +194,7 @@ function AdminDashboard({ session }) {
         <div style={s.mainCard}>
           <div style={s.cardHead}>
             <p style={s.cardTitle}>Últimas comisiones cobradas</p>
-            <span style={{ fontSize: 11, color: '#9599AE', fontWeight: 500 }}>
+            <span style={{ fontSize: 11, color: 'var(--c-muted)', fontWeight: 500 }}>
               {comisiones.length} registros totales
             </span>
           </div>
@@ -202,7 +202,7 @@ function AdminDashboard({ session }) {
             <p style={s.emptyMsg}>Cargando...</p>
           ) : recentCom.length === 0 ? (
             <div style={s.emptyState}>
-              <div style={{ color: '#C5CADF', display: 'flex', justifyContent: 'center' }}>
+              <div style={{ color: 'var(--c-border)', display: 'flex', justifyContent: 'center' }}>
                 <Ic n="money" size={36} />
               </div>
               <p style={s.emptyTitle}>Sin comisiones registradas</p>
@@ -221,7 +221,7 @@ function AdminDashboard({ session }) {
               </thead>
               <tbody>
                 {recentCom.map((c, i) => (
-                  <tr key={c.id ?? i} style={{ background: i % 2 === 0 ? '#fff' : '#FAFBFD' }}>
+                  <tr key={c.id ?? i} style={{ background: i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-alt)' }}>
                     <td style={{ ...s.td, fontWeight: 600 }}>
                       {c.idProveedor?.idEmpresa?.nombre ?? c.nombreProveedor ?? '—'}
                     </td>
@@ -229,10 +229,10 @@ function AdminDashboard({ session }) {
                     <td style={{ ...s.td, fontWeight: 700, color: '#059669' }}>
                       {fmtMoney(c.montoComision)}
                     </td>
-                    <td style={{ ...s.td, fontSize: 11, color: '#9599AE' }}>
+                    <td style={{ ...s.td, fontSize: 11, color: 'var(--c-muted)' }}>
                       {c.idReglaComision?.tipo ?? c.nombreReglaComision ?? '—'}
                     </td>
-                    <td style={{ ...s.td, color: '#9599AE' }}>{fmtDate(c.fecha)}</td>
+                    <td style={{ ...s.td, color: 'var(--c-muted)' }}>{fmtDate(c.fecha)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -246,22 +246,22 @@ function AdminDashboard({ session }) {
           {/* Top proveedores */}
           <div style={s.sideCard}>
             <p style={s.cardTitle}>Top proveedores</p>
-            <p style={{ margin: '2px 0 14px', fontSize: 11, color: '#9599AE' }}>Por comisión generada para la plataforma</p>
+            <p style={{ margin: '2px 0 14px', fontSize: 11, color: 'var(--c-muted)' }}>Por comisión generada para la plataforma</p>
             {loading || topProveedores.length === 0 ? (
-              <p style={{ fontSize: 12, color: '#9599AE', margin: 0 }}>Sin datos aún.</p>
+              <p style={{ fontSize: 12, color: 'var(--c-muted)', margin: 0 }}>Sin datos aún.</p>
             ) : (
               topProveedores.map(([nombre, monto], i) => (
                 <div key={nombre} style={{ marginBottom: 13 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#1A1D3B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
-                      <span style={{ color: '#9599AE', marginRight: 5 }}>#{i + 1}</span>{nombre}
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
+                      <span style={{ color: 'var(--c-muted)', marginRight: 5 }}>#{i + 1}</span>{nombre}
                     </span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#059669', flexShrink: 0, marginLeft: 6 }}>
                       {fmtMoney(monto)}
                     </span>
                   </div>
-                  <div style={{ height: 5, borderRadius: 4, background: '#F0F2FA' }}>
-                    <div style={{ height: '100%', borderRadius: 4, background: 'linear-gradient(90deg,#06175D,#4f46e5)', width: `${Math.round((monto / maxCom) * 100)}%` }} />
+                  <div style={{ height: 5, borderRadius: 4, background: 'var(--c-border-light)' }}>
+                    <div style={{ height: '100%', borderRadius: 4, background: 'linear-gradient(90deg,var(--c-primary),#4f46e5)', width: `${Math.round((monto / maxCom) * 100)}%` }} />
                   </div>
                 </div>
               ))
@@ -334,10 +334,10 @@ export default function Dashboard() {
   const kpiCards = isProveedor ? [
     { key: 'ingresos',    label: 'Ingresos generados',    value: fmtMoney(totalMonto),  sub: `de ${ordenes.length} órdenes recibidas`, icon: 'money',    grad: 'linear-gradient(135deg,#065f46,#059669)' },
     { key: 'pendientes',  label: 'Órdenes pendientes',    value: pendientes,             sub: pendientes === 0 ? 'Sin órdenes por procesar' : 'requieren atención', icon: 'clock', grad: 'linear-gradient(135deg,#78350f,#d97706)', alert: pendientes > 0, action: () => navigate('/mis-ordenes') },
-    { key: 'procesadas',  label: 'Procesadas / Pagadas',  value: completadas,            sub: `${Math.round((completadas / total) * 100)}% de éxito`, icon: 'box', grad: 'linear-gradient(135deg,#06175D,#1a3a8f)', action: () => navigate('/mis-ordenes') },
+    { key: 'procesadas',  label: 'Procesadas / Pagadas',  value: completadas,            sub: `${Math.round((completadas / total) * 100)}% de éxito`, icon: 'box', grad: 'linear-gradient(135deg,var(--c-primary),var(--c-primary-mid))', action: () => navigate('/mis-ordenes') },
     { key: 'contratos',   label: 'Contratos activos',     value: contratosActivos,       sub: `${contratos.length} contratos en total`, icon: 'contract', grad: 'linear-gradient(135deg,#1e1b4b,#4f46e5)', action: () => navigate('/contratos') },
   ] : [
-    { key: 'gastado',     label: 'Total en compras',      value: fmtMoney(totalMonto),  sub: `en ${ordenes.length} órdenes`, icon: 'money', grad: 'linear-gradient(135deg,#06175D,#1a3a8f)' },
+    { key: 'gastado',     label: 'Total en compras',      value: fmtMoney(totalMonto),  sub: `en ${ordenes.length} órdenes`, icon: 'money', grad: 'linear-gradient(135deg,var(--c-primary),var(--c-primary-mid))' },
     { key: 'pendientes',  label: 'Órdenes pendientes',    value: pendientes,             sub: pendientes === 0 ? 'Todo al día' : 'esperando aprobación', icon: 'clock', grad: 'linear-gradient(135deg,#78350f,#d97706)', alert: pendientes > 0, action: () => navigate('/mis-ordenes') },
     { key: 'completadas', label: 'Órdenes completadas',   value: completadas,            sub: `${Math.round((completadas / total) * 100)}% de éxito`, icon: 'box', grad: 'linear-gradient(135deg,#065f46,#059669)', action: () => navigate('/mis-ordenes') },
     { key: 'contratos',   label: 'Contratos vigentes',    value: contratosActivos,       sub: `${contratos.length} contratos en total`, icon: 'contract', grad: 'linear-gradient(135deg,#1e1b4b,#4f46e5)', action: () => navigate('/contratos') },
@@ -390,7 +390,7 @@ export default function Dashboard() {
             <p style={s.emptyMsg}>Cargando...</p>
           ) : recentOrdenes.length === 0 ? (
             <div style={s.emptyState}>
-              <div style={{ color: '#C5CADF', display: 'flex', justifyContent: 'center' }}><Ic n="box" size={36} /></div>
+              <div style={{ color: 'var(--c-border)', display: 'flex', justifyContent: 'center' }}><Ic n="box" size={36} /></div>
               <p style={s.emptyTitle}>Sin órdenes aún</p>
               <p style={s.emptySub}>
                 {isProveedor ? 'Las órdenes que recibas aparecerán aquí.' : 'Crea tu primera orden desde "Mis órdenes".'}
@@ -414,8 +414,8 @@ export default function Dashboard() {
                     ? (o.idEmpresaCompradora?.nombre ?? '—')
                     : (o.idProveedor?.idEmpresa?.nombre ?? '—')
                   return (
-                    <tr key={o.id ?? i} style={{ background: i % 2 === 0 ? '#fff' : '#FAFBFD' }}>
-                      <td style={{ ...s.td, fontFamily: 'monospace', fontWeight: 700, color: '#06175D', fontSize: 12 }}>
+                    <tr key={o.id ?? i} style={{ background: i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-alt)' }}>
+                      <td style={{ ...s.td, fontFamily: 'monospace', fontWeight: 700, color: 'var(--c-primary)', fontSize: 12 }}>
                         #{shortId(o.id)}
                       </td>
                       <td style={{ ...s.td, fontWeight: 500 }}>{counterpart}</td>
@@ -423,7 +423,7 @@ export default function Dashboard() {
                       <td style={s.td}>
                         <span style={{ ...s.statusChip, background: st.bg, color: st.color }}>{st.label}</span>
                       </td>
-                      <td style={{ ...s.td, color: '#9599AE' }}>{fmtDate(o.fecha)}</td>
+                      <td style={{ ...s.td, color: 'var(--c-muted)' }}>{fmtDate(o.fecha)}</td>
                     </tr>
                   )
                 })}
@@ -439,7 +439,7 @@ export default function Dashboard() {
           <div style={s.sideCard}>
             <p style={s.cardTitle}>Estado de órdenes</p>
             {loading || ordenes.length === 0 ? (
-              <p style={{ fontSize: 12, color: '#9599AE', margin: '8px 0 0' }}>Sin datos aún.</p>
+              <p style={{ fontSize: 12, color: 'var(--c-muted)', margin: '8px 0 0' }}>Sin datos aún.</p>
             ) : (
               <>
                 <div style={s.stackedBar}>
@@ -452,18 +452,18 @@ export default function Dashboard() {
                     <div key={b.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: b.color, flexShrink: 0 }} />
-                        <span style={{ fontSize: 12, color: '#1A1D3B', fontWeight: 500 }}>{b.label}</span>
+                        <span style={{ fontSize: 12, color: 'var(--c-text)', fontWeight: 500 }}>{b.label}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1D3B' }}>{b.val}</span>
-                        <span style={{ fontSize: 11, color: '#C5CADF', width: 30, textAlign: 'right' }}>{b.pct}%</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-text)' }}>{b.val}</span>
+                        <span style={{ fontSize: 11, color: 'var(--c-border)', width: 30, textAlign: 'right' }}>{b.pct}%</span>
                       </div>
                     </div>
                   ))}
                 </div>
                 <div style={s.totalRow}>
-                  <span style={{ fontSize: 12, color: '#9599AE' }}>Total órdenes</span>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: '#06175D' }}>{ordenes.length}</span>
+                  <span style={{ fontSize: 12, color: 'var(--c-muted)' }}>Total órdenes</span>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--c-primary)' }}>{ordenes.length}</span>
                 </div>
               </>
             )}
@@ -508,7 +508,7 @@ function HeroBanner({ session, role, totalMonto, totalOrdenes }) {
 
 /* ─── Styles ────────────────────────────────────────────────────────────────── */
 const s = {
-  hero:            { background: 'linear-gradient(135deg,#06175D 0%,#1a3a8f 100%)', borderRadius: 16, padding: '1.75rem 2rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', minHeight: 120 },
+  hero:            { background: 'linear-gradient(135deg,var(--c-primary) 0%,var(--c-primary-mid) 100%)', borderRadius: 16, padding: '1.75rem 2rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', minHeight: 120 },
   heroCircle1:     { position: 'absolute', right: -20, top: -30, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' },
   heroCircle2:     { position: 'absolute', right: 120, bottom: -50, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' },
   heroLeft:        { zIndex: 1 },
@@ -524,37 +524,37 @@ const s = {
   heroStatDivider: { width: 1, height: 36, background: 'rgba(255,255,255,0.15)' },
 
   kpiGrid:         { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1rem', marginBottom: '1.25rem' },
-  kpiCard:         { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, padding: '1.1rem', textAlign: 'left', transition: 'transform .18s, box-shadow .18s' },
+  kpiCard:         { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '1.1rem', textAlign: 'left', transition: 'transform .18s, box-shadow .18s' },
   iconBox:         { width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 },
   alertDot:        { width: 8, height: 8, borderRadius: '50%', background: '#d97706', marginTop: 6 },
-  kpiValue:        { margin: '0 0 2px', fontSize: 26, fontWeight: 800, color: '#06175D', lineHeight: 1 },
-  kpiLabel:        { margin: '0 0 3px', fontSize: 12, fontWeight: 700, color: '#1A1D3B' },
-  kpiSub:          { margin: '0 0 10px', fontSize: 11, color: '#9599AE' },
-  kpiLink:         { display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#9599AE', fontWeight: 600 },
+  kpiValue:        { margin: '0 0 2px', fontSize: 26, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1 },
+  kpiLabel:        { margin: '0 0 3px', fontSize: 12, fontWeight: 700, color: 'var(--c-text)' },
+  kpiSub:          { margin: '0 0 10px', fontSize: 11, color: 'var(--c-muted)' },
+  kpiLink:         { display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-muted)', fontWeight: 600 },
 
-  adminCard:       { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, padding: '1.1rem 1.25rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 },
-  adminCardLabel:  { flex: 1, fontSize: 14, fontWeight: 700, color: '#1A1D3B', margin: 0 },
+  adminCard:       { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '1.1rem 1.25rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 },
+  adminCardLabel:  { flex: 1, fontSize: 14, fontWeight: 700, color: 'var(--c-text)', margin: 0 },
 
   splitLayout:     { display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1rem', alignItems: 'flex-start' },
-  mainCard:        { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, overflow: 'hidden' },
-  cardHead:        { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: '1px solid #F0F2FA' },
-  cardTitle:       { margin: 0, fontSize: 14, fontWeight: 700, color: '#06175D' },
-  viewAllBtn:      { display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', fontSize: 12, fontWeight: 600, color: '#9599AE', cursor: 'pointer' },
+  mainCard:        { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, overflow: 'hidden' },
+  cardHead:        { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: '1px solid var(--c-border-light)' },
+  cardTitle:       { margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--c-primary)' },
+  viewAllBtn:      { display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', fontSize: 12, fontWeight: 600, color: 'var(--c-muted)', cursor: 'pointer' },
 
   table:           { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  th:              { padding: '9px 14px', background: '#F7F8FC', color: '#9599AE', fontWeight: 700, textAlign: 'left', fontSize: 11, textTransform: 'uppercase', letterSpacing: .4 },
-  td:              { padding: '11px 14px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA' },
+  th:              { padding: '9px 14px', background: 'var(--c-bg-subtle)', color: 'var(--c-muted)', fontWeight: 700, textAlign: 'left', fontSize: 11, textTransform: 'uppercase', letterSpacing: .4 },
+  td:              { padding: '11px 14px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)' },
   statusChip:      { display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600 },
 
   emptyState:      { padding: '3rem 2rem', textAlign: 'center' },
-  emptyTitle:      { fontSize: 15, fontWeight: 700, color: '#1A1D3B', margin: '12px 0 4px' },
-  emptySub:        { fontSize: 12, color: '#9599AE', margin: 0 },
-  emptyMsg:        { padding: '2rem', color: '#9599AE', fontSize: 14, textAlign: 'center', margin: 0 },
+  emptyTitle:      { fontSize: 15, fontWeight: 700, color: 'var(--c-text)', margin: '12px 0 4px' },
+  emptySub:        { fontSize: 12, color: 'var(--c-muted)', margin: 0 },
+  emptyMsg:        { padding: '2rem', color: 'var(--c-muted)', fontSize: 14, textAlign: 'center', margin: 0 },
 
   rightCol:        { display: 'flex', flexDirection: 'column', gap: '1rem' },
-  sideCard:        { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, padding: '1.1rem 1.25rem' },
+  sideCard:        { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '1.1rem 1.25rem' },
 
-  stackedBar:      { height: 8, borderRadius: 6, display: 'flex', gap: 3, marginTop: 12, background: '#F0F2FA' },
-  totalRow:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTop: '1px solid #F0F2FA' },
+  stackedBar:      { height: 8, borderRadius: 6, display: 'flex', gap: 3, marginTop: 12, background: 'var(--c-border-light)' },
+  totalRow:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--c-border-light)' },
 
 }

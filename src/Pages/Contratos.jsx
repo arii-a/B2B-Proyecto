@@ -415,13 +415,13 @@ export default function Contratos() {
 
             {/* Lista de productos para seleccionar */}
             {productosProveedor.length === 0 ? (
-              <p style={{ fontSize: 12, color: '#9599AE', margin: '6px 0' }}>
+              <p style={{ fontSize: 12, color: 'var(--c-muted)', margin: '6px 0' }}>
                 Tu empresa no tiene productos registrados.
               </p>
             ) : (
               <div style={s.productPickerList}>
                 {productosFiltrados.length === 0 ? (
-                  <p style={{ fontSize: 12, color: '#9599AE', padding: 8 }}>Sin resultados.</p>
+                  <p style={{ fontSize: 12, color: 'var(--c-muted)', padding: 8 }}>Sin resultados.</p>
                 ) : productosFiltrados.slice(0, 20).map(p => {
                   const yaAgregado = lineas.some(l => l.idProducto === p.id)
                   const checked    = seleccionados.has(p.id)
@@ -429,9 +429,9 @@ export default function Contratos() {
                     <label key={p.id} style={{ ...s.productPickerItem, opacity: yaAgregado ? 0.45 : 1, cursor: yaAgregado ? 'not-allowed' : 'pointer' }}>
                       <input type="checkbox" checked={checked} disabled={yaAgregado}
                         onChange={() => !yaAgregado && toggleSeleccion(p.id)}
-                        style={{ accentColor: '#06175D', flexShrink: 0 }} />
+                        style={{ accentColor: 'var(--c-primary)', flexShrink: 0 }} />
                       <span style={s.skuBadge}>{p.sku}</span>
-                      <span style={{ fontSize: 13, color: '#1A1D3B' }}>{p.nombre}</span>
+                      <span style={{ fontSize: 13, color: 'var(--c-text)' }}>{p.nombre}</span>
                     </label>
                   )
                 })}
@@ -446,7 +446,7 @@ export default function Contratos() {
                   {lineas.map((l, i) => (
                     <div key={i} style={s.lineaAgregada}>
                       <span style={s.skuBadge}>{l.sku}</span>
-                      <span style={{ flex: 1, fontSize: 13, color: '#1A1D3B' }}>{l.nombre}</span>
+                      <span style={{ flex: 1, fontSize: 13, color: 'var(--c-text)' }}>{l.nombre}</span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#15803d' }}>
                         {l.tipoDescuento === 'fijo' ? `−Bs. ${l.valor}` : `−${l.valor}%`}
                       </span>
@@ -469,7 +469,7 @@ export default function Contratos() {
 
       {/* ── Lista ── */}
       {loading ? (
-        <p style={{ color: '#9599AE', fontSize: 13 }}>Cargando contratos...</p>
+        <p style={{ color: 'var(--c-muted)', fontSize: 13 }}>Cargando contratos...</p>
       ) : contratos.length === 0 ? (
         <div style={s.emptyBox}>
           <p style={s.emptyTitle}>Sin contratos</p>
@@ -595,7 +595,7 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
             <button style={s.deleteBtn} onClick={onDelete}>Eliminar</button>
           </div>
         )}
-        <span style={{ color: '#9599AE', fontSize: 16, cursor: 'pointer', marginLeft: 8 }}
+        <span style={{ color: 'var(--c-muted)', fontSize: 16, cursor: 'pointer', marginLeft: 8 }}
           onClick={() => setOpen(o => !o)}>{open ? '▲' : '▼'}</span>
       </div>
 
@@ -679,7 +679,7 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
                                 <span style={s.arrow}>→</span>
                                 <span style={s.precioFinal}>{fmtMoney(precioFinal)}</span>
                               </span>
-                            : <span style={{ fontSize: 12, color: '#9599AE', fontStyle: 'italic' }}>Sin precio base</span>}
+                            : <span style={{ fontSize: 12, color: 'var(--c-muted)', fontStyle: 'italic' }}>Sin precio base</span>}
                         </td>
                       </tr>
                     )
@@ -704,7 +704,7 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
             {simOpen && (
               <div style={s.simBox}>
                 {prodsConPrecio.length === 0 ? (
-                  <p style={{ fontSize: 13, color: '#9599AE', margin: 0 }}>
+                  <p style={{ fontSize: 13, color: 'var(--c-muted)', margin: 0 }}>
                     No hay productos con precio base vigente para simular.
                   </p>
                 ) : (
@@ -810,100 +810,100 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
 }
 
 const s = {
-  newBtn:    { background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  newBtn:    { background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
   alert:     { borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13 },
   alertOk:   { background: '#f0fdf4', border: '1px solid #86efac', color: '#15803d' },
   alertErr:  { background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626' },
 
-  formCard:  { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, padding: '1.25rem', marginBottom: '1.25rem', boxShadow: '0 2px 8px rgba(6,23,93,0.06)' },
-  formTitle: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: '#1A1D3B' },
-  formSub:   { margin: '0 0 1.25rem', fontSize: 12, color: '#9599AE', lineHeight: 1.6 },
+  formCard:  { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '1.25rem', marginBottom: '1.25rem', boxShadow: '0 2px 8px rgba(6,23,93,0.06)' },
+  formTitle: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: 'var(--c-text)' },
+  formSub:   { margin: '0 0 1.25rem', fontSize: 12, color: 'var(--c-muted)', lineHeight: 1.6 },
   twoColForm:{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginBottom: '1rem' },
   twoCol:    { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
-  label:     { display: 'block', fontSize: 11, fontWeight: 700, color: '#9599AE', marginBottom: 5, textTransform: 'uppercase', letterSpacing: .4 },
-  input:     { width: '100%', padding: '9px 12px', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 13, color: '#1A1D3B', outline: 'none', boxSizing: 'border-box' },
-  hint:      { margin: '4px 0 0', fontSize: 11, color: '#9599AE' },
+  label:     { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: .4 },
+  input:     { width: '100%', padding: '9px 12px', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box' },
+  hint:      { margin: '4px 0 0', fontSize: 11, color: 'var(--c-muted)' },
 
-  dateChip:      { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '9px 12px', border: '1.5px solid #DDE0EE', borderRadius: 8, background: '#F0F2FA', cursor: 'pointer', boxSizing: 'border-box' },
-  dateChipLabel: { background: '#06175D', color: '#fff', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700 },
-  dateChipDate:  { color: '#1A1D3B', fontWeight: 600, fontSize: 13, flex: 1 },
-  dateChipEdit:  { fontSize: 11, color: '#9599AE' },
+  dateChip:      { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '9px 12px', border: '1.5px solid var(--c-border)', borderRadius: 8, background: 'var(--c-bg-page)', cursor: 'pointer', boxSizing: 'border-box' },
+  dateChipLabel: { background: 'var(--c-primary)', color: '#fff', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700 },
+  dateChipDate:  { color: 'var(--c-text)', fontWeight: 600, fontSize: 13, flex: 1 },
+  dateChipEdit:  { fontSize: 11, color: 'var(--c-muted)' },
 
-  seccionWrap:  { background: '#F8F9FF', border: '1px solid #E8EBF5', borderRadius: 10, padding: '1rem', marginBottom: '1rem' },
+  seccionWrap:  { background: '#F8F9FF', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem', marginBottom: '1rem' },
   seccionHead:  { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
-  sectionLabel: { margin: 0, fontWeight: 700, fontSize: 13, color: '#1A1D3B' },
-  sectionHint:  { margin: '2px 0 0', fontSize: 11, color: '#9599AE', lineHeight: 1.5 },
-  addBtn:       { background: '#fff', border: '1.5px solid #06175D', color: '#06175D', borderRadius: 8, padding: '7px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 },
+  sectionLabel: { margin: 0, fontWeight: 700, fontSize: 13, color: 'var(--c-text)' },
+  sectionHint:  { margin: '2px 0 0', fontSize: 11, color: 'var(--c-muted)', lineHeight: 1.5 },
+  addBtn:       { background: 'var(--c-bg)', border: '1.5px solid var(--c-primary)', color: 'var(--c-primary)', borderRadius: 8, padding: '7px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 },
 
-  tramoHeaderNew: { display: 'grid', gridTemplateColumns: '160px 90px 100px 1fr 32px', gap: 8, fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', padding: '0 0 6px', borderBottom: '1px solid #E8EBF5', marginBottom: 8 },
+  tramoHeaderNew: { display: 'grid', gridTemplateColumns: '160px 90px 100px 1fr 32px', gap: 8, fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', padding: '0 0 6px', borderBottom: '1px solid var(--c-border)', marginBottom: 8 },
   tramoRowNew:    { display: 'grid', gridTemplateColumns: '160px 90px 100px 1fr 32px', gap: 8, marginBottom: 8, alignItems: 'center' },
-  inputSm:     { width: '100%', padding: '8px 10px', border: '1.5px solid #DDE0EE', borderRadius: 7, fontSize: 13, color: '#1A1D3B', outline: 'none', boxSizing: 'border-box' },
+  inputSm:     { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box' },
 
-  previewBox:   { marginTop: 10, background: '#fff', border: '1px solid #E8EBF5', borderRadius: 8, padding: '10px 12px' },
-  previewTitle: { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 },
-  previewChip:  { display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#F0F2FA', borderRadius: 8, padding: '6px 12px', minWidth: 90 },
-  previewRange: { fontSize: 11, color: '#9599AE', marginBottom: 4, textAlign: 'center' },
-  previewPct:   { fontSize: 14, fontWeight: 800, color: '#06175D' },
+  previewBox:   { marginTop: 10, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '10px 12px' },
+  previewTitle: { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 },
+  previewChip:  { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--c-bg-page)', borderRadius: 8, padding: '6px 12px', minWidth: 90 },
+  previewRange: { fontSize: 11, color: 'var(--c-muted)', marginBottom: 4, textAlign: 'center' },
+  previewPct:   { fontSize: 14, fontWeight: 800, color: 'var(--c-primary)' },
 
-  productPickerList: { border: '1.5px solid #DDE0EE', borderRadius: 8, background: '#fff', maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column' },
-  productPickerItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderBottom: '1px solid #F0F2FA' },
-  lineaAgregada:     { display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: '1px solid #E8EBF5', borderRadius: 7, padding: '6px 10px' },
+  productPickerList: { border: '1.5px solid var(--c-border)', borderRadius: 8, background: 'var(--c-bg)', maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column' },
+  productPickerItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderBottom: '1px solid var(--c-border-light)' },
+  lineaAgregada:     { display: 'flex', alignItems: 'center', gap: 8, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 7, padding: '6px 10px' },
   removeBtnSm:       { background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '4px 8px', fontSize: 11, cursor: 'pointer', fontWeight: 700, flexShrink: 0 },
   removeBtn:         { background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 7, padding: '8px', fontSize: 12, cursor: 'pointer', fontWeight: 700 },
 
   formActions: { display: 'flex', justifyContent: 'flex-end', gap: 8 },
-  cancelBtn:   { padding: '9px 16px', background: '#fff', border: '1.5px solid #DDE0EE', borderRadius: 8, cursor: 'pointer', color: '#9599AE', fontSize: 13 },
-  saveBtn:     { padding: '9px 16px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 13 },
+  cancelBtn:   { padding: '9px 16px', background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 8, cursor: 'pointer', color: 'var(--c-muted)', fontSize: 13 },
+  saveBtn:     { padding: '9px 16px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 13 },
 
-  emptyBox:  { textAlign: 'center', padding: '3rem', background: '#fff', borderRadius: 14, border: '1px solid #E8EBF5' },
-  emptyTitle:{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#1A1D3B' },
-  emptySub:  { margin: 0, fontSize: 13, color: '#9599AE' },
+  emptyBox:  { textAlign: 'center', padding: '3rem', background: 'var(--c-bg)', borderRadius: 14, border: '1px solid var(--c-border)' },
+  emptyTitle:{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--c-text)' },
+  emptySub:  { margin: 0, fontSize: 13, color: 'var(--c-muted)' },
 
-  card:        { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 8px rgba(6,23,93,0.04)' },
+  card:        { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--c-shadow-sm)' },
   cardInactive:{ opacity: .7 },
   cardHead:    { display: 'flex', alignItems: 'center', gap: 8, padding: '1rem 1.25rem' },
   partes:      { display: 'flex', alignItems: 'center', gap: 8 },
-  empresa:     { fontWeight: 800, fontSize: 14, color: '#1A1D3B' },
-  partesArrow: { fontSize: 11, color: '#9599AE' },
-  vigencia:    { fontSize: 12, color: '#9599AE' },
+  empresa:     { fontWeight: 800, fontSize: 14, color: 'var(--c-text)' },
+  partesArrow: { fontSize: 11, color: 'var(--c-muted)' },
+  vigencia:    { fontSize: 12, color: 'var(--c-muted)' },
   badge:       { fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, flexShrink: 0 },
   badgeOk:     { background: '#dcfce7', color: '#15803d' },
   badgeOff:    { background: '#fee2e2', color: '#991b1b' },
-  toggleBtn:   { padding: '5px 12px', background: '#EEF1FB', color: '#06175D', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  toggleBtn:   { padding: '5px 12px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
   deleteBtn:   { padding: '5px 12px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
 
   cardBody:    { padding: '0 1.25rem 1.25rem' },
-  section:     { marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #F0F2FA' },
-  sectionTitle:{ margin: '0 0 0', fontSize: 13, color: '#1A1D3B' },
-  sectionNote: { fontWeight: 400, color: '#9599AE', fontSize: 12 },
-  noData:      { margin: '6px 0 0', fontSize: 12, color: '#9599AE' },
+  section:     { marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--c-border-light)' },
+  sectionTitle:{ margin: '0 0 0', fontSize: 13, color: 'var(--c-text)' },
+  sectionNote: { fontWeight: 400, color: 'var(--c-muted)', fontSize: 12 },
+  noData:      { margin: '6px 0 0', fontSize: 12, color: 'var(--c-muted)' },
 
-  tramoChip:      { display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#F0F2FA', border: '1px solid #DDE0EE', borderRadius: 8, padding: '6px 12px', minWidth: 90 },
-  tramoChipLabel: { fontSize: 11, color: '#9599AE', textAlign: 'center', marginBottom: 2 },
-  tramoChipPct:   { fontSize: 15, fontWeight: 800, color: '#06175D' },
+  tramoChip:      { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--c-bg-page)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '6px 12px', minWidth: 90 },
+  tramoChipLabel: { fontSize: 11, color: 'var(--c-muted)', textAlign: 'center', marginBottom: 2 },
+  tramoChipPct:   { fontSize: 15, fontWeight: 800, color: 'var(--c-primary)' },
 
   table:    { width: '100%', borderCollapse: 'collapse', marginTop: '0.75rem', fontSize: 13 },
-  th:       { padding: '7px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4, borderBottom: '1px solid #E8EBF5' },
-  td:       { padding: '8px 12px', color: '#1A1D3B', verticalAlign: 'middle' },
-  skuBadge: { fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#F0F2FA', color: '#9599AE', fontFamily: 'monospace', marginRight: 6 },
-  allProd:  { fontSize: 12, color: '#9599AE', fontStyle: 'italic' },
+  th:       { padding: '7px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4, borderBottom: '1px solid var(--c-border)' },
+  td:       { padding: '8px 12px', color: 'var(--c-text)', verticalAlign: 'middle' },
+  skuBadge: { fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: 'var(--c-bg-page)', color: 'var(--c-muted)', fontFamily: 'monospace', marginRight: 6 },
+  allProd:  { fontSize: 12, color: 'var(--c-muted)', fontStyle: 'italic' },
   precioRow:  { display: 'inline-flex', alignItems: 'center', gap: 6 },
-  baseStrike: { textDecoration: 'line-through', color: '#9599AE', fontSize: 12 },
-  arrow:      { color: '#9599AE', fontSize: 11 },
+  baseStrike: { textDecoration: 'line-through', color: 'var(--c-muted)', fontSize: 12 },
+  arrow:      { color: 'var(--c-muted)', fontSize: 11 },
   precioFinal:{ fontWeight: 700, color: '#16a34a', fontSize: 13 },
 
-  simToggleBtn: { padding: '5px 12px', background: '#EEF1FB', color: '#06175D', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  simBox:       { marginTop: 12, background: '#F8F9FF', border: '1px solid #E8EBF5', borderRadius: 10, padding: '1rem' },
+  simToggleBtn: { padding: '5px 12px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  simBox:       { marginTop: 12, background: '#F8F9FF', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem' },
   simInputRow:  { display: 'flex', gap: 12, marginBottom: 12 },
-  simResult:    { background: '#fff', border: '1px solid #E8EBF5', borderRadius: 10, overflow: 'hidden', marginTop: 4 },
-  simResultTitle:{ margin: 0, padding: '10px 14px', fontWeight: 800, fontSize: 13, color: '#1A1D3B', background: '#EEF1FB', borderBottom: '1px solid #DDE0EE' },
+  simResult:    { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden', marginTop: 4 },
+  simResultTitle:{ margin: 0, padding: '10px 14px', fontWeight: 800, fontSize: 13, color: 'var(--c-text)', background: 'var(--c-primary-light)', borderBottom: '1px solid var(--c-border)' },
   simSteps:     { padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 },
-  simStep:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: '#1A1D3B' },
-  simStepTotal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: '#1A1D3B', borderTop: '1px solid #E8EBF5', paddingTop: 6, marginTop: 2 },
-  simStepFinal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 15, fontWeight: 800, color: '#06175D', borderTop: '2px solid #DDE0EE', paddingTop: 8, marginTop: 4 },
-  simLabel:     { color: '#9599AE', fontSize: 12 },
+  simStep:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: 'var(--c-text)' },
+  simStepTotal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: 'var(--c-text)', borderTop: '1px solid var(--c-border)', paddingTop: 6, marginTop: 2 },
+  simStepFinal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 15, fontWeight: 800, color: 'var(--c-primary)', borderTop: '2px solid var(--c-border)', paddingTop: 8, marginTop: 4 },
+  simLabel:     { color: 'var(--c-muted)', fontSize: 12 },
   simValue:     { fontFamily: 'monospace', fontSize: 13 },
-  simFinalLabel:{ color: '#06175D', fontWeight: 700 },
-  simFinalValue:{ fontFamily: 'monospace', fontSize: 15, fontWeight: 800, color: '#06175D' },
+  simFinalLabel:{ color: 'var(--c-primary)', fontWeight: 700 },
+  simFinalValue:{ fontFamily: 'monospace', fontSize: 15, fontWeight: 800, color: 'var(--c-primary)' },
   simSavings:   { fontSize: 12, color: '#15803d', background: '#f0fdf4', borderRadius: 6, padding: '6px 10px', marginTop: 4 },
 }

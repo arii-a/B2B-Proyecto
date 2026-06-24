@@ -194,7 +194,7 @@ export default function AdminEmpresas() {
                 <option value="nombre">Nombre</option>
                 <option value="nit">NIT</option>
               </select>
-              <div style={{ width: 1, height: 16, background: '#DDE0EE', flexShrink: 0 }} />
+              <div style={{ width: 1, height: 16, background: 'var(--c-border)', flexShrink: 0 }} />
               <input style={s.searchInput}
                 placeholder={searchBy === 'nit' ? 'Buscar por NIT...' : searchBy === 'nombre' ? 'Buscar por nombre...' : 'Buscar...'}
                 value={search} onChange={e => { setSearch(e.target.value); setPage(0); setSelected(null) }} />
@@ -238,9 +238,9 @@ export default function AdminEmpresas() {
                           <tr key={item.id}
                             onClick={() => openDetail(item)}
                             style={{
-                              background: sel ? '#EEF1FB' : i % 2 === 0 ? '#fff' : '#F7F8FC',
+                              background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? '#fff' : 'var(--c-bg-subtle)',
                               cursor: 'pointer',
-                              borderLeft: `3px solid ${sel ? '#06175D' : 'transparent'}`,
+                              borderLeft: `3px solid ${sel ? 'var(--c-primary)' : 'transparent'}`,
                             }}>
                             <td style={{ ...s.td, fontWeight: 600 }}>{item.nombre || '—'}</td>
                             <td style={s.td}>{item.razonSocial || '—'}</td>
@@ -248,8 +248,8 @@ export default function AdminEmpresas() {
                             <td style={s.td}>{item.dominio || '—'}</td>
                             <td style={s.td}>
                               {item.proveedor
-                                ? <Chip bg="#EEF1FB" color="#06175D">Proveedor</Chip>
-                                : <Chip bg="#F0F2FA" color="#9599AE">Empresa</Chip>}
+                                ? <Chip bg="var(--c-primary-light)" color="var(--c-primary)">Proveedor</Chip>
+                                : <Chip bg="var(--c-bg-page)" color="var(--c-muted)">Empresa</Chip>}
                             </td>
                             <td style={s.td}>
                               {item.activo
@@ -344,7 +344,7 @@ export default function AdminEmpresas() {
                         <InfoRow label="ID proveedor" value={selected.proveedor.id} mono />
                       </>
                     ) : (
-                      <p style={{ margin: 0, fontSize: 12, color: '#9599AE' }}>
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--c-muted)' }}>
                         Esta empresa no tiene perfil de proveedor.
                       </p>
                     )}
@@ -433,9 +433,9 @@ export default function AdminEmpresas() {
                           <tr key={prov.id}
                             onClick={() => { openDetailFromProv(prov); setFeedback(null) }}
                             style={{
-                              background: sel ? '#EEF1FB' : i % 2 === 0 ? '#fff' : '#F7F8FC',
+                              background: sel ? 'var(--c-primary-light)' : i % 2 === 0 ? '#fff' : 'var(--c-bg-subtle)',
                               cursor: 'pointer',
-                              borderLeft: `3px solid ${sel ? '#06175D' : 'transparent'}`,
+                              borderLeft: `3px solid ${sel ? 'var(--c-primary)' : 'transparent'}`,
                             }}>
                             <td style={{ ...s.td, fontWeight: 600 }}>{prov.idEmpresa?.nombre || '—'}</td>
                             <td style={{ ...s.td, fontFamily: 'monospace' }}>{prov.idEmpresa?.nit || '—'}</td>
@@ -466,7 +466,7 @@ export default function AdminEmpresas() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={s.panelNombre}>{selected.nombre}</p>
-                    <span style={{ fontSize: 11, color: '#9599AE', fontWeight: 500 }}>
+                    <span style={{ fontSize: 11, color: 'var(--c-muted)', fontWeight: 500 }}>
                       {selected.razonSocial || 'Sin razón social'}
                     </span>
                   </div>
@@ -488,7 +488,7 @@ export default function AdminEmpresas() {
                         value={selected.proveedor.activo ? 'Aprobado' : 'Pendiente de aprobación'}
                         valueColor={selected.proveedor.activo ? '#16a34a' : '#d97706'} />
                     ) : (
-                      <p style={{ margin: 0, fontSize: 12, color: '#9599AE' }}>Sin solicitud enviada.</p>
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--c-muted)' }}>Sin solicitud enviada.</p>
                     )}
                   </Section>
 
@@ -542,11 +542,11 @@ function Section({ number, title, children }) {
   return (
     <div style={{ marginBottom: '1.25rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#EEF1FB', color: '#06175D',
+        <span style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--c-primary-light)', color: 'var(--c-primary)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>
           {number}
         </span>
-        <p style={{ margin: 0, fontWeight: 700, fontSize: 12, color: '#1A1D3B' }}>{title}</p>
+        <p style={{ margin: 0, fontWeight: 700, fontSize: 12, color: 'var(--c-text)' }}>{title}</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{children}</div>
     </div>
@@ -557,9 +557,9 @@ function InfoRow({ label, value, mono, valueColor }) {
   const empty = value == null || value === ''
   return (
     <div>
-      <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
+      <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
       <p style={{ margin: '2px 0 0', fontSize: 13, fontWeight: 600,
-        color: empty ? '#C4C7D6' : valueColor ?? '#1A1D3B',
+        color: empty ? '#C4C7D6' : valueColor ?? 'var(--c-text)',
         fontStyle: empty ? 'italic' : 'normal',
         fontFamily: mono ? 'monospace' : 'inherit' }}>
         {empty ? 'No proporcionado' : value}
@@ -571,7 +571,7 @@ function InfoRow({ label, value, mono, valueColor }) {
 function Field({ label, children }) {
   return (
     <div>
-      <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 600, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
+      <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 600, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 }}>{label}</p>
       {children}
     </div>
   )
@@ -589,10 +589,10 @@ function DocLink({ label, url }) {
   const isPdf = url?.toLowerCase().endsWith('.pdf')
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span style={{ fontSize: 10, fontWeight: 600, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .4, minWidth: 140 }}>{label}</span>
+      <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4, minWidth: 140 }}>{label}</span>
       {url ? (
         <a href={url} target="_blank" rel="noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', background: '#EEF1FB', color: '#06175D', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', border: '1px solid #DDE0EE' }}>
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', border: '1px solid var(--c-border)' }}>
           {isPdf ? '📄' : '🖼'} Ver {isPdf ? 'PDF' : 'imagen'}
         </a>
       ) : (
@@ -615,8 +615,8 @@ function FeedbackBanner({ feedback }) {
 
 function Paginacion({ page, totalPages, totalElements, pageSize, onChange }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid #F0F2FA' }}>
-      <span style={{ fontSize: 12, color: '#9599AE' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: '1px solid var(--c-border-light)' }}>
+      <span style={{ fontSize: 12, color: 'var(--c-muted)' }}>
         {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalElements)} de {totalElements}
       </span>
       <div style={{ display: 'flex', gap: 4 }}>
@@ -632,48 +632,48 @@ function Paginacion({ page, totalPages, totalElements, pageSize, onChange }) {
 
 /* ─── Styles ─────────────────────────────────────────────────────────────── */
 const s = {
-  tabBar:       { display: 'flex', gap: 4, marginBottom: '1rem', background: '#fff', border: '1px solid #DDE0EE', borderRadius: 10, padding: 4 },
-  tab:          { flex: 1, padding: '8px 14px', border: 'none', borderRadius: 7, background: 'transparent', fontSize: 13, fontWeight: 500, color: '#9599AE', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  tabActive:    { background: '#EEF1FB', color: '#06175D', fontWeight: 700 },
+  tabBar:       { display: 'flex', gap: 4, marginBottom: '1rem', background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, padding: 4 },
+  tab:          { flex: 1, padding: '8px 14px', border: 'none', borderRadius: 7, background: 'transparent', fontSize: 13, fontWeight: 500, color: 'var(--c-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  tabActive:    { background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 700 },
   notifBadge:   { padding: '1px 7px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: '#d97706', color: '#fff' },
 
   toolbar:      { display: 'flex', gap: '12px', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap' },
-  searchWrap:   { display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: '1.5px solid #DDE0EE', borderRadius: 8, padding: '8px 12px', flex: 1, minWidth: 200 },
-  searchInput:  { border: 'none', outline: 'none', fontSize: 13, color: '#1A1D3B', flex: 1, background: 'transparent' },
-  searchSelect: { border: 'none', outline: 'none', fontSize: 12, fontWeight: 600, color: '#06175D', background: 'transparent', cursor: 'pointer', paddingRight: 4 },
-  clearBtn:     { border: 'none', background: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 12, padding: 0 },
+  searchWrap:   { display: 'flex', alignItems: 'center', gap: 8, background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 8, padding: '8px 12px', flex: 1, minWidth: 200 },
+  searchInput:  { border: 'none', outline: 'none', fontSize: 13, color: 'var(--c-text)', flex: 1, background: 'transparent' },
+  searchSelect: { border: 'none', outline: 'none', fontSize: 12, fontWeight: 600, color: 'var(--c-primary)', background: 'transparent', cursor: 'pointer', paddingRight: 4 },
+  clearBtn:     { border: 'none', background: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 12, padding: 0 },
   chips:        { display: 'flex', gap: 6 },
-  chip:         { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 12, fontWeight: 600, color: '#9599AE', background: '#fff', cursor: 'pointer' },
-  chipActive:   { background: '#06175D', color: '#fff', borderColor: '#06175D' },
-  chipCount:    { fontSize: 11, background: '#EEF1FB', color: '#9599AE', borderRadius: 20, padding: '1px 7px', fontWeight: 700 },
+  chip:         { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 12, fontWeight: 600, color: 'var(--c-muted)', background: 'var(--c-bg)', cursor: 'pointer' },
+  chipActive:   { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
+  chipCount:    { fontSize: 11, background: 'var(--c-primary-light)', color: 'var(--c-muted)', borderRadius: 20, padding: '1px 7px', fontWeight: 700 },
   chipCountActive:{ background: 'rgba(255,255,255,0.2)', color: '#fff' },
 
   errorBanner:  { background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 12 },
 
-  tableWrap:    { background: '#fff', border: '1px solid #DDE0EE', borderRadius: 10, overflow: 'hidden' },
+  tableWrap:    { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden' },
   table:        { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  th:           { padding: '10px 14px', background: '#EEF1FB', color: '#06175D', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid #DDE0EE', whiteSpace: 'nowrap' },
-  td:           { padding: '10px 14px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA', whiteSpace: 'nowrap' },
-  empty:        { padding: '2.5rem', color: '#9599AE', fontSize: 14, textAlign: 'center', margin: 0 },
+  th:           { padding: '10px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid var(--c-border)', whiteSpace: 'nowrap' },
+  td:           { padding: '10px 14px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)', whiteSpace: 'nowrap' },
+  empty:        { padding: '2.5rem', color: 'var(--c-muted)', fontSize: 14, textAlign: 'center', margin: 0 },
 
-  pageBtn:      { padding: '4px 10px', fontSize: 12, fontWeight: 600, background: '#fff', color: '#9599AE', border: '1px solid #DDE0EE', borderRadius: 6, cursor: 'pointer' },
-  pageBtnActive:{ background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  pageBtn:      { padding: '4px 10px', fontSize: 12, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)', borderRadius: 6, cursor: 'pointer' },
+  pageBtnActive:{ background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
-  panel:        { width: 300, flexShrink: 0, background: '#fff', border: '1px solid #DDE0EE', borderRadius: 10, display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 220px)', overflow: 'hidden' },
-  panelHead:    { display: 'flex', alignItems: 'center', gap: 10, padding: '1rem', borderBottom: '1px solid #F0F2FA', flexShrink: 0 },
-  panelAvatar:  { width: 56, height: 56, borderRadius: 10, background: '#06175D', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, flexShrink: 0, overflow: 'hidden' },
-  panelNombre:  { margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D3B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  closeBtn:     { background: 'none', border: 'none', color: '#9599AE', cursor: 'pointer', fontSize: 14, flexShrink: 0, padding: 4 },
+  panel:        { width: 300, flexShrink: 0, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 220px)', overflow: 'hidden' },
+  panelHead:    { display: 'flex', alignItems: 'center', gap: 10, padding: '1rem', borderBottom: '1px solid var(--c-border-light)', flexShrink: 0 },
+  panelAvatar:  { width: 56, height: 56, borderRadius: 10, background: 'var(--c-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, flexShrink: 0, overflow: 'hidden' },
+  panelNombre:  { margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--c-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  closeBtn:     { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 14, flexShrink: 0, padding: 4 },
   panelScroll:  { flex: 1, overflowY: 'auto', padding: '1rem' },
-  panelActions: { padding: '1rem', borderTop: '1px solid #F0F2FA', flexShrink: 0 },
+  panelActions: { padding: '1rem', borderTop: '1px solid var(--c-border-light)', flexShrink: 0 },
 
-  input:        { width: '100%', padding: '8px 10px', border: '1.5px solid #DDE0EE', borderRadius: 7, fontSize: 13, color: '#1A1D3B', boxSizing: 'border-box', outline: 'none' },
-  toggleBtn:    { flex: 1, padding: '7px 10px', border: '1.5px solid #DDE0EE', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: '#fff', color: '#9599AE' },
-  toggleBtnActive:{ background: '#06175D', color: '#fff', borderColor: '#06175D' },
+  input:        { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', boxSizing: 'border-box', outline: 'none' },
+  toggleBtn:    { flex: 1, padding: '7px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--c-bg)', color: 'var(--c-muted)' },
+  toggleBtnActive:{ background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
-  actionBtn:        { padding: '10px 14px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  actionBtnSecondary:{ background: '#fff', color: '#1A1D3B', border: '1.5px solid #DDE0EE' },
+  actionBtn:        { padding: '10px 14px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  actionBtnSecondary:{ background: 'var(--c-bg)', color: 'var(--c-text)', border: '1.5px solid var(--c-border)' },
   actionBtnSuccess:  { background: '#16a34a', color: '#fff', border: 'none' },
-  actionBtnDanger:   { background: '#fff', color: '#dc2626', border: '1.5px solid #fca5a5' },
+  actionBtnDanger:   { background: 'var(--c-bg)', color: '#dc2626', border: '1.5px solid #fca5a5' },
 
 }

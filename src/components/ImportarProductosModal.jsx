@@ -1,36 +1,17 @@
 import { useRef, useState } from 'react'
 import * as XLSX from 'xlsx'
+import Fuse from 'fuse.js'
 import { api } from '../api/client'
 
 function normalize(s) { return String(s ?? '').trim() }
 
-function levenshtein(a, b) {
-  a = a.toLowerCase(); b = b.toLowerCase()
-  const m = a.length, n = b.length
-  const dp = Array.from({ length: m + 1 }, (_, i) => Array.from({ length: n + 1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0))
-  for (let i = 1; i <= m; i++)
-    for (let j = 1; j <= n; j++)
-      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
-  return dp[m][n]
-}
-
-function bestMatch(input, list, key = 'nombre') {
+function bestMatch(input, list, keys) {
   if (!input) return null
-  const q = input.toLowerCase().trim()
-  // 1. exact
-  let found = list.find(x => x[key]?.toLowerCase() === q)
-  if (found) return { item: found, fuzzy: false }
-  // 2. contains either way
-  found = list.find(x => x[key]?.toLowerCase().includes(q) || q.includes(x[key]?.toLowerCase()))
-  if (found) return { item: found, fuzzy: true }
-  // 3. Levenshtein — accept if distance <= 40% of the longer string
-  let best = null, bestDist = Infinity
-  for (const x of list) {
-    const d = levenshtein(q, x[key] ?? '')
-    const threshold = Math.ceil(Math.max(q.length, (x[key] ?? '').length) * 0.4)
-    if (d < bestDist && d <= threshold) { bestDist = d; best = x }
-  }
-  return best ? { item: best, fuzzy: true } : null
+  const fuse = new Fuse(list, { keys, threshold: 0.4, includeScore: true, ignoreLocation: true, useExtendedSearch: false })
+  const results = fuse.search(input)
+  if (!results.length) return null
+  const exact = results[0].score === 0
+  return { item: results[0].item, fuzzy: !exact }
 }
 
 function parseSheet(wb) {
@@ -64,8 +45,8 @@ function validar(filas, categorias, unidades) {
     if (!f.nombre) errores.push('Nombre vacío')
     const precioNum = Number(f.precio)
     if (f.precio && (isNaN(precioNum) || precioNum < 0)) errores.push('Precio inválido')
-    const catMatch = bestMatch(f.categoria, categorias)
-    const uniMatch = bestMatch(f.unidad, unidades)
+    const catMatch = bestMatch(f.categoria, categorias, ['nombre'])
+    const uniMatch = bestMatch(f.unidad,    unidades,   ['nombre', 'abreviatura'])
     if (!catMatch && f.categoria) errores.push(`Categoría "${f.categoria}" no reconocida`)
     if (!uniMatch && f.unidad)    errores.push(`Unidad "${f.unidad}" no reconocida`)
     return {
@@ -81,6 +62,8 @@ function validar(filas, categorias, unidades) {
   })
 }
 
+const PAGE_SIZE = 100
+
 export default function ImportarProductosModal({ proveedorId, categorias, unidades, onClose, onDone }) {
   const inputRef    = useRef()
   const [filas,     setFilas]     = useState([])
@@ -88,6 +71,7 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
   const [importing, setImporting] = useState(false)
   const [progress,  setProgress]  = useState(null)
   const [done,      setDone]      = useState(false)
+  const [page,      setPage]      = useState(0)
 
   const handleFile = (e) => {
     const file = e.target.files?.[0]
@@ -95,6 +79,7 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
     setFileName(file.name)
     setDone(false)
     setProgress(null)
+    setPage(0)
     const reader = new FileReader()
     reader.onload = (ev) => {
       const wb  = XLSX.read(ev.target.result, { type: 'array' })
@@ -141,8 +126,10 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
     onDone()
   }
 
-  const validas   = filas.filter(f => f._ok).length
-  const invalidas = filas.filter(f => !f._ok).length
+  const validas     = filas.filter(f => f._ok).length
+  const invalidas   = filas.filter(f => !f._ok).length
+  const totalPages  = Math.ceil(filas.length / PAGE_SIZE)
+  const filasPage   = filas.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   const downloadPlantilla = () => {
     const ws = XLSX.utils.aoa_to_sheet([
@@ -183,20 +170,34 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
             <div style={s.hintGrid}>
               <div style={s.hintBox}>
                 <p style={s.hintTitle}>Categorías disponibles</p>
-                <p style={s.hintList}>{categorias.map(c => c.nombre).join(', ') || '—'}</p>
+                <ul style={s.hintUl}>
+                  {categorias.length ? categorias.map(c => <li key={c.id}>{c.nombre}</li>) : <li>—</li>}
+                </ul>
               </div>
               <div style={s.hintBox}>
                 <p style={s.hintTitle}>Unidades de medida disponibles</p>
-                <p style={s.hintList}>{unidades.map(u => u.nombre).join(', ') || '—'}</p>
+                <ul style={s.hintUl}>
+                  {unidades.length ? unidades.map(u => <li key={u.id}>{u.nombre} ({u.abreviatura})</li>) : <li>—</li>}
+                </ul>
               </div>
             </div>
           )}
 
           {filas.length > 0 && (
             <>
-              <div style={s.summary}>
-                <span style={{ color: '#16a34a', fontWeight: 700 }}>✓ {validas} listos para importar</span>
-                {invalidas > 0 && <span style={{ color: '#dc2626', fontWeight: 700, marginLeft: 14 }}>✕ {invalidas} con errores (se omitirán)</span>}
+              <div style={{ ...s.summary, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                <div>
+                  <span style={{ color: '#16a34a', fontWeight: 700 }}>✓ {validas} listos para importar</span>
+                  {invalidas > 0 && <span style={{ color: '#dc2626', fontWeight: 700, marginLeft: 14 }}>✕ {invalidas} con errores (se omitirán)</span>}
+                  <span style={{ color: 'var(--c-muted)', marginLeft: 14 }}>{filas.length} filas en total</span>
+                </div>
+                {totalPages > 1 && (
+                  <div style={s.pagNav}>
+                    <button style={s.pagBtn} disabled={page === 0} onClick={() => setPage(p => p - 1)}>‹</button>
+                    <span style={s.pagInfo}>Página {page + 1} / {totalPages}</span>
+                    <button style={s.pagBtn} disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>›</button>
+                  </div>
+                )}
               </div>
               <div style={s.tableWrap}>
                 <table style={s.table}>
@@ -208,23 +209,23 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
                     </tr>
                   </thead>
                   <tbody>
-                    {filas.map((f, i) => (
-                      <tr key={i} style={{ background: f._ok ? (i % 2 === 0 ? '#fff' : '#FAFBFD') : '#fef2f2' }}>
-                        <td style={{ ...s.td, color: '#9599AE', fontSize: 11 }}>{f._row}</td>
+                    {filasPage.map((f, i) => (
+                      <tr key={f._row} style={{ background: f._ok ? (i % 2 === 0 ? '#fff' : 'var(--c-bg-alt)') : '#fef2f2' }}>
+                        <td style={{ ...s.td, color: 'var(--c-muted)', fontSize: 11 }}>{f._row}</td>
                         <td style={{ ...s.td, fontFamily: 'monospace', fontWeight: 600 }}>{f.sku || '—'}</td>
                         <td style={s.td}>{f.nombre || '—'}</td>
-                        <td style={{ ...s.td, color: '#9599AE', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.descripcion || '—'}</td>
-                        <td style={{ ...s.td, color: f._cat ? '#1A1D3B' : (f.categoria ? '#dc2626' : '#9599AE') }}>
+                        <td style={{ ...s.td, color: 'var(--c-muted)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.descripcion || '—'}</td>
+                        <td style={{ ...s.td, color: f._cat ? 'var(--c-text)' : (f.categoria ? '#dc2626' : 'var(--c-muted)') }}>
                           {f._cat
                             ? <>{f._cat.nombre}{f._catFuzzy && <span style={s.fuzzyTag} title={`Escrito: "${f.categoria}"`}>~</span>}</>
                             : f.categoria || '—'}
                         </td>
-                        <td style={{ ...s.td, color: f._uni ? '#1A1D3B' : (f.unidad ? '#dc2626' : '#9599AE') }}>
+                        <td style={{ ...s.td, color: f._uni ? 'var(--c-text)' : (f.unidad ? '#dc2626' : 'var(--c-muted)') }}>
                           {f._uni
                             ? <>{f._uni.nombre}{f._uniFuzzy && <span style={s.fuzzyTag} title={`Escrito: "${f.unidad}"`}>~</span>}</>
                             : f.unidad || '—'}
                         </td>
-                        <td style={{ ...s.td, fontWeight: f._precio != null ? 600 : 400, color: f._precio != null ? '#059669' : '#9599AE' }}>
+                        <td style={{ ...s.td, fontWeight: f._precio != null ? 600 : 400, color: f._precio != null ? '#059669' : 'var(--c-muted)' }}>
                           {f._precio != null ? `Bs. ${f._precio.toLocaleString('es-BO', { minimumFractionDigits: 2 })}` : '—'}
                         </td>
                         <td style={s.td}>
@@ -274,29 +275,32 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
 
 const s = {
   overlay:     { position: 'fixed', inset: 0, background: 'rgba(6,23,93,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' },
-  modal:       { background: '#fff', borderRadius: 14, width: '100%', maxWidth: 820, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(6,23,93,0.2)' },
-  header:      { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '1.25rem 1.5rem', borderBottom: '1px solid #EEF1FB' },
-  title:       { margin: '0 0 3px', fontSize: 16, fontWeight: 800, color: '#06175D' },
-  sub:         { margin: 0, fontSize: 12, color: '#9599AE' },
-  closeBtn:    { background: 'none', border: 'none', fontSize: 16, color: '#9599AE', cursor: 'pointer', padding: 4, flexShrink: 0 },
+  modal:       { background: 'var(--c-bg)', borderRadius: 14, width: '100%', maxWidth: 820, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(6,23,93,0.2)' },
+  header:      { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--c-primary-light)' },
+  title:       { margin: '0 0 3px', fontSize: 16, fontWeight: 800, color: 'var(--c-primary)' },
+  sub:         { margin: 0, fontSize: 12, color: 'var(--c-muted)' },
+  closeBtn:    { background: 'none', border: 'none', fontSize: 16, color: 'var(--c-muted)', cursor: 'pointer', padding: 4, flexShrink: 0 },
   body:        { flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
-  footer:      { display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '1rem 1.5rem', borderTop: '1px solid #EEF1FB' },
+  footer:      { display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '1rem 1.5rem', borderTop: '1px solid var(--c-primary-light)' },
   uploadRow:   { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' },
-  uploadBtn:   { padding: '9px 16px', background: '#EEF1FB', color: '#06175D', border: '1.5px dashed #C5CADF', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  plantillaBtn:{ padding: '9px 16px', background: '#fff', color: '#9599AE', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  uploadBtn:   { padding: '9px 16px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: '1.5px dashed var(--c-border)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  plantillaBtn:{ padding: '9px 16px', background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
   hintGrid:    { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },
-  hintBox:     { background: '#FAFBFD', border: '1px solid #EEF1FB', borderRadius: 8, padding: '12px 14px' },
-  hintTitle:   { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#9599AE', textTransform: 'uppercase', letterSpacing: .5 },
-  hintList:    { margin: 0, fontSize: 12, color: '#1A1D3B', lineHeight: 1.6 },
+  hintBox:     { background: 'var(--c-bg-alt)', border: '1px solid var(--c-primary-light)', borderRadius: 8, padding: '12px 14px' },
+  hintTitle:   { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .5 },
+  hintUl:      { margin: 0, padding: '0 0 0 16px', fontSize: 12, color: 'var(--c-text)', lineHeight: 1.8, maxHeight: 160, overflowY: 'auto' },
   summary:     { fontSize: 13 },
-  tableWrap:   { border: '1px solid #EEF1FB', borderRadius: 8, overflow: 'auto', maxHeight: 300 },
+  pagNav:      { display: 'flex', alignItems: 'center', gap: 6 },
+  pagBtn:      { padding: '3px 10px', border: '1.5px solid var(--c-border)', borderRadius: 6, background: 'var(--c-bg)', color: 'var(--c-primary)', fontSize: 14, fontWeight: 700, cursor: 'pointer', lineHeight: 1 },
+  pagInfo:     { fontSize: 12, color: 'var(--c-muted)', fontWeight: 600, whiteSpace: 'nowrap' },
+  tableWrap:   { border: '1px solid var(--c-primary-light)', borderRadius: 8, overflow: 'auto', maxHeight: 300 },
   table:       { width: '100%', borderCollapse: 'collapse', fontSize: 12 },
-  th:          { padding: '8px 12px', background: '#EEF1FB', color: '#06175D', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid #DDE0EE', whiteSpace: 'nowrap', position: 'sticky', top: 0 },
-  td:          { padding: '7px 12px', color: '#1A1D3B', borderBottom: '1px solid #F0F2FA' },
-  progressWrap:{ background: '#F7F8FC', border: '1px solid #EEF1FB', borderRadius: 8, padding: '12px 14px' },
-  progressBar: { height: 6, background: 'linear-gradient(90deg,#06175D,#4f46e5)', borderRadius: 4, marginBottom: 8, transition: 'width .3s' },
-  progressText:{ margin: 0, fontSize: 12, color: '#1A1D3B', fontWeight: 600 },
-  cancelBtn:   { padding: '9px 20px', background: '#fff', color: '#9599AE', border: '1.5px solid #DDE0EE', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  importBtn:   { padding: '9px 20px', background: '#06175D', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  th:          { padding: '8px 12px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid var(--c-border)', whiteSpace: 'nowrap', position: 'sticky', top: 0 },
+  td:          { padding: '7px 12px', color: 'var(--c-text)', borderBottom: '1px solid var(--c-border-light)' },
+  progressWrap:{ background: 'var(--c-bg-subtle)', border: '1px solid var(--c-primary-light)', borderRadius: 8, padding: '12px 14px' },
+  progressBar: { height: 6, background: 'linear-gradient(90deg,var(--c-primary),#4f46e5)', borderRadius: 4, marginBottom: 8, transition: 'width .3s' },
+  progressText:{ margin: 0, fontSize: 12, color: 'var(--c-text)', fontWeight: 600 },
+  cancelBtn:   { padding: '9px 20px', background: 'var(--c-bg)', color: 'var(--c-muted)', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  importBtn:   { padding: '9px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' },
   fuzzyTag:    { display: 'inline-block', marginLeft: 4, fontSize: 10, fontWeight: 700, color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, padding: '0 4px', cursor: 'default' },
 }
