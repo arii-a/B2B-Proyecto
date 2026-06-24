@@ -2,6 +2,184 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api/client'
 import PageHeader from '../../components/PageHeader'
 
+/* ─── Modal crear empresa ───────────────────────────────────────────────── */
+const BLANK_E = { nombre: '', razon_social: '', nit: '', dominio: '', logo_url: '' }
+const BLANK_C = { nombres: '', apellidos: '', cargo: '' }
+const BLANK_S = { nombre: '', direccion: '' }
+const BLANK_U = { nombre: '', email: '', password: '' }
+
+function MField({ label, value, onChange, placeholder, type = 'text' }) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4, marginBottom: 4 }}>{label}</label>
+      <input style={ms.input} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+    </div>
+  )
+}
+
+function CrearEmpresaModal({ onClose, onCreated }) {
+  const [step,    setStep]    = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+  const [empresa,  setEmpresa]  = useState(BLANK_E)
+  const [contacto, setContacto] = useState(BLANK_C)
+  const [sucursal, setSucursal] = useState(BLANK_S)
+  const [usuario,  setUsuario]  = useState(BLANK_U)
+  const [logoFile,      setLogoFile]      = useState(null)
+  const [logoPreview,   setLogoPreview]   = useState(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { setError('El logo no debe superar los 2 MB.'); return }
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+    setError('')
+  }
+
+  const STEPS = ['Empresa', 'Contacto', 'Sucursal', 'Usuario']
+
+  const next = () => {
+    setError('')
+    if (step === 0 && (!empresa.nombre || !empresa.razon_social || !empresa.nit)) { setError('Completa nombre, razón social y NIT.'); return }
+    if (step === 1 && (!contacto.nombres || !contacto.apellidos)) { setError('Completa nombres y apellidos.'); return }
+    if (step === 2 && (!sucursal.nombre || !sucursal.direccion)) { setError('Completa nombre y dirección.'); return }
+    setStep(s => s + 1)
+  }
+
+  const submit = async () => {
+    setError('')
+    if (!usuario.nombre || !usuario.email || !usuario.password) { setError('Completa todos los datos del usuario.'); return }
+    setLoading(true)
+
+    let logoUrl = null
+    if (logoFile) {
+      setLogoUploading(true)
+      try {
+        const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+        const fd = new FormData()
+        fd.append('file', logoFile)
+        const res = await fetch(`${BASE}/api/v1/upload`, { method: 'POST', body: fd })
+        const data = await res.json()
+        if (res.ok) logoUrl = data.url
+      } catch { /* logo es opcional */ }
+      setLogoUploading(false)
+    }
+
+    try {
+      await api.post('/api/v1/auth/register', {
+        empresa:  { ...empresa, logo_url: logoUrl || empresa.logo_url || null },
+        contacto,
+        sucursal,
+        usuario,
+      })
+      onCreated()
+    } catch (e) {
+      setError(e.message || 'Error al crear la empresa.')
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div style={ms.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={ms.modal}>
+        <div style={ms.head}>
+          <p style={ms.title}>Nueva empresa</p>
+          <button style={ms.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        {/* Stepper */}
+        <div style={ms.stepper}>
+          {STEPS.map((l, i) => (
+            <div key={l} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <div style={{ ...ms.stepCircle, background: i <= step ? 'var(--c-primary)' : 'var(--c-border)', color: i <= step ? '#fff' : 'var(--c-muted)' }}>
+                {i < step ? '✓' : i + 1}
+              </div>
+              <span style={{ fontSize: 11, marginLeft: 5, color: i <= step ? 'var(--c-text)' : 'var(--c-muted)', whiteSpace: 'nowrap' }}>{l}</span>
+              {i < STEPS.length - 1 && <div style={{ flex: 1, height: 2, background: i < step ? 'var(--c-primary)' : 'var(--c-border)', margin: '0 6px' }} />}
+            </div>
+          ))}
+        </div>
+
+        {error && <p style={ms.error}>{error}</p>}
+
+        <div style={ms.body}>
+          {step === 0 && <>
+            <p style={ms.stepTitle}>Datos de la empresa</p>
+            <MField label="Nombre comercial"   value={empresa.nombre}       onChange={v => setEmpresa(f => ({ ...f, nombre: v }))}       placeholder="Ej: TechCorp" />
+            <MField label="Razón social"        value={empresa.razon_social} onChange={v => setEmpresa(f => ({ ...f, razon_social: v }))} placeholder="Ej: TechCorp S.R.L." />
+            <MField label="NIT"                 value={empresa.nit}          onChange={v => setEmpresa(f => ({ ...f, nit: v }))}          placeholder="Ej: 12345678" />
+            <MField label="Dominio (opcional)"  value={empresa.dominio}      onChange={v => setEmpresa(f => ({ ...f, dominio: v }))}      placeholder="Ej: techcorp.com" />
+            {/* Logo */}
+            <div style={{ marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4, marginBottom: 8 }}>Logo (opcional)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 10, border: '2px dashed var(--c-border)', background: 'var(--c-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                  {logoPreview
+                    ? <img src={logoPreview} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    : <span style={{ fontSize: 22 }}>🏢</span>}
+                </div>
+                <div>
+                  <label style={{ display: 'inline-block', padding: '7px 14px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid var(--c-border)' }}>
+                    {logoFile ? 'Cambiar logo' : 'Subir logo'}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoChange} />
+                  </label>
+                  {logoFile && <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--c-muted)' }}>{logoFile.name}</p>}
+                  <p style={{ margin: '4px 0 0', fontSize: 10, color: 'var(--c-muted)' }}>PNG, JPG — máx. 2 MB</p>
+                </div>
+              </div>
+            </div>
+          </>}
+          {step === 1 && <>
+            <p style={ms.stepTitle}>Contacto principal</p>
+            <MField label="Nombres"          value={contacto.nombres}   onChange={v => setContacto(f => ({ ...f, nombres: v }))}   placeholder="Ej: Ana" />
+            <MField label="Apellidos"        value={contacto.apellidos} onChange={v => setContacto(f => ({ ...f, apellidos: v }))} placeholder="Ej: García" />
+            <MField label="Cargo (opcional)" value={contacto.cargo}     onChange={v => setContacto(f => ({ ...f, cargo: v }))}     placeholder="Ej: Gerente" />
+          </>}
+          {step === 2 && <>
+            <p style={ms.stepTitle}>Sucursal principal</p>
+            <MField label="Nombre de la sucursal" value={sucursal.nombre}    onChange={v => setSucursal(f => ({ ...f, nombre: v }))}    placeholder="Ej: Oficina Central" />
+            <MField label="Dirección"              value={sucursal.direccion} onChange={v => setSucursal(f => ({ ...f, direccion: v }))} placeholder="Ej: Av. Bush 123" />
+          </>}
+          {step === 3 && <>
+            <p style={ms.stepTitle}>Usuario de acceso</p>
+            <MField label="Nombre completo" value={usuario.nombre}   onChange={v => setUsuario(f => ({ ...f, nombre: v }))}   placeholder="Ej: Ana García" />
+            <MField label="Email"           value={usuario.email}    onChange={v => setUsuario(f => ({ ...f, email: v }))}    placeholder="ana@techcorp.com" type="email" />
+            <MField label="Contraseña"      value={usuario.password} onChange={v => setUsuario(f => ({ ...f, password: v }))} placeholder="••••••••" type="password" />
+          </>}
+        </div>
+
+        <div style={ms.footer}>
+          {step > 0 && <button style={ms.backBtn} onClick={() => { setError(''); setStep(s => s - 1) }}>← Atrás</button>}
+          {step < 3
+            ? <button style={ms.nextBtn} onClick={next}>Siguiente →</button>
+            : <button style={ms.nextBtn} onClick={submit} disabled={loading}>{logoUploading ? 'Subiendo logo...' : loading ? 'Creando...' : 'Crear empresa →'}</button>
+          }
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ms = {
+  overlay:    { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  modal:      { background: 'var(--c-bg)', borderRadius: 14, width: 480, maxWidth: '95vw', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', maxHeight: '90vh' },
+  head:       { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--c-border-light)' },
+  title:      { margin: 0, fontWeight: 700, fontSize: 16, color: 'var(--c-text)' },
+  closeBtn:   { background: 'none', border: 'none', color: 'var(--c-muted)', fontSize: 16, cursor: 'pointer', padding: 4 },
+  stepper:    { display: 'flex', alignItems: 'center', padding: '1rem 1.5rem', borderBottom: '1px solid var(--c-border-light)', gap: 2 },
+  stepCircle: { width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 },
+  body:       { padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1 },
+  stepTitle:  { margin: '0 0 1rem', fontWeight: 600, fontSize: 14, color: 'var(--c-text)' },
+  input:      { width: '100%', padding: '9px 12px', border: '1.5px solid var(--c-border)', borderRadius: 8, fontSize: 14, color: 'var(--c-text)', background: 'var(--c-input-bg)', outline: 'none', boxSizing: 'border-box' },
+  error:      { margin: '0 1.5rem', padding: '8px 12px', background: '#fef2f2', color: '#dc2626', borderRadius: 8, fontSize: 13 },
+  footer:     { display: 'flex', gap: 8, justifyContent: 'flex-end', padding: '1rem 1.5rem', borderTop: '1px solid var(--c-border-light)' },
+  backBtn:    { padding: '9px 16px', border: '1.5px solid var(--c-border)', borderRadius: 8, background: 'var(--c-bg)', color: 'var(--c-muted)', fontSize: 13, fontWeight: 500, cursor: 'pointer' },
+  nextBtn:    { padding: '9px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
+
 const PAGE_SIZE = 12
 
 const MAIN_TABS   = [{ key: 'directorio', label: 'Directorio' }, { key: 'verificacion', label: 'Verificación' }]
@@ -20,6 +198,7 @@ export default function AdminEmpresas() {
   const [page,     setPage]     = useState(0)
   const [verPage,  setVerPage]  = useState(0)
 
+  const [showCrear,     setShowCrear]     = useState(false)
   const [selected,      setSelected]      = useState(null)
   const [editing,       setEditing]       = useState(false)
   const [editForm,      setEditForm]      = useState({})
@@ -177,6 +356,13 @@ export default function AdminEmpresas() {
         ))}
       </div>
 
+      {showCrear && (
+        <CrearEmpresaModal
+          onClose={() => setShowCrear(false)}
+          onCreated={() => { setShowCrear(false); cargar(0) }}
+        />
+      )}
+
       {loadError && <div style={s.errorBanner}>{loadError}</div>}
 
       {/* ══════════════ DIRECTORIO ══════════════ */}
@@ -214,6 +400,7 @@ export default function AdminEmpresas() {
                 </button>
               ))}
             </div>
+            <button style={s.newBtn} onClick={() => setShowCrear(true)}>+ Nueva empresa</button>
           </div>
 
           {/* Table + panel */}
@@ -648,6 +835,7 @@ const s = {
   chipCount:    { fontSize: 11, background: 'var(--c-primary-light)', color: 'var(--c-muted)', borderRadius: 20, padding: '1px 7px', fontWeight: 700 },
   chipCountActive:{ background: 'rgba(255,255,255,0.2)', color: '#fff' },
 
+  newBtn:       { padding: '8px 16px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 },
   errorBanner:  { background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 12 },
 
   tableWrap:    { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden' },

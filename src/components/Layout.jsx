@@ -34,6 +34,7 @@ const empresaLinks = [
 const adminLinks = [
   { to: '/dashboard',      icon: 'dashboard', label: 'Dashboard'   },
   { to: '/admin/empresas', icon: 'empresas',  label: 'Empresas'    },
+  { to: '/admin/ordenes',  icon: 'orders',    label: 'Órdenes'     },
   { to: '/admin/productos',icon: 'productos', label: 'Productos'   },
   { to: '/admin/usuarios', icon: 'usuarios',  label: 'Usuarios'    },
   { to: '/admin/logs',     icon: 'logs',      label: 'Logs'        },

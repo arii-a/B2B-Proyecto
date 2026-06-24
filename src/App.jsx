@@ -27,6 +27,7 @@ import AdminUsuarios from './Pages/admin/AdminUsuarios'
 import AdminLogs from './Pages/admin/AdminLogs'
 import AdminEmpresas from './Pages/admin/AdminEmpresas'
 import AdminProveedores from './Pages/admin/AdminProveedores'
+import AdminOrdenes from './Pages/admin/AdminOrdenes'
 
 function ProtectedRoutes() {
   const { session } = useAuth()
@@ -58,6 +59,7 @@ function ProtectedRoutes() {
         <Route path="/mi-cuenta"   element={<MiCuenta />} />
 
         <Route path="/admin/empresas"    element={<AdminEmpresas />} />
+        <Route path="/admin/ordenes"     element={<AdminOrdenes />} />
         <Route path="/admin/proveedores" element={<AdminProveedores />} />
         <Route path="/admin/productos"   element={<AdminProductos />} />
         <Route path="/admin/usuarios"    element={<AdminUsuarios />} />
