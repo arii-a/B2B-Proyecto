@@ -47,13 +47,13 @@ services:
       # Mail (set real values or remove if not used in prod)
       MAIL_HOST: smtp.gmail.com
       MAIL_SMTP_PORT: 587
-      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_AUTH: "true"
       MAIL_SMTP_STARTTLS_ENABLE: "true"
       MAIL_SMTP_PROTOCOL: smtp
-      MAIL_SMTP_USERNAME: ${MAIL_SMTP_USERNAME:-}
-      MAIL_SMTP_PASSWORD: ${MAIL_SMTP_PASSWORD:-}
-      MAIL_SMTP_FROM_MAIL: ${MAIL_SMTP_USERNAME:-}
-      MAIL_SMTP_MAIL_NOREPLY: noreply@gmail.com
+      MAIL_SMTP_USERNAME: rodriguezsanizofernando@gmail.com
+      MAIL_SMTP_PASSWORD: mcjaujmuwvrajtlh
+      MAIL_SMTP_FROM_MAIL: rodriguezsanizofernando@gmail.com
+      MAIL_SMTP_MAIL_NOREPLY: rodriguezsanizofernando@gmail.com
     ports:
       - "8080:8080"
     depends_on:
