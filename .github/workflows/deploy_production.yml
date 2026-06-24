@@ -1,0 +1,41 @@
+name: Deploy Production
+
+on:
+  # workflow_dispatch:
+  # Uncomment the lines below to also deploy automatically on push to main:
+  push:
+    branches: [frontend-b2b]
+
+jobs:
+  deploy:
+    name: Build & deploy to production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (production)
+        run: npm run build
+        env:
+          VITE_API_URL: https://apisantiarifer.nicolascresposu.com
+
+      - name: Upload frontend build
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 74.163.80.99
+          username: azureadmin
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          source: "dist/"
+          target: /home/azureadmin/Frontend-B2B/dist/
+          strip_components: 1
+          
