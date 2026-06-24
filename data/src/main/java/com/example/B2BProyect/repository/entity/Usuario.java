@@ -47,6 +47,9 @@ public class Usuario extends AuditableEntity implements UserDetails {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Column(name = "totp_secret", length = 500)
+    private String totpSecret;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "id_empresa", nullable = true)
