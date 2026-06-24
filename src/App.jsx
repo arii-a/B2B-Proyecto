@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './AuthContext'
+import { ThemeProvider } from './ThemeContext'
 
 import Login from './Pages/Login'
 import Registro from './Pages/RegistroEmpresa'
@@ -12,18 +13,24 @@ import VistaPage from './Pages/VistaPage'
 import Facturas from './Pages/Facturas'
 import Contratos from './Pages/Contratos'
 import TarifasProducto from './Pages/TarifasProducto'
-import ReglasTarifa from './Pages/ReglasTarifa'
 import Productos from './Pages/Productos'
 import Stock from './Pages/Stock'
 import PreciosBase from './Pages/PreciosBase'
 import Proveedores from './Pages/Proveedores'
+import Catalogo from './Pages/Catalogo'
+import MisProductos from './Pages/MisProductos'
+import Almacenes from './Pages/Almacenes'
 import MiCuenta from './Pages/MiCuenta'
+import MiEmpresa from './Pages/MiEmpresa'
 import Admin from './Pages/Admin'
 import AdminProductos from './Pages/admin/AdminProductos'
 import AdminUsuarios from './Pages/admin/AdminUsuarios'
 import AdminLogs from './Pages/admin/AdminLogs'
 import AdminEmpresas from './Pages/admin/AdminEmpresas'
 import AdminProveedores from './Pages/admin/AdminProveedores'
+import AdminOrdenes from './Pages/admin/AdminOrdenes'
+import Sucursales from './Pages/Sucursales'
+import Contactos from './Pages/Contactos'
 
 function ProtectedRoutes() {
   const { session } = useAuth()
@@ -44,15 +51,21 @@ function ProtectedRoutes() {
         <Route path="/facturas" element={<Facturas />} />
         <Route path="/tarifas-producto" element={<TarifasProducto />} />
         <Route path="/productos" element={<Productos />} />
-        <Route path="/reglas-tarifa" element={<ReglasTarifa />} />
         <Route path="/stock" element={<Stock />} />
         <Route path="/precios" element={<PreciosBase />} />
         <Route path="/comisiones" element={<VistaPage tipo="comisiones" />} />
         <Route path="/resumen" element={<VistaPage tipo="resumen" />} />
-        <Route path="/proveedores" element={<Proveedores />} />
-        <Route path="/mi-cuenta"   element={<MiCuenta />} />
+        <Route path="/proveedores"    element={<Proveedores />} />
+        <Route path="/catalogo"       element={<Catalogo />} />
+        <Route path="/mis-productos"  element={<MisProductos />} />
+        <Route path="/almacenes"      element={<Almacenes />} />
+        <Route path="/sucursales"     element={<Sucursales />} />
+        <Route path="/contactos"      element={<Contactos />} />
+        <Route path="/mi-empresa"     element={<MiEmpresa />} />
+        <Route path="/mi-cuenta"      element={<MiCuenta />} />
 
         <Route path="/admin/empresas"    element={<AdminEmpresas />} />
+        <Route path="/admin/ordenes"     element={<AdminOrdenes />} />
         <Route path="/admin/proveedores" element={<AdminProveedores />} />
         <Route path="/admin/productos"   element={<AdminProductos />} />
         <Route path="/admin/usuarios"    element={<AdminUsuarios />} />
@@ -93,8 +106,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
