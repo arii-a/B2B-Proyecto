@@ -11,6 +11,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ContratoEmpresaTarifaRepository extends JpaRepository<ContratoEmpresaTarifa, UUID> {
+    @Query("SELECT ct FROM ContratoEmpresaTarifa ct WHERE ct.idEmpresa.id = :idEmpresa")
+    List<ContratoEmpresaTarifa> findByEmpresa(@Param("idEmpresa") UUID idEmpresa);
+
+    @Query("SELECT ct FROM ContratoEmpresaTarifa ct WHERE ct.idProveedor.idEmpresa.id = :idEmpresa")
+    List<ContratoEmpresaTarifa> findByProveedorEmpresa(@Param("idEmpresa") UUID idEmpresa);
+
     @Query("SELECT new " +
             "com.example.B2BProyect.repository.dto.response.ContratoEmpresaTarifasDTO(" +
             "ct) " +
