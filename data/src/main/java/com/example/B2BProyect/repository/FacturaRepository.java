@@ -37,4 +37,6 @@ public interface FacturaRepository extends JpaRepository<Factura, UUID> {
             @Param("pInit") LocalDateTime pInit,
             @Param("pEnd") LocalDateTime pEnd,
             Pageable pageable);
+
+    boolean existsByIdOrdenId(UUID id);
 }

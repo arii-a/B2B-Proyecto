@@ -4,6 +4,7 @@ import com.example.B2BProyect.integracion.*;
 import com.example.B2BProyect.integracion.stereum.PaymentRequest;
 import com.example.B2BProyect.integracion.stereum.StereumPayResponse;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
+import com.example.B2BProyect.service.FacturaService;
 import com.example.B2BProyect.service.OrdenCompraService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,7 @@ public class StereumController {
 
     private final SistemaB2B sistemaB2B;
     private final OrdenCompraService ordenCompraService;
+    private final FacturaService facturaService;
 
     @PostMapping("/charge")
     public ResponseEntity<?> charge(@RequestBody PaymentRequest request) {
@@ -103,6 +105,18 @@ public class StereumController {
         StereumPayResponse response = objectMapper.readValue(body, StereumPayResponse.class);
 
         template.convertAndSend("/paymenting/" + response.getTransaction().getIdempotencyKey(), response.getTransaction().getStatus());
+
+        if ("COMPLETED".equalsIgnoreCase(response.getTransaction().getStatus())) {
+            UUID ordenId = response.getTransaction().getIdempotencyKey();
+            if (ordenId != null) {
+                try {
+                    facturaService.saveFromPayment(ordenId);
+                } catch (Exception ex) {
+                    log.error("[STEREUM] Error generando factura para orden {}: {}", ordenId, ex.getMessage());
+                }
+            }
+        }
+
         return ok().build();
     }
 
