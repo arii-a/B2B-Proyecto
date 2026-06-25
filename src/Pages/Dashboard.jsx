@@ -287,29 +287,24 @@ export default function Dashboard() {
   const [hovered,   setHovered]   = useState(null)
 
   useEffect(() => {
+    if (!session) return
     if (isAdmin) { setLoading(false); return }
+    setOrdenes([])
+    setContratos([])
     load()
-  }, [session?.id_empresa])
+  }, [session?.id, session?.rol])
 
   const load = async () => {
+    if (!session?.id_empresa) return
     setLoading(true)
     try {
+      const tipo = isProveedor ? 'proveedor' : 'empresa'
       const [ordRes, conRes] = await Promise.allSettled([
-        api.get('/api/v1/ordenes-compra'),
-        api.get('/api/v1/contratos-tarifa'),
+        api.get(`/api/v1/ordenes-compra/${tipo}/${session.id_empresa}`),
+        api.get(`/api/v1/contratos-tarifa/${tipo}/${session.id_empresa}`),
       ])
-      let ords = norm(ordRes.status === 'fulfilled' ? ordRes.value : [])
-      let cons = norm(conRes.status === 'fulfilled' ? conRes.value : [])
-
-      if (isProveedor) {
-        ords = ords.filter(o => o.idProveedor?.idEmpresa?.id === session?.id_empresa)
-        cons = cons.filter(c => c.idProveedor?.idEmpresa?.id === session?.id_empresa)
-      } else {
-        ords = ords.filter(o => o.idEmpresaCompradora?.id === session?.id_empresa)
-        cons = cons.filter(c => c.idEmpresa?.id === session?.id_empresa)
-      }
-      setOrdenes(ords)
-      setContratos(cons)
+      setOrdenes(norm(ordRes.status === 'fulfilled' ? ordRes.value : []))
+      setContratos(norm(conRes.status === 'fulfilled' ? conRes.value : []))
     } catch {}
     setLoading(false)
   }
