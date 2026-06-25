@@ -46,4 +46,8 @@ public class TramoTarifa {
     @JoinColumn(name = "id_contrato", nullable = false)
     private ContratoEmpresaTarifa idContrato;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_producto")
+    private Producto idProducto;
+
 }

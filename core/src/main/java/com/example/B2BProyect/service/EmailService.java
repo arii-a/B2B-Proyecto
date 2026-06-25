@@ -27,6 +27,7 @@ public class EmailService {
     private static final String LINKEDIN_PNG = "images/linkedin@2x.png";
     private static final String X_PNG = "images/twitter@2x.png";
     private final ConcurrentHashMap<String, Factura> facturaList = new ConcurrentHashMap<>();
+    private final PdfGeneratorService pdfGeneratorService;
 
     @Value("${mail.smtp.from-mail}")
     private String mailFrom;
@@ -88,6 +89,41 @@ public class EmailService {
             messageHelper.addInline("imageX", new ClassPathResource(X_PNG));
         };
         javaMailSender.send(messagePreparator);
+    }
+
+    @Async("taskLog")
+    public void sendFacturaConPdf(String to, FacturaEmailData data) {
+        try {
+            log.info("[EMAIL] Enviando factura PDF a {}", to);
+            byte[] pdfBytes = pdfGeneratorService.generateFacturaPdf(data);
+            MimeMessagePreparator prep = mimeMessage -> {
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+                helper.setTo(to);
+                helper.setFrom(new InternetAddress(mailFrom));
+                helper.setReplyTo(new InternetAddress(mailNoreply, mailNoreply));
+                helper.setSubject("Factura de compra – Marketplace B2B");
+                String body = "<div style='font-family:Arial,sans-serif;color:#1a1a2e;'>"
+                        + "<h2 style='color:#1e3a5f;'>Marketplace B2B</h2>"
+                        + "<p>Hola,</p>"
+                        + "<p>Se ha generado una nueva factura correspondiente a tu orden. Encontrarás el detalle completo en el PDF adjunto.</p>"
+                        + "<table style='margin:16px 0;border-collapse:collapse;'>"
+                        + "<tr><td style='padding:4px 12px 4px 0;color:#555;'>Factura N°</td><td style='font-weight:bold;'>" + data.getFacturaId().toString().substring(0, 8).toUpperCase() + "</td></tr>"
+                        + "<tr><td style='padding:4px 12px 4px 0;color:#555;'>Fecha</td><td style='font-weight:bold;'>" + data.getFecha() + "</td></tr>"
+                        + "<tr><td style='padding:4px 12px 4px 0;color:#555;'>Total</td><td style='font-weight:bold;color:#1e3a5f;'>Bs. " + data.getTotal() + "</td></tr>"
+                        + "</table>"
+                        + "<p style='color:#555;font-size:12px;'>Este correo fue generado automáticamente por Marketplace B2B.</p>"
+                        + "</div>";
+                helper.setText(body, true);
+                if (pdfBytes.length > 0) {
+                    helper.addAttachment("factura-" + data.getFacturaId().toString().substring(0, 8).toUpperCase() + ".pdf",
+                            new ByteArrayResource(pdfBytes), "application/pdf");
+                }
+            };
+            javaMailSender.send(prep);
+            log.info("[EMAIL] Factura enviada exitosamente a {}", to);
+        } catch (Exception e) {
+            log.error("[EMAIL] Error enviando factura a {}: {}", to, e.getMessage(), e);
+        }
     }
 
     @Async("taskLog")

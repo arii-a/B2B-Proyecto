@@ -55,6 +55,7 @@ public class OrdenCompraController {
     private final UsuarioService usuarioService;
     private final ProveedorService proveedorService;
     private final EmpresaService empresaService;
+    private final FacturaService facturaService;
     @Autowired
     private SimpMessagingTemplate template;
 
@@ -73,9 +74,16 @@ public class OrdenCompraController {
     @PutMapping("/{id}")
     public ResponseEntity<OrdenCompraDTO> update(@PathVariable UUID id, @RequestBody OrdenCompraRequest dto) {
         try {
-            return ordenCompraService.update(id, dto)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+            return ordenCompraService.update(id, dto).map(result -> {
+                if ("pagado".equals(dto.getIdEstado())) {
+                    try {
+                        facturaService.saveFromPayment(id);
+                    } catch (Exception ex) {
+                        log.error("Error generando factura para orden {}: {}", id, ex.getMessage());
+                    }
+                }
+                return ResponseEntity.ok(result);
+            }).orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             log.error("Error actualizando orden compra: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

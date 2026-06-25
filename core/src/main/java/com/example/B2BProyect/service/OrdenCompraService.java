@@ -1,11 +1,12 @@
 package com.example.B2BProyect.service;
 
+import com.example.B2BProyect.repository.DetalleOrdenRepository;
 import com.example.B2BProyect.repository.OrdenCompraRepository;
+import com.example.B2BProyect.repository.ProductoAlmacenRepository;
 import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
-import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
-import com.example.B2BProyect.service.exception.EmpresasException;
+import com.example.B2BProyect.repository.entity.ProductoAlmacenId;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,8 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -30,6 +29,8 @@ public class OrdenCompraService {
     private final EmpresaService empresaService;
     private final SucursalEmpresaService sucursalEmpresaService;
     private final UsuarioService usuarioService;
+    private final DetalleOrdenRepository detalleOrdenRepository;
+    private final ProductoAlmacenRepository productoAlmacenRepository;
 
     @Transactional
     public OrdenCompraDTO save(OrdenCompraRequest request, UUID idempotency) {
@@ -64,6 +65,9 @@ public class OrdenCompraService {
     @Transactional
     public Optional<OrdenCompraDTO> update(UUID id, OrdenCompraRequest dto) {
         return ordenCompraRepository.findById(id).map(orden -> {
+            boolean aprobandoAhora = "aprobado".equals(dto.getIdEstado())
+                    && !"aprobado".equals(orden.getIdEstado());
+
             if (dto.getTotal() != null)      orden.setTotal(dto.getTotal());
             if (dto.getFecha() != null)      orden.setFecha(dto.getFecha());
             if (dto.getFechaOrden() != null) orden.setFechaOrden(dto.getFechaOrden());
@@ -76,7 +80,49 @@ public class OrdenCompraService {
                 sucursalEmpresaService.findById(dto.getIdSucursal()).ifPresent(orden::setIdSucursal);
             if (dto.getIdUsuario() != null)
                 usuarioService.findById(dto.getIdUsuario()).ifPresent(orden::setIdUsuario);
-            return new OrdenCompraDTO(ordenCompraRepository.save(orden));
+
+            OrdenCompraDTO saved = new OrdenCompraDTO(ordenCompraRepository.save(orden));
+
+            if (aprobandoAhora) {
+                descontarStock(id);
+            }
+
+            return saved;
+        });
+    }
+
+    private void descontarStock(UUID ordenId) {
+        detalleOrdenRepository.findByOrden(ordenId).forEach(detalle -> {
+            UUID productoId = detalle.getIdProducto().getId();
+            UUID almacenId = detalle.getAlmacen() != null ? detalle.getAlmacen().getId() : null;
+
+            if (almacenId == null) {
+                log.warn("[STOCK] Detalle sin almacen para producto {}, buscando el primero disponible", productoId);
+                productoAlmacenRepository.findByProductoDTO(productoId).stream()
+                        .findFirst()
+                        .ifPresent(pa -> {
+                            ProductoAlmacenId paId = new ProductoAlmacenId();
+                            paId.setIdAlmacen(pa.getIdAlmacen());
+                            paId.setIdProducto(productoId);
+                            productoAlmacenRepository.findById(paId).ifPresent(entity -> {
+                                int nuevoStock = Math.max(0, entity.getStock() - detalle.getCantidad());
+                                entity.setStock(nuevoStock);
+                                productoAlmacenRepository.save(entity);
+                                log.info("[STOCK] Producto {} stock {} -> {}", productoId, entity.getStock() + detalle.getCantidad(), nuevoStock);
+                            });
+                        });
+                return;
+            }
+
+            ProductoAlmacenId paId = new ProductoAlmacenId();
+            paId.setIdAlmacen(almacenId);
+            paId.setIdProducto(productoId);
+            productoAlmacenRepository.findById(paId).ifPresent(entity -> {
+                int nuevoStock = Math.max(0, entity.getStock() - detalle.getCantidad());
+                entity.setStock(nuevoStock);
+                productoAlmacenRepository.save(entity);
+                log.info("[STOCK] Producto {} almacen {} stock {} -> {}", productoId, almacenId, entity.getStock() + detalle.getCantidad(), nuevoStock);
+            });
         });
     }
 

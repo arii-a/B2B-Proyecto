@@ -18,4 +18,5 @@ public class TramoTarifaRequest {
     private String tipoDescuento;
     private BigDecimal montoFijo;
     private UUID idContrato;
+    private UUID idProducto;
 }

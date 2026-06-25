@@ -1,6 +1,7 @@
 package com.example.B2BProyect.integracion;
 
 import com.example.B2BProyect.integracion.stereum.StereuemApiResponse;
+import com.example.B2BProyect.integracion.stereum.StereumVerifyResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -157,6 +158,21 @@ public class SistemaB2B {
             throw e;
         }
     }*/
+
+    public StereumVerifyResponse verifyCharge(String transactionId) throws Exception {
+        RestClient restClient = create();
+        try {
+            return restClient.get()
+                    .uri(stereumUrl + "/api/v1/transactions/" + transactionId + "/verify")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .header("x-api-key", stereumToken)
+                    .retrieve()
+                    .body(StereumVerifyResponse.class);
+        } catch (Exception e) {
+            log.error("Error calling Stereum verify. ", e);
+            throw e;
+        }
+    }
 
     private RestClient create() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();

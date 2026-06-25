@@ -1,5 +1,6 @@
 package com.example.B2BProyect.service;
 
+import com.example.B2BProyect.repository.ProductoRepository;
 import com.example.B2BProyect.repository.TramoTarifaRepository;
 import com.example.B2BProyect.repository.dto.request.TramoTarifaRequest;
 import com.example.B2BProyect.repository.dto.response.TramoTarifaDTO;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class TramoTarifaService {
     private final TramoTarifaRepository tramoTarifaRepository;
     private final ContratoEmpresaTarifaService contratoEmpresaTarifaService;
+    private final ProductoRepository productoRepository;
 
     @Transactional
     public TramoTarifaDTO save(TramoTarifaRequest request) {
@@ -29,6 +31,8 @@ public class TramoTarifaService {
         tramo.setMontoFijo(request.getMontoFijo());
         if (request.getIdContrato() != null)
             contratoEmpresaTarifaService.findById(request.getIdContrato()).ifPresent(tramo::setIdContrato);
+        if (request.getIdProducto() != null)
+            productoRepository.findById(request.getIdProducto()).ifPresent(tramo::setIdProducto);
         return new TramoTarifaDTO(tramoTarifaRepository.save(tramo));
     }
 
@@ -53,6 +57,9 @@ public class TramoTarifaService {
             tramo.setMontoFijo(dto.getMontoFijo());
             if (dto.getIdContrato() != null)
                 contratoEmpresaTarifaService.findById(dto.getIdContrato()).ifPresent(tramo::setIdContrato);
+            tramo.setIdProducto(null);
+            if (dto.getIdProducto() != null)
+                productoRepository.findById(dto.getIdProducto()).ifPresent(tramo::setIdProducto);
             return new TramoTarifaDTO(tramoTarifaRepository.save(tramo));
         });
     }
