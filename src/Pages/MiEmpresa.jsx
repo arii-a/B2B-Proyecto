@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader'
 
 const TIPOS_DOC = ['Cédula de Identidad', 'Pasaporte', 'RUC']
 const BLANK_C   = { nombres: '', apellidos: '', telefono: '', idCargoEmpresa: '' }
+const BLANK_S   = { nombre: '', direccion: '', coordenadas: '', activo: true }
 
 function initials(nombres, apellidos) {
   return ((nombres?.[0] ?? '') + (apellidos?.[0] ?? '')).toUpperCase() || '?'
@@ -13,14 +14,15 @@ function initials(nombres, apellidos) {
 export default function MiEmpresa() {
   const { session } = useAuth()
 
-  const [cargos,   setCargos]   = useState([])
+  const [cargos,    setCargos]    = useState([])
   const [contactos, setContactos] = useState([])
-  const [sucursal, setSucursal] = useState(null)
-  const [loading,  setLoading]  = useState(true)
+  const [sucursales,setSucursales]= useState([])
+  const [loading,   setLoading]   = useState(true)
 
-  const [editandoContacto, setEditandoContacto] = useState(null) // null = nuevo
+  const [editandoContacto, setEditandoContacto] = useState(null)
   const [contactoForm,     setContactoForm]     = useState(BLANK_C)
-  const [sucursalForm,     setSucursalForm]     = useState({ nombre: '', direccion: '' })
+  const [editandoSucursal, setEditandoSucursal] = useState(null)
+  const [sucursalForm,     setSucursalForm]     = useState(BLANK_S)
   const [logoUrl,          setLogoUrl]          = useState('')
   const [logoPreview,      setLogoPreview]      = useState('')
   const [logoFile,         setLogoFile]         = useState(null)
@@ -62,6 +64,14 @@ export default function MiEmpresa() {
     } catch {}
   }
 
+  const cargarSucursales = async () => {
+    try {
+      const res = await api.get('/api/v1/sucursales-empresa')
+      const all = Array.isArray(res) ? res : (res?.content ?? [])
+      setSucursales(all.filter(s => s.idEmpresa?.id === session.id_empresa))
+    } catch {}
+  }
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -84,13 +94,8 @@ export default function MiEmpresa() {
           return empId === session.id_empresa
         }))
 
-        const allSucursales = Array.isArray(sucursalesRes) ? sucursalesRes : []
-        const mySucursal = allSucursales.find(s => s.id === (session.idSucursal?.id ?? session.id_sucursal))
-        setSucursal(mySucursal ?? null)
-        setSucursalForm({
-          nombre:    mySucursal?.nombre    ?? session.idSucursal?.nombre    ?? '',
-          direccion: mySucursal?.direccion ?? session.idSucursal?.direccion ?? '',
-        })
+        const allSucursales = Array.isArray(sucursalesRes) ? sucursalesRes : (sucursalesRes?.content ?? [])
+        setSucursales(allSucursales.filter(s => s.idEmpresa?.id === session.id_empresa))
 
         setCargos(Array.isArray(cargosRes) ? cargosRes : [])
 
@@ -108,7 +113,10 @@ export default function MiEmpresa() {
     init()
   }, [])
 
-  const setFb = (section, ok, msg) => setFeedback(f => ({ ...f, [section]: { ok, msg } }))
+  const setFb = (section, ok, msg) => {
+    setFeedback(f => ({ ...f, [section]: { ok, msg } }))
+    setTimeout(() => setFeedback(f => ({ ...f, [section]: null })), 8000)
+  }
 
   const uploadFile = async (file) => {
     const fd = new FormData()
@@ -196,20 +204,55 @@ export default function MiEmpresa() {
   }
 
   const saveSucursal = async () => {
-    const id = sucursal?.id ?? session.idSucursal?.id ?? session.id_sucursal
-    if (!id) return setFb('sucursal', false, 'No se encontró la sucursal asignada.')
+    if (!sucursalForm.nombre || !sucursalForm.direccion)
+      return setFb('sucursal', false, 'Nombre y dirección son requeridos.')
     setSaving('sucursal')
     try {
-      await api.put(`/api/v1/sucursales-empresa/${id}`, {
+      const body = {
         nombre:      sucursalForm.nombre,
         direccion:   sucursalForm.direccion,
-        coordenadas: sucursal?.coordenadas ?? null,
-        activo:      sucursal?.activo ?? true,
+        coordenadas: sucursalForm.coordenadas || null,
+        activo:      sucursalForm.activo,
         idEmpresa:   session.id_empresa,
-      })
-      setFb('sucursal', true, 'Sucursal actualizada.')
+      }
+      if (editandoSucursal?.id) {
+        await api.put(`/api/v1/sucursales-empresa/${editandoSucursal.id}`, body)
+        setFb('sucursal', true, 'Sucursal actualizada.')
+      } else {
+        await api.post('/api/v1/sucursales-empresa', body)
+        setFb('sucursal', true, 'Sucursal agregada.')
+      }
+      setSucursalForm(BLANK_S)
+      setEditandoSucursal(null)
+      await cargarSucursales()
     } catch (e) { setFb('sucursal', false, e.message) }
     setSaving('')
+  }
+
+  const editarSucursal = (s) => {
+    setEditandoSucursal(s)
+    setSucursalForm({
+      nombre:      s.nombre      ?? '',
+      direccion:   s.direccion   ?? '',
+      coordenadas: s.coordenadas ?? '',
+      activo:      s.activo      ?? true,
+    })
+    setFb('sucursal', null, '')
+  }
+
+  const cancelarEdicionSucursal = () => {
+    setEditandoSucursal(null)
+    setSucursalForm(BLANK_S)
+    setFb('sucursal', null, '')
+  }
+
+  const eliminarSucursal = async (s) => {
+    if (!window.confirm(`¿Eliminar la sucursal "${s.nombre}"?`)) return
+    try {
+      await api.delete(`/api/v1/sucursales-empresa/${s.id}`)
+      setFb('sucursal', true, 'Sucursal eliminada.')
+      await cargarSucursales()
+    } catch (e) { setFb('sucursal', false, e.message) }
   }
 
   const handleVerSubmit = async () => {
@@ -368,14 +411,89 @@ export default function MiEmpresa() {
         )}
       </div>
 
-      {/* ── Sucursal asignada ── */}
-      <Section title="Sucursal asignada" feedback={feedback.sucursal}>
-        <div style={s.grid2}>
-          <Field label="Nombre de sucursal" value={sucursalForm.nombre}    onChange={v => setSucursalForm(f => ({ ...f, nombre: v }))}    placeholder="Oficina Central" />
-          <Field label="Dirección"          value={sucursalForm.direccion} onChange={v => setSucursalForm(f => ({ ...f, direccion: v }))} placeholder="Av. Bush 123, Santa Cruz" />
+      {/* ── Sucursales ── */}
+      <div style={s.card}>
+        <div style={s.cardHeader}>
+          <p style={s.cardTitle}>Sucursales de la empresa</p>
+          <span style={s.countBadge}>{sucursales.length} registrada{sucursales.length !== 1 ? 's' : ''}</span>
         </div>
-        <SaveBtn onClick={saveSucursal} loading={saving === 'sucursal'} />
-      </Section>
+
+        {feedback.sucursal && (
+          <div style={{
+            padding: '8px 12px', borderRadius: 8, fontSize: 13, marginBottom: 12,
+            background: feedback.sucursal.ok ? '#f0fdf4' : '#fef2f2',
+            color:      feedback.sucursal.ok ? '#16a34a'  : '#dc2626',
+            border:     `1px solid ${feedback.sucursal.ok ? '#bbf7d0' : '#fca5a5'}`,
+          }}>{feedback.sucursal.msg}</div>
+        )}
+
+        {/* Formulario */}
+        <div style={s.contactForm}>
+          <p style={s.contactFormTitle}>
+            {editandoSucursal ? `Editando: ${editandoSucursal.nombre}` : 'Agregar sucursal'}
+          </p>
+          <div style={s.grid2}>
+            <Field label="Nombre *"   value={sucursalForm.nombre}      onChange={v => setSucursalForm(f => ({ ...f, nombre: v }))}      placeholder="Oficina Central" />
+            <Field label="Dirección *" value={sucursalForm.direccion}   onChange={v => setSucursalForm(f => ({ ...f, direccion: v }))}   placeholder="Av. Bush 123, Santa Cruz" />
+            <Field label="Coordenadas (opcional)" value={sucursalForm.coordenadas} onChange={v => setSucursalForm(f => ({ ...f, coordenadas: v }))} placeholder="-17.7833, -63.1821" />
+            <div>
+              <label style={s.label}>Estado</label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[true, false].map(v => (
+                  <button key={String(v)}
+                    style={{ ...s.toggleBtn, ...(sucursalForm.activo === v ? s.toggleBtnActive : {}) }}
+                    onClick={() => setSucursalForm(f => ({ ...f, activo: v }))}>
+                    {v ? 'Activa' : 'Inactiva'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: '1rem' }}>
+            {editandoSucursal && (
+              <button style={s.btnCancelar} onClick={cancelarEdicionSucursal} disabled={saving === 'sucursal'}>
+                Cancelar
+              </button>
+            )}
+            <button style={s.saveBtn} onClick={saveSucursal} disabled={saving === 'sucursal'}>
+              {saving === 'sucursal' ? 'Guardando...' : editandoSucursal ? 'Guardar cambios' : 'Agregar sucursal'}
+            </button>
+          </div>
+        </div>
+
+        {/* Lista */}
+        {sucursales.length === 0 ? (
+          <p style={{ margin: '1rem 0 0', fontSize: 13, color: 'var(--c-muted)' }}>
+            Aún no hay sucursales registradas para esta empresa.
+          </p>
+        ) : (
+          <div style={s.contactGrid}>
+            {sucursales.map(suc => (
+              <div key={suc.id} style={{ ...s.contactCard, ...(editandoSucursal?.id === suc.id ? s.contactCardActive : {}), opacity: suc.activo ? 1 : 0.65 }}>
+                <div style={s.contactTop}>
+                  <div style={{ ...s.avatar, borderRadius: 10, background: 'var(--c-primary-light)' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c-primary)" strokeWidth="2.5">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={s.contactNombre}>{suc.nombre}</p>
+                    <p style={{ ...s.contactTel, marginTop: 2 }}>{suc.direccion}</p>
+                    {suc.coordenadas && <p style={{ ...s.contactTel, fontFamily: 'monospace', fontSize: 11 }}>📍 {suc.coordenadas}</p>}
+                    <span style={{ ...s.cargoBadge, background: suc.activo ? '#dcfce7' : '#fee2e2', color: suc.activo ? '#15803d' : '#991b1b', marginTop: 4 }}>
+                      {suc.activo ? 'Activa' : 'Inactiva'}
+                    </span>
+                  </div>
+                </div>
+                <div style={s.contactActions}>
+                  <button style={s.btnEdit} onClick={() => editarSucursal(suc)}>Editar</button>
+                  <button style={s.btnDel}  onClick={() => eliminarSucursal(suc)}>Eliminar</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* ── Verificación como proveedor (empresa only) ── */}
       {session?.rol === 'empresa' && (
@@ -613,6 +731,8 @@ const s = {
   contactActions:  { display: 'flex', gap: 6, borderTop: '1px solid var(--c-border-light)', paddingTop: 8 },
   btnEdit:         { flex: 1, padding: '5px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
   btnDel:          { padding: '5px 10px', background: 'var(--c-bg)', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+  toggleBtn:       { padding: '7px 14px', border: '1.5px solid var(--c-border-mid)', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: 'var(--c-bg)', color: 'var(--c-muted)' },
+  toggleBtnActive: { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
   sectionTitle:    { margin: '0 0 .75rem', fontWeight: 700, fontSize: 15, color: 'var(--c-text)' },
   muted:           { margin: 0, fontSize: 14, color: 'var(--c-muted)', lineHeight: 1.5 },

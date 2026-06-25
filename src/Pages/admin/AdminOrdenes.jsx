@@ -129,7 +129,7 @@ export default function AdminOrdenes() {
                       {Number(o.total || 0).toLocaleString('es-BO', { style: 'currency', currency: 'BOB' })}
                     </td>
                     <td style={{ ...s.td, whiteSpace: 'nowrap' }}>
-                      {o.fechaOrden ? new Date(o.fechaOrden).toLocaleDateString('es-BO') : '—'}
+                      {(o.fecha || o.fechaOrden) ? new Date(o.fecha || o.fechaOrden).toLocaleString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                     </td>
                     <td style={s.td}>
                       <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: ec.bg, color: ec.color }}>

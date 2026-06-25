@@ -33,7 +33,10 @@ export default function MiCuenta() {
     init()
   }, [])
 
-  const setFb = (section, ok, msg) => setFeedback(f => ({ ...f, [section]: { ok, msg } }))
+  const setFb = (section, ok, msg) => {
+    setFeedback(f => ({ ...f, [section]: { ok, msg } }))
+    setTimeout(() => setFeedback(f => ({ ...f, [section]: null })), 8000)
+  }
 
   const uploadFile = async (file) => {
     const fd = new FormData()
@@ -48,19 +51,23 @@ export default function MiCuenta() {
     return data.url
   }
 
+  const buildPayload = (overrides = {}) => ({
+    nombre:     fullUser?.nombre,
+    email:      fullUser?.email,
+    activo:     fullUser?.activo ?? true,
+    avatarUrl:  fullUser?.avatarUrl ?? null,
+    idEmpresa:  session.id_empresa,
+    idSucursal: session.idSucursal?.id ?? session.id_sucursal,
+    ...overrides,
+  })
+
   const saveUser = async () => {
     setSaving('user')
     try {
-      await api.put(`/api/v1/usuarios/${session.id}`, {
-        nombre:     userForm.nombre,
-        email:      userForm.email,
-        password:   fullUser?.password ?? '',
-        activo:     fullUser?.activo ?? true,
-        avatarUrl:  fullUser?.avatarUrl ?? null,
-        idEmpresa:  session.id_empresa,
-        idSucursal: session.idSucursal?.id ?? session.id_sucursal,
-        idRol:      fullUser?.idRol?.id ?? fullUser?.idRol,
-      })
+      await api.put(`/api/v1/usuarios/${session.id}`, buildPayload({
+        nombre: userForm.nombre,
+        email:  userForm.email,
+      }))
       setFb('user', true, 'Datos actualizados correctamente.')
     } catch (e) { setFb('user', false, e.message) }
     setSaving('')
@@ -71,16 +78,7 @@ export default function MiCuenta() {
     try {
       let url = avatarUrl
       if (avatarFile) url = await uploadFile(avatarFile)
-      await api.put(`/api/v1/usuarios/${session.id}`, {
-        nombre:     fullUser?.nombre,
-        email:      fullUser?.email,
-        password:   fullUser?.password ?? '',
-        activo:     fullUser?.activo ?? true,
-        avatarUrl:  url || null,
-        idEmpresa:  session.id_empresa,
-        idSucursal: session.idSucursal?.id ?? session.id_sucursal,
-        idRol:      fullUser?.idRol?.id ?? fullUser?.idRol,
-      })
+      await api.put(`/api/v1/usuarios/${session.id}`, buildPayload({ avatarUrl: url || null }))
       setAvatarUrl(url)
       setAvatarPreview(url)
       setAvatarFile(null)
@@ -94,15 +92,7 @@ export default function MiCuenta() {
     if (passForm.nueva !== passForm.confirmar) return setFb('pass', false, 'Las contraseñas no coinciden.')
     setSaving('pass')
     try {
-      await api.put(`/api/v1/usuarios/${session.id}`, {
-        nombre:     fullUser?.nombre,
-        email:      fullUser?.email,
-        password:   passForm.nueva,
-        activo:     fullUser?.activo ?? true,
-        idEmpresa:  session.id_empresa,
-        idSucursal: session.idSucursal?.id ?? session.id_sucursal,
-        idRol:      fullUser?.idRol?.id ?? fullUser?.idRol,
-      })
+      await api.put(`/api/v1/usuarios/${session.id}`, buildPayload({ password: passForm.nueva }))
       setPassForm({ nueva: '', confirmar: '' })
       setFb('pass', true, 'Contraseña actualizada.')
     } catch (e) { setFb('pass', false, e.message) }

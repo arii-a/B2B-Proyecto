@@ -654,7 +654,7 @@ export default function MisOrdenes() {
                 const estilo = ESTADO_COLORS[o.estado_orden] || ESTADO_COLORS.pendiente
                 return (
                   <tr key={o.id_orden || i} style={{ background: i % 2 === 0 ? 'var(--c-bg)' : 'var(--c-bg-subtle)' }}>
-                    <td style={styles.td}>{o.fecha_creacion ? new Date(o.fecha_creacion).toLocaleDateString('es-BO') : '—'}</td>
+                    <td style={styles.td}>{o.fecha_creacion ? new Date(o.fecha_creacion).toLocaleString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
                     <td style={styles.td}>{o.proveedor}</td>
                     <td style={styles.td}>{o.empresa_compradora}</td>
                     <td style={styles.td}>{o.usuario_comprador}</td>
