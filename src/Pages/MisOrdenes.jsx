@@ -34,8 +34,6 @@ export default function MisOrdenes() {
   const [cantidad, setCantidad] = useState(1)
   const [productosOrden, setProductosOrden] = useState([])
 
-  const [precioInfo, setPrecioInfo] = useState(null)
-  const [cargandoPrecio, setCargandoPrecio] = useState(false)
   const [esperandoWebhook, setEsperandoWebhook] = useState(false)
 
   const stompClientRef = useRef(null)
@@ -124,10 +122,6 @@ export default function MisOrdenes() {
     }
   }, [qrModal.open, qrModal.ordenId])
 
-  useEffect(() => {
-    if (opcionElegida && productoEncontrado) buscarPreciosYDescuentos()
-    else setPrecioInfo(null)
-  }, [opcionElegida, cantidad, productoEncontrado])
 
   const cambiarEstado = async (id_orden, nuevoEstado, triggerDesc) => {
     const raw = rawOrdenes.find(o => o.id === id_orden)
@@ -190,82 +184,9 @@ export default function MisOrdenes() {
     setBuscandoSku(false)
   }
 
-  const buscarPreciosYDescuentos = async () => {
-    if (!opcionElegida || !productoEncontrado) return
-    setCargandoPrecio(true)
-    setPrecioInfo(null)
-
-    const hoy = new Date().toISOString()
-    const idProducto = productoEncontrado.id
-    const idProveedorAlmacen = opcionElegida.idProveedor
-    const idEmpresaCompradora = session?.id_empresa
-    const cantidadNum = Number(cantidad) || 1
-
-    try {
-      const [preciosData, contratosData, tramosData, detallesData] = await Promise.all([
-        api.get('/api/v1/precios-base'),
-        api.get('/api/v1/contratos-tarifa'),
-        api.get('/api/v1/tramos-tarifa'),
-        api.get('/api/v1/contratos-detalle'),
-      ])
-
-      const precioRecord = (preciosData || []).find(p =>
-        p.idProducto?.id === idProducto &&
-        p.idProveedor?.id === idProveedorAlmacen &&
-        p.vigenteDesde <= hoy &&
-        (!p.vigenteHasta || p.vigenteHasta >= hoy)
-      )
-      const precioBase = precioRecord ? Number(precioRecord.precioBase) : null
-
-      const contrato = (contratosData || []).find(c =>
-        c.idEmpresa?.id === idEmpresaCompradora &&
-        c.idProveedor?.id === idProveedorAlmacen &&
-        c.activo &&
-        c.vigenteDesde <= hoy &&
-        (!c.vigenteHasta || c.vigenteHasta >= hoy)
-      )
-
-      let descuentoTarifa = 0, tipoTramo = null, nombreRegla = null
-      if (contrato) {
-        const idRegla = contrato.idRegla?.id
-        nombreRegla = contrato.idRegla?.nombre || null
-        const subtotalEstimado = precioBase != null ? precioBase * cantidadNum : 0
-        const tramos = (tramosData || []).filter(t => t.idRegla?.id === idRegla)
-
-        const tramoVolumen = tramos.filter(t => t.tipo === 'volumen').find(t =>
-          cantidadNum >= Number(t.cantidadMinima) && (t.cantidadMaxima == null || cantidadNum <= Number(t.cantidadMaxima))
-        )
-        const tramoCosto = tramos.filter(t => t.tipo === 'costo').find(t =>
-          subtotalEstimado >= Number(t.cantidadMinima) && (t.cantidadMaxima == null || subtotalEstimado <= Number(t.cantidadMaxima))
-        )
-        const mejorTramo = [tramoVolumen, tramoCosto].filter(Boolean).sort((a, b) => Number(b.porcentajeDesc) - Number(a.porcentajeDesc))[0]
-        if (mejorTramo) { descuentoTarifa = Number(mejorTramo.porcentajeDesc); tipoTramo = mejorTramo.tipo }
-      }
-
-      let descuentoContrato = 0, origenContrato = null
-      if (contrato) {
-        const detalles = (detallesData || []).filter(d => d.idContrato?.id === contrato.id)
-        const especifico = detalles.find(d => d.idProducto?.id === idProducto)
-        const general = detalles.find(d => !d.idProducto)
-        const elegido = especifico || general
-        if (elegido) {
-          descuentoContrato = Number(elegido.porcentajeDescuento)
-          origenContrato = especifico ? `SKU ${productoEncontrado.sku}` : 'general del contrato'
-        }
-      }
-
-      const descuentoTotal = descuentoTarifa + descuentoContrato
-      const precioFinal = precioBase != null ? precioBase * (1 - descuentoTotal / 100) : null
-      setPrecioInfo({ precioBase, descuentoTarifa, tipoTramo, nombreRegla, descuentoContrato, origenContrato, descuentoTotal, precioFinal })
-    } catch (e) {
-      showToast(`Error consultando precios: ${e.message}`, 'error')
-    }
-    setCargandoPrecio(false)
-  }
-
   const limpiarBusquedaProducto = () => {
     setSkuBusqueda(''); setProductoEncontrado(null); setOpcionesStock([])
-    setOpcionElegida(null); setCantidad(1); setPrecioInfo(null)
+    setOpcionElegida(null); setCantidad(1)
   }
 
   const limpiarFormulario = () => { limpiarBusquedaProducto(); setProductosOrden([]) }
@@ -301,9 +222,6 @@ export default function MisOrdenes() {
         nombreAlmacen: opcionElegida.nombreAlmacen,
         idProveedor: opcionElegida.idProveedor,
         nombreProveedor: opcionElegida.nombreProveedor,
-        precioBase: precioInfo?.precioBase ?? null,
-        precioFinal: precioInfo?.precioFinal ?? null,
-        descuentoTotal: precioInfo?.descuentoTotal ?? 0,
       }])
     }
     limpiarBusquedaProducto()
@@ -317,9 +235,7 @@ export default function MisOrdenes() {
     if (productosOrden.length === 0) { showToast('Agrega al menos un producto.', 'error'); return }
 
     const primer = productosOrden[0]
-    const total = Math.round(
-      productosOrden.reduce((sum, p) => sum + (p.precioFinal ?? p.precioBase ?? 0) * p.cantidad, 0) * 100
-    ) / 100
+    const total = 0
     setGuardandoOrden(true)
     try {
       const orden = await api.post('/api/v1/ordenes-compra', {
@@ -335,8 +251,8 @@ export default function MisOrdenes() {
 
       await Promise.all(productosOrden.map(p => api.post('/api/v1/detalle-orden', {
         cantidad: p.cantidad,
-        precioUnitario: p.precioFinal ?? p.precioBase ?? 0,
-        subtotal: (p.precioFinal ?? p.precioBase ?? 0) * p.cantidad,
+        precioUnitario: 0,
+        subtotal: 0,
         idOrden: orden.id,
         idProducto: p.idProducto,
         idAlmacen: p.idAlmacen,
@@ -477,96 +393,21 @@ export default function MisOrdenes() {
               </div>
             )}
 
-            {opcionElegida && (
-              <div style={styles.precioBox}>
-                {cargandoPrecio ? (
-                  <p style={styles.precioLoading}>Consultando precios y descuentos...</p>
-                ) : precioInfo ? (
-                  <>
-                    <p style={styles.precioTitulo}>Desglose de precio</p>
-                    <div style={styles.precioGrid}>
-                      <div style={styles.precioFila}>
-                        <span style={styles.precioLabel}>Precio base unitario</span>
-                        <span style={styles.precioValor}>
-                          {precioInfo.precioBase != null ? formatBOB(precioInfo.precioBase) : <em style={{ color: '#94a3b8' }}>Sin precio configurado</em>}
-                        </span>
-                      </div>
-                      {precioInfo.descuentoTarifa > 0 && (
-                        <div style={{ ...styles.precioFila, ...styles.precioDescuento }}>
-                          <span style={styles.precioLabel}>
-                            Descuento tarifa
-                            {precioInfo.tipoTramo && <span style={styles.tramoBadge}>{precioInfo.tipoTramo}</span>}
-                            {precioInfo.nombreRegla && <span style={{ color: 'var(--c-muted)', fontSize: '11px' }}> · {precioInfo.nombreRegla}</span>}
-                          </span>
-                          <span style={{ ...styles.precioValor, color: '#16a34a', fontWeight: '700' }}>−{precioInfo.descuentoTarifa}%</span>
-                        </div>
-                      )}
-                      {precioInfo.descuentoContrato > 0 && (
-                        <div style={{ ...styles.precioFila, ...styles.precioDescuento }}>
-                          <span style={styles.precioLabel}>
-                            Descuento contrato
-                            {precioInfo.origenContrato && <span style={{ color: 'var(--c-muted)', fontSize: '11px' }}> · {precioInfo.origenContrato}</span>}
-                          </span>
-                          <span style={{ ...styles.precioValor, color: '#16a34a', fontWeight: '700' }}>−{precioInfo.descuentoContrato}%</span>
-                        </div>
-                      )}
-                      {precioInfo.precioFinal != null && (
-                        <div style={{ ...styles.precioFila, background: '#f0fdf4', borderRadius: '8px', padding: '10px 12px', marginTop: '4px' }}>
-                          <span style={{ ...styles.precioLabel, fontWeight: '700', color: '#166534' }}>Precio final unitario</span>
-                          <span style={{ ...styles.precioValor, color: '#166534', fontWeight: '800', fontSize: '16px' }}>{formatBOB(precioInfo.precioFinal)}</span>
-                        </div>
-                      )}
-                      {precioInfo.precioBase != null && Number(cantidad) > 0 && (
-                        <div style={{ ...styles.precioFila, background: '#eff6ff', borderRadius: '8px', padding: '10px 12px', marginTop: '4px' }}>
-                          <span style={{ ...styles.precioLabel, fontWeight: '700', color: '#1e40af' }}>Subtotal ({cantidad} u.)</span>
-                          <span style={{ ...styles.precioValor, color: '#1e40af', fontWeight: '800', fontSize: '16px' }}>
-                            {formatBOB((precioInfo.precioFinal ?? precioInfo.precioBase) * Number(cantidad))}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            )}
-
             {productosOrden.length > 0 && (
               <div style={styles.orderList}>
                 <p style={styles.sectionTitle}>Productos en la orden</p>
-                {productosOrden.map(p => {
-                  const precioUnit = p.precioFinal ?? p.precioBase ?? null
-                  const subtotal = precioUnit != null ? precioUnit * p.cantidad : null
-                  return (
-                    <div key={p.idProducto} style={styles.orderItem}>
-                      <div>
-                        <strong>{p.sku}</strong> — {p.nombre}
-                        <br />
-                        <span style={{ fontSize: '12px', color: 'var(--c-muted)' }}>
-                          Cant: {p.cantidad} · {p.nombreProveedor} · {p.nombreAlmacen}
-                        </span>
-                        {precioUnit != null && (
-                          <span style={{ display: 'block', fontSize: '12px', color: '#166534', fontWeight: '600', marginTop: '2px' }}>
-                            {formatBOB(precioUnit)}/u
-                            {p.descuentoTotal > 0 && <span style={{ color: '#16a34a' }}> (−{p.descuentoTotal}%)</span>}
-                            {subtotal != null && <span style={{ color: 'var(--c-text)', marginLeft: '8px' }}>= {formatBOB(subtotal)}</span>}
-                          </span>
-                        )}
-                        {precioUnit == null && (
-                          <span style={{ display: 'block', fontSize: '12px', color: '#f59e0b', marginTop: '2px' }}>Sin precio configurado</span>
-                        )}
-                      </div>
-                      <button style={styles.removeBtn} onClick={() => quitarProductoDeOrden(p.idProducto)}>Quitar</button>
+                {productosOrden.map(p => (
+                  <div key={p.idProducto} style={styles.orderItem}>
+                    <div>
+                      <strong>{p.sku}</strong> — {p.nombre}
+                      <br />
+                      <span style={{ fontSize: '12px', color: 'var(--c-muted)' }}>
+                        Cant: {p.cantidad} · {p.nombreProveedor} · {p.nombreAlmacen}
+                      </span>
                     </div>
-                  )
-                })}
-
-                {/* Total de la orden */}
-                <div style={{ marginTop: '12px', padding: '12px 14px', background: '#f0fdf4', borderRadius: '10px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: '700', fontSize: '14px', color: '#166534' }}>Total de la orden</span>
-                  <span style={{ fontWeight: '800', fontSize: '18px', color: '#166534' }}>
-                    {formatBOB(productosOrden.reduce((sum, p) => sum + (p.precioFinal ?? p.precioBase ?? 0) * p.cantidad, 0))}
-                  </span>
-                </div>
+                    <button style={styles.removeBtn} onClick={() => quitarProductoDeOrden(p.idProducto)}>Quitar</button>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -672,7 +513,7 @@ export default function MisOrdenes() {
                               style={{ ...styles.actionBtn, background: '#f1f5f9', color: '#475569' }}>Rechazar</button>
                           </>
                         )}
-                        {session?.rol !== 'proveedor' && o.estado_orden === 'pendiente' && (
+                        {session?.rol !== 'proveedor' && o.estado_orden === 'aprobado' && (
                           <button disabled={procesando === o.id_orden}
                             onClick={() => abrirQR(o)}
                             style={{ ...styles.actionBtn, background: '#eff6ff', color: '#1e40af' }}>Pagar QR</button>
@@ -747,15 +588,6 @@ const styles = {
   qtyInput: { width: '60px', padding: '10px 4px', border: 'none', borderLeft: '1.5px solid var(--c-border-mid)', borderRight: '1.5px solid var(--c-border-mid)', fontSize: '14px', outline: 'none', boxSizing: 'border-box', textAlign: 'center', MozAppearance: 'textfield' },
   addBtn: { padding: '10px 14px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' },
   quantityHint: { margin: '6px 0 0', color: 'var(--c-muted)', fontSize: '12px' },
-  precioBox: { marginTop: '1rem', background: 'var(--c-bg-page)', border: '1px solid var(--c-border-mid)', borderRadius: '12px', padding: '14px 16px' },
-  precioLoading: { margin: 0, fontSize: '13px', color: 'var(--c-muted)' },
-  precioTitulo: { margin: '0 0 10px', fontWeight: '700', fontSize: '13px', color: 'var(--c-text)' },
-  precioGrid: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  precioFila: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', fontSize: '13px' },
-  precioDescuento: { background: '#f0fdf4', borderRadius: '6px', padding: '4px 8px' },
-  precioLabel: { color: 'var(--c-muted)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' },
-  precioValor: { fontWeight: '600', color: 'var(--c-text)', whiteSpace: 'nowrap' },
-  tramoBadge: { background: 'var(--c-primary)', color: '#fff', borderRadius: '4px', padding: '1px 6px', fontSize: '10px', fontWeight: '700' },
   orderList: { marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--c-border-mid)' },
   orderItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', background: 'var(--c-bg-page)', border: '1px solid var(--c-border-mid)', borderRadius: '8px', padding: '10px', marginBottom: '8px', fontSize: '13px', color: 'var(--c-text)' },
   removeBtn: { border: 'none', background: '#fee2e2', color: '#991b1b', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },

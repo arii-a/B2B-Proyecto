@@ -19,6 +19,7 @@ const proveedorLinks = [
   { to: '/almacenes',       icon: 'almacenes',    label: 'Almacenes'           },
   { to: '/sucursales',      icon: 'sucursales',   label: 'Sucursales'          },
   { to: '/contratos',       icon: 'contratos',    label: 'Contratos'           },
+  { to: '/facturas',        icon: 'facturas',     label: 'Facturas'            },
   { to: '/mi-empresa',      icon: 'miempresa',    label: 'Mi empresa'          },
   { to: '/mi-cuenta',       icon: 'cuenta',       label: 'Mi cuenta'           },
 ]
