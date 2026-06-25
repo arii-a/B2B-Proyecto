@@ -103,4 +103,45 @@ public class ProductoAlmacenService {
         productoAlmacenRepository.deleteById(id);
         return true;
     }
+
+    /**
+     * Descuenta `cantidad` unidades del stock del producto, empezando por el almacén
+     * con más stock. Dispara la alerta por email si algún almacén cruza por debajo del mínimo.
+     */
+    @Transactional
+    public void decrementarStock(UUID idProducto, int cantidad) {
+        if (idProducto == null || cantidad <= 0) return;
+        var almacenes = productoAlmacenRepository.findActivosByProducto(idProducto);
+        int restante = cantidad;
+        for (var pa : almacenes) {
+            if (restante <= 0) break;
+            int oldStock = pa.getStock();
+            int deducir  = Math.min(restante, Math.max(0, oldStock));
+            if (deducir == 0) continue;
+            int newStock = oldStock - deducir;
+            pa.setStock(newStock);
+            restante -= deducir;
+            productoAlmacenRepository.save(pa);
+
+            if (pa.getMin() != null && newStock < pa.getMin().intValue() && oldStock >= pa.getMin().intValue()) {
+                try {
+                    String productoNombre = pa.getProducto() != null ? pa.getProducto().getNombre() : "Desconocido";
+                    String almacenNombre  = pa.getAlmacen()  != null ? pa.getAlmacen().getNombre()  : null;
+                    int    minStock       = pa.getMin().intValue();
+                    if (pa.getProducto() != null
+                            && pa.getProducto().getIdProveedor() != null
+                            && pa.getProducto().getIdProveedor().getIdEmpresa() != null) {
+                        UUID empresaId = pa.getProducto().getIdProveedor().getIdEmpresa().getId();
+                        var  usuarios  = usuarioRepository.findByIdEmpresaId(empresaId);
+                        log.info("[STOCK] '{}' bajo mínimo ({}/{}) vía pedido — alertando {} usuario(s)",
+                                productoNombre, newStock, minStock, usuarios.size());
+                        usuarios.forEach(u -> emailService.sendStockAlerta(
+                                u.getEmail(), productoNombre, newStock, minStock, almacenNombre));
+                    }
+                } catch (Exception e) {
+                    log.warn("[STOCK] No se pudo enviar alerta de stock: {}", e.getMessage());
+                }
+            }
+        }
+    }
 }
