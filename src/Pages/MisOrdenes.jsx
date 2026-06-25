@@ -525,7 +525,7 @@ export default function MisOrdenes() {
                             style={{ ...styles.actionBtn, background: '#fee2e2', color: '#991b1b' }}>Cancelar</button>
                         )}
                         {(o.estado_orden === 'cancelado' || o.estado_orden === 'rechazado' || o.estado_orden === 'pagado') && <span style={styles.noActions}>Sin acciones</span>}
-                        {session?.rol === 'proveedor' && o.estado_orden !== 'pendiente' && <span style={styles.noActions}>Sin acciones</span>}
+                        {session?.rol === 'proveedor' && o.estado_orden === 'aprobado' && <span style={styles.noActions}>Sin acciones</span>}
                       </div>
                     </td>
                   </tr>

@@ -4,7 +4,7 @@ import PageHeader from '../../components/PageHeader'
 
 /* ─── Modal crear empresa ───────────────────────────────────────────────── */
 const BLANK_E = { nombre: '', razon_social: '', nit: '', dominio: '', logo_url: '' }
-const BLANK_C = { nombres: '', apellidos: '', cargo: '' }
+const BLANK_C = { nombres: '', apellidos: '' }
 const BLANK_S = { nombre: '', direccion: '' }
 const BLANK_U = { nombre: '', email: '', password: '' }
 
@@ -135,7 +135,6 @@ function CrearEmpresaModal({ onClose, onCreated }) {
             <p style={ms.stepTitle}>Contacto principal</p>
             <MField label="Nombres"          value={contacto.nombres}   onChange={v => setContacto(f => ({ ...f, nombres: v }))}   placeholder="Ej: Ana" />
             <MField label="Apellidos"        value={contacto.apellidos} onChange={v => setContacto(f => ({ ...f, apellidos: v }))} placeholder="Ej: García" />
-            <MField label="Cargo (opcional)" value={contacto.cargo}     onChange={v => setContacto(f => ({ ...f, cargo: v }))}     placeholder="Ej: Gerente" />
           </>}
           {step === 2 && <>
             <p style={ms.stepTitle}>Sucursal principal</p>
