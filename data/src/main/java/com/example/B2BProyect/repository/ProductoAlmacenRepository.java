@@ -47,4 +47,7 @@ public interface ProductoAlmacenRepository extends JpaRepository<ProductoAlmacen
     List<ProductoAlmacenDTO> findAllDTO();
 
     void deleteById_IdProducto(UUID idProducto);
+
+    @Query("SELECT pa FROM ProductoAlmacen pa WHERE pa.id.idProducto = :idProducto AND pa.activo = true ORDER BY pa.stock DESC")
+    List<ProductoAlmacen> findActivosByProducto(@Param("idProducto") UUID idProducto);
 }
