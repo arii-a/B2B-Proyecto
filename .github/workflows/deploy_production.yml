@@ -40,3 +40,4 @@ jobs:
           target: /home/azureadmin/Frontend-B2B/dist/
           strip_components: 1
           
+          
