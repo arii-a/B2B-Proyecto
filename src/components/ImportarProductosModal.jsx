@@ -28,6 +28,8 @@ function parseSheet(wb) {
     precio:      header.findIndex(h => h.includes('precio')),
     almacen:     header.findIndex(h => h.includes('almac')),
     stock:       header.findIndex(h => h.includes('stock') || h.includes('cantidad')),
+    min:         header.findIndex(h => h === 'min' || h.includes('mínimo') || h.includes('minimo')),
+    max:         header.findIndex(h => h === 'max' || h.includes('máximo') || h.includes('maximo')),
   }
   return rows.slice(1).map((r, i) => ({
     _row:        i + 2,
@@ -39,6 +41,8 @@ function parseSheet(wb) {
     precio:      normalize(r[idx.precio]),
     almacen:     idx.almacen  >= 0 ? normalize(r[idx.almacen])  : '',
     stock:       idx.stock    >= 0 ? normalize(r[idx.stock])    : '',
+    min:         idx.min      >= 0 ? normalize(r[idx.min])      : '',
+    max:         idx.max      >= 0 ? normalize(r[idx.max])      : '',
   })).filter(r => r.sku || r.nombre)
 }
 
@@ -56,7 +60,11 @@ function validar(filas, categorias, unidades, almacenes) {
     if (!uniMatch && f.unidad)    errores.push(`Unidad "${f.unidad}" no reconocida`)
     if (!almMatch && f.almacen)   errores.push(`Almacén "${f.almacen}" no reconocido`)
     const stockNum = f.stock !== '' ? parseInt(f.stock, 10) : null
+    const minNum   = f.min   !== '' ? parseInt(f.min,   10) : null
+    const maxNum   = f.max   !== '' ? parseInt(f.max,   10) : null
     if (f.stock !== '' && (isNaN(stockNum) || stockNum < 0)) errores.push('Stock inválido')
+    if (f.min   !== '' && (isNaN(minNum)   || minNum   < 0)) errores.push('Mínimo inválido')
+    if (f.max   !== '' && (isNaN(maxNum)   || maxNum   < 0)) errores.push('Máximo inválido')
     return {
       ...f,
       _cat:      catMatch?.item ?? null,
@@ -67,6 +75,8 @@ function validar(filas, categorias, unidades, almacenes) {
       _almFuzzy: almMatch?.fuzzy ?? false,
       _precio:   f.precio ? precioNum : null,
       _stock:    f.stock !== '' && !isNaN(stockNum) && stockNum >= 0 ? stockNum : null,
+      _min:      f.min   !== '' && !isNaN(minNum)   && minNum   >= 0 ? minNum   : null,
+      _max:      f.max   !== '' && !isNaN(maxNum)   && maxNum   >= 0 ? maxNum   : null,
       _errores:  errores,
       _ok:       errores.length === 0,
     }
@@ -77,12 +87,13 @@ const PAGE_SIZE = 100
 
 export default function ImportarProductosModal({ proveedorId, categorias, unidades, almacenes = [], onClose, onDone }) {
   const inputRef    = useRef()
-  const [filas,     setFilas]     = useState([])
-  const [fileName,  setFileName]  = useState('')
-  const [importing, setImporting] = useState(false)
-  const [progress,  setProgress]  = useState(null)
-  const [done,      setDone]      = useState(false)
-  const [page,      setPage]      = useState(0)
+  const [filas,          setFilas]          = useState([])
+  const [fileName,       setFileName]       = useState('')
+  const [importing,      setImporting]      = useState(false)
+  const [progress,       setProgress]       = useState(null)
+  const [done,           setDone]           = useState(false)
+  const [page,           setPage]           = useState(0)
+  const [defaultAlmId,   setDefaultAlmId]   = useState(almacenes[0]?.id ?? '')
 
   const sinAlmacenes = almacenes.length === 0
 
@@ -129,11 +140,14 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
             idProducto:   prod.id,
           })
         }
-        if (f._alm && f._stock != null && prod?.id) {
+        const almId = f._alm?.id ?? defaultAlmId
+        if (almId && f._stock != null && prod?.id) {
           await api.post('/api/v1/producto-almacen', {
-            idAlmacen:  f._alm.id,
+            idAlmacen:  almId,
             idProducto: prod.id,
             stock:      f._stock,
+            min:        f._min ?? null,
+            max:        f._max ?? null,
             activo:     true,
           })
         }
@@ -155,21 +169,22 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
   const downloadPlantilla = () => {
     const almNombre = almacenes[0]?.nombre ?? 'Almacén Principal'
     const ws = XLSX.utils.aoa_to_sheet([
-      ['SKU', 'Nombre', 'Descripcion', 'Categoria', 'UnidadMedida', 'Precio', 'Almacen', 'Stock'],
+      ['SKU', 'Nombre', 'Descripcion', 'Categoria', 'UnidadMedida', 'Precio', 'Almacen', 'Stock', 'Min', 'Max'],
       ['PROD-001', 'Producto ejemplo', 'Descripción opcional',
        categorias[0]?.nombre ?? 'Categoría',
        unidades[0]?.nombre   ?? 'Unidad',
        '100.00',
        almNombre,
-       '50'],
+       '50', '10', '200'],
     ])
-    ws['!cols'] = [14, 22, 24, 16, 16, 10, 20, 8].map(w => ({ wch: w }))
+    ws['!cols'] = [14, 22, 24, 16, 16, 10, 20, 8, 8, 8].map(w => ({ wch: w }))
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Productos')
     XLSX.writeFile(wb, 'plantilla_productos.xlsx')
   }
 
   const hasAlmacenCol = filas.some(f => f.almacen !== '')
+  const hasMinMaxCol  = filas.some(f => f.min !== '' || f.max !== '')
 
   return (
     <div style={s.overlay} onClick={e => { if (e.target === e.currentTarget && !importing) onClose() }}>
@@ -178,7 +193,7 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
         <div style={s.header}>
           <div>
             <p style={s.title}>Importar productos desde Excel</p>
-            <p style={s.sub}>Columnas: SKU · Nombre · Descripcion · Categoria · UnidadMedida · Precio · Almacen · Stock</p>
+            <p style={s.sub}>Columnas: SKU · Nombre · Descripcion · Categoria · UnidadMedida · Precio · Almacen · Stock · Min · Max</p>
           </div>
           <button style={s.closeBtn} onClick={onClose} disabled={importing}>✕</button>
         </div>
@@ -199,6 +214,21 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
             <input ref={inputRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleFile} />
             <button style={s.plantillaBtn} onClick={downloadPlantilla}>⬇ Descargar plantilla</button>
           </div>
+
+          {/* Almacén por defecto */}
+          {!sinAlmacenes && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--c-bg-alt)', border: '1px solid var(--c-primary-light)', borderRadius: 8, padding: '10px 14px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>Almacén por defecto:</span>
+              <select style={{ padding: '6px 10px', border: '1.5px solid var(--c-border)', borderRadius: 6, fontSize: 12, color: 'var(--c-text)', background: 'var(--c-bg)', flex: 1, minWidth: 160 }}
+                value={defaultAlmId} onChange={e => setDefaultAlmId(e.target.value)}>
+                <option value="">— Sin asignar —</option>
+                {almacenes.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+              </select>
+              <span style={{ fontSize: 11, color: 'var(--c-muted)' }}>
+                Se usa cuando la fila no tiene columna "Almacen" o no coincide con ninguno.
+              </span>
+            </div>
+          )}
 
           {filas.length === 0 && (
             <div style={s.hintGrid}>
@@ -245,6 +275,7 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
                     <tr>
                       {['Fila', 'SKU', 'Nombre', 'Descripción', 'Categoría', 'Unidad', 'Precio',
                         ...(hasAlmacenCol ? ['Almacén', 'Stock'] : []),
+                        ...(hasMinMaxCol  ? ['Mín', 'Máx'] : []),
                         'Estado'].map(h => (
                         <th key={h} style={s.th}>{h}</th>
                       ))}
@@ -274,10 +305,22 @@ export default function ImportarProductosModal({ proveedorId, categorias, unidad
                           <td style={{ ...s.td, color: f._alm ? 'var(--c-text)' : (f.almacen ? '#dc2626' : 'var(--c-muted)') }}>
                             {f._alm
                               ? <>{f._alm.nombre}{f._almFuzzy && <span style={s.fuzzyTag} title={`Escrito: "${f.almacen}"`}>~</span>}</>
-                              : f.almacen || '—'}
+                              : f.almacen
+                                ? <span style={{ color: '#dc2626' }}>{f.almacen}</span>
+                                : defaultAlmId
+                                  ? <span style={{ color: '#d97706' }}>{almacenes.find(a=>a.id===defaultAlmId)?.nombre ?? '—'} <span style={s.fuzzyTag}>dflt</span></span>
+                                  : '—'}
                           </td>
                           <td style={{ ...s.td, color: f._stock != null ? '#059669' : 'var(--c-muted)', fontWeight: f._stock != null ? 600 : 400 }}>
                             {f._stock != null ? f._stock : '—'}
+                          </td>
+                        </>}
+                        {hasMinMaxCol && <>
+                          <td style={{ ...s.td, color: f._min != null ? 'var(--c-text)' : 'var(--c-muted)' }}>
+                            {f._min != null ? f._min : '—'}
+                          </td>
+                          <td style={{ ...s.td, color: f._max != null ? 'var(--c-text)' : 'var(--c-muted)', fontWeight: f._max != null ? 600 : 400 }}>
+                            {f._max != null ? f._max : '—'}
                           </td>
                         </>}
                         <td style={s.td}>

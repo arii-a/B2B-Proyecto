@@ -41,7 +41,7 @@ export default function MisProductos() {
   // ── Formulario nuevo producto ──
   const [showForm,   setShowForm]   = useState(false)
   const [showImport, setShowImport] = useState(false)
-  const [newForm,  setNewForm]  = useState({ sku:'', nombre:'', descripcion:'', idUnidadMedida:'', idCategoria:'', precio:'', vigenteDesde: todayInput(), stock:'' })
+  const [newForm,  setNewForm]  = useState({ sku:'', nombre:'', descripcion:'', idUnidadMedida:'', idCategoria:'', precio:'', vigenteDesde: todayInput(), stock:'', idAlmacen:'', min:'', max:'' })
   const [saving,   setSaving]   = useState(false)
 
 
@@ -79,6 +79,7 @@ export default function MisProductos() {
       const alm     = almsArr[0] ?? null
       setAlmacen(alm)
       setAlmacenes(almsArr)
+      setNewForm(f => ({ ...f, idAlmacen: alm?.id ?? '' }))
 
       let inventario = []
       if (alm) {
@@ -149,14 +150,18 @@ export default function MisProductos() {
         })
       }
       // Stock inicial opcional
-      if (newForm.stock !== '' && almacen) {
+      const targetAlm = almacenes.find(a => a.id === newForm.idAlmacen) ?? almacen
+      if (newForm.stock !== '' && targetAlm) {
         await api.post('/api/v1/producto-almacen', {
-          idAlmacen: almacen.id, idProducto: prod.id,
-          stock: Number(newForm.stock), activo: true,
+          idAlmacen: targetAlm.id, idProducto: prod.id,
+          stock: Number(newForm.stock),
+          min: newForm.min !== '' ? Number(newForm.min) : null,
+          max: newForm.max !== '' ? Number(newForm.max) : null,
+          activo: true,
         })
       }
       setMsg({ ok: true, text: 'Producto creado correctamente.' })
-      setNewForm({ sku:'', nombre:'', descripcion:'', idUnidadMedida:'', idCategoria:'', precio:'', vigenteDesde: todayInput(), stock:'' })
+      setNewForm({ sku:'', nombre:'', descripcion:'', idUnidadMedida:'', idCategoria:'', precio:'', vigenteDesde: todayInput(), stock:'', idAlmacen: almacen?.id ?? '', min:'', max:'' })
       setShowForm(false)
       await cargar()
     } catch (e) {
@@ -226,10 +231,46 @@ export default function MisProductos() {
               <input style={s.input} type="datetime-local" value={newForm.vigenteDesde}
                 onChange={e => setNewForm(f => ({ ...f, vigenteDesde: e.target.value }))} />
             </Field>
-            <Field label="Stock inicial" hint={almacen ? `Se vincula a ${almacen.nombre}` : 'Sin almacén registrado'}>
-              <input style={s.input} type="number" min="0" placeholder="0" disabled={!almacen} value={newForm.stock}
-                onChange={e => setNewForm(f => ({ ...f, stock: e.target.value }))} />
-            </Field>
+            {/* ── Sección stock: almacén + cantidad + min/max ── */}
+            <div style={{ gridColumn: '1 / -1', background: 'var(--c-bg-subtle)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--c-text)', textTransform: 'uppercase', letterSpacing: .4 }}>Stock inicial (opcional)</p>
+              <div style={{ display: 'grid', gridTemplateColumns: almacenes.length > 1 ? '1fr 1fr' : '1fr', gap: 10 }}>
+                {almacenes.length > 1 && (
+                  <Field label="Almacén destino">
+                    <select style={s.input} value={newForm.idAlmacen}
+                      onChange={e => setNewForm(f => ({ ...f, idAlmacen: e.target.value }))}>
+                      {almacenes.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                    </select>
+                  </Field>
+                )}
+                <Field label={`Cantidad (${(almacenes.find(a=>a.id===newForm.idAlmacen) ?? almacen)?.nombre ?? 'sin almacén'})`}>
+                  <input style={s.input} type="number" min="0" placeholder="0" disabled={!almacen} value={newForm.stock}
+                    onChange={e => setNewForm(f => ({ ...f, stock: e.target.value }))} />
+                </Field>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <Field label="Stock mínimo (alerta)" hint="Alerta si el stock baja de este valor">
+                  <input style={s.input} type="number" min="0" placeholder="Sin límite" disabled={!almacen} value={newForm.min}
+                    onChange={e => setNewForm(f => ({ ...f, min: e.target.value }))} />
+                </Field>
+                <Field label="Stock máximo (capacidad)" hint={`Máx permitido en este almacén`}>
+                  <input style={s.input} type="number" min="0" placeholder="Sin límite" disabled={!almacen} value={newForm.max}
+                    onChange={e => setNewForm(f => ({ ...f, max: e.target.value }))} />
+                </Field>
+              </div>
+              {(() => {
+                const alm = almacenes.find(a => a.id === newForm.idAlmacen) ?? almacen
+                if (!alm) return <p style={{ margin: 0, fontSize: 11, color: '#d97706' }}>Sin almacén registrado — crea uno primero en Almacenes.</p>
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--c-muted)', background: 'var(--c-bg)', borderRadius: 6, padding: '6px 10px', border: '1px solid var(--c-border-light)' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--c-primary)' }}>→ Destino:</span>
+                    <span style={{ fontWeight: 600, color: 'var(--c-text)' }}>{alm.nombre}</span>
+                    {newForm.max !== '' && <><span>·</span><span>Máx: <strong>{newForm.max}</strong></span></>}
+                    {newForm.min !== '' && <><span>·</span><span>Mín: <strong>{newForm.min}</strong></span></>}
+                  </div>
+                )
+              })()}
+            </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
             <button style={s.cancelBtn} onClick={() => { setShowForm(false); setMsg(null) }}>Cancelar</button>
@@ -338,6 +379,7 @@ export default function MisProductos() {
             unidades={unidades}
             proveedor={proveedor}
             almacen={almacen}
+            almacenes={almacenes}
             onClose={() => setSel(null)}
             onRefresh={cargar}
             setMsg={setMsg}
@@ -360,7 +402,7 @@ export default function MisProductos() {
 }
 
 /* ─── Panel derecho ────────────────────────────────────────────────────────── */
-function ProductoPanel({ producto: p, categorias, unidades, proveedor, almacen, onClose, onRefresh, setMsg }) {
+function ProductoPanel({ producto: p, categorias, unidades, proveedor, almacen, almacenes = [], onClose, onRefresh, setMsg }) {
   const [tab, setTab] = useState('datos')
 
   return (
@@ -385,7 +427,7 @@ function ProductoPanel({ producto: p, categorias, unidades, proveedor, almacen, 
       <div style={s.panelBody}>
         {tab === 'datos'  && <TabDatos  p={p} categorias={categorias} unidades={unidades} proveedor={proveedor} onRefresh={onRefresh} onDelete={() => { onClose(); onRefresh() }} setMsg={setMsg} />}
         {tab === 'precio' && <TabPrecio p={p} proveedor={proveedor} onRefresh={onRefresh} setMsg={setMsg} />}
-        {tab === 'stock'  && <TabStock  p={p} almacen={almacen} onRefresh={onRefresh} setMsg={setMsg} />}
+        {tab === 'stock'  && <TabStock  p={p} almacen={almacen} almacenes={almacenes} onRefresh={onRefresh} setMsg={setMsg} />}
       </div>
     </div>
   )
@@ -612,23 +654,45 @@ function TabPrecio({ p, proveedor, onRefresh, setMsg }) {
 }
 
 /* ─── Tab: Stock ─────────────────────────────────────────────────────────── */
-function TabStock({ p, almacen, onRefresh, setMsg }) {
-  const stock = p.stockActual
+function TabStock({ p, almacen, almacenes = [], onRefresh, setMsg }) {
+  const [selAlmId,     setSelAlmId]     = useState(almacen?.id ?? '')
+  const [stock,        setStock]        = useState(p.stockActual)
+  const [loadingStock, setLoadingStock] = useState(false)
   const [form, setForm] = useState({
-    stock: stock?.stock ?? '',
-    min:   stock?.min   ?? '',
-    max:   stock?.max   ?? '',
-    activo: stock?.activo ?? true,
+    stock: p.stockActual?.stock ?? '',
+    min:   p.stockActual?.min   ?? '',
+    max:   p.stockActual?.max   ?? '',
+    activo: p.stockActual?.activo ?? true,
   })
   const [saving, setSaving] = useState(false)
 
+  const selAlm = almacenes.find(a => a.id === selAlmId) ?? almacen
+
+  const cambiarAlmacen = async (almId) => {
+    setSelAlmId(almId)
+    setLoadingStock(true)
+    try {
+      const inv   = await api.get(`/api/v1/producto-almacen/almacen/${almId}`)
+      const items = Array.isArray(inv) ? inv : (inv?.content ?? [])
+      const item  = items.find(i => i.idProducto === p.id) ?? null
+      setStock(item)
+      setForm({
+        stock: item?.stock ?? '',
+        min:   item?.min   ?? '',
+        max:   item?.max   ?? '',
+        activo: item?.activo ?? true,
+      })
+    } catch {}
+    setLoadingStock(false)
+  }
+
   const guardarStock = async () => {
-    if (!almacen) { setMsg({ ok: false, text: 'No hay almacén registrado.' }); return }
+    if (!selAlm) { setMsg({ ok: false, text: 'No hay almacén registrado.' }); return }
     if (form.stock === '') { setMsg({ ok: false, text: 'Ingresa el stock.' }); return }
     setSaving(true); setMsg(null)
     try {
       if (stock) {
-        await api.put(`/api/v1/producto-almacen/${almacen.id}/${p.id}`, {
+        await api.put(`/api/v1/producto-almacen/${selAlm.id}/${p.id}`, {
           stock: Number(form.stock),
           min: form.min !== '' ? Number(form.min) : null,
           max: form.max !== '' ? Number(form.max) : null,
@@ -636,7 +700,7 @@ function TabStock({ p, almacen, onRefresh, setMsg }) {
         })
       } else {
         await api.post('/api/v1/producto-almacen', {
-          idAlmacen: almacen.id, idProducto: p.id,
+          idAlmacen: selAlm.id, idProducto: p.id,
           stock: Number(form.stock),
           min: form.min !== '' ? Number(form.min) : null,
           max: form.max !== '' ? Number(form.max) : null,
@@ -656,7 +720,7 @@ function TabStock({ p, almacen, onRefresh, setMsg }) {
       <div style={s.precioClearCard}>
         <p style={{ margin: '0 0 8px', fontSize: 13, color: '#d97706', fontWeight: 600 }}>Sin almacén registrado</p>
         <p style={{ margin: 0, fontSize: 12, color: '#92400e' }}>
-          Usa el botón "Crear almacén" arriba para registrar tu almacén y luego podrás configurar el stock de este producto.
+          Ve a Almacenes para registrar tu almacén, luego podrás configurar stock aquí.
         </p>
       </div>
     )
@@ -666,49 +730,74 @@ function TabStock({ p, almacen, onRefresh, setMsg }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* Estado actual */}
-      <div style={stock ? s.precioCard : s.precioClearCard}>
-        {stock ? (
-          <>
-            <p style={s.precioCardLabel}>{almacen.nombre}</p>
-            <p style={{ ...s.precioCardVal, color: bajo ? '#dc2626' : 'var(--c-primary)' }}>
-              {stock.stock} {p.idUnidadMedida?.abreviatura || 'unidades'}
+
+      {/* Selector de almacén (solo si hay más de uno) */}
+      {almacenes.length > 1 && (
+        <div>
+          <label style={s.label}>Almacén</label>
+          <select style={s.input} value={selAlmId} disabled={loadingStock}
+            onChange={e => cambiarAlmacen(e.target.value)}>
+            {almacenes.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+          </select>
+        </div>
+      )}
+
+      {/* Estado actual en el almacén seleccionado */}
+      {loadingStock ? (
+        <p style={{ margin: 0, fontSize: 12, color: 'var(--c-muted)' }}>Cargando stock...</p>
+      ) : (
+        <div style={stock ? s.precioCard : s.precioClearCard}>
+          {stock ? (
+            <>
+              <p style={s.precioCardLabel}>Stock en {selAlm?.nombre}</p>
+              <p style={{ ...s.precioCardVal, color: bajo ? '#dc2626' : 'var(--c-primary)' }}>
+                {stock.stock} {p.idUnidadMedida?.abreviatura || 'unidades'}
+              </p>
+              <p style={s.precioCardSub}>
+                {stock.min != null ? `Mín en este almacén: ${stock.min}` : 'Sin mínimo'}
+                {stock.max != null ? ` · Máx en este almacén: ${stock.max}` : ' · Sin máximo'}
+                {bajo ? ' · ⚠ Por debajo del mínimo' : ''}
+              </p>
+            </>
+          ) : (
+            <p style={{ margin: 0, fontSize: 13, color: '#d97706' }}>
+              Sin stock en <strong>{selAlm?.nombre}</strong> — configura uno abajo.
             </p>
-            <p style={s.precioCardSub}>
-              {stock.min != null ? `Mín: ${stock.min}` : 'Sin mínimo'}
-              {stock.max != null ? ` · Máx: ${stock.max}` : ''}
-              {bajo ? ' · ⚠ Por debajo del mínimo' : ''}
-            </p>
-          </>
-        ) : (
-          <p style={{ margin: 0, fontSize: 13, color: '#d97706' }}>
-            Producto no vinculado al almacén — configura el stock abajo.
-          </p>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Formulario */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <p style={s.sectionLabel}>{stock ? 'Editar stock' : `Vincular a ${almacen.nombre}`}</p>
+        <p style={s.sectionLabel}>{stock ? `Editar stock en ${selAlm?.nombre}` : `Vincular a ${selAlm?.nombre}`}</p>
         <Field label={`Stock actual (${p.idUnidadMedida?.abreviatura || 'unidades'}) *`}>
           <input style={s.input} type="number" min="0" value={form.stock}
             onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} placeholder="0" />
         </Field>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <Field label="Mínimo (alerta)" hint="Alerta si baja de este valor">
+          <Field label={`Mínimo en ${selAlm?.nombre}`} hint="Alerta si el stock baja de aquí">
             <input style={s.input} type="number" min="0" value={form.min}
               onChange={e => setForm(f => ({ ...f, min: e.target.value }))} placeholder="Sin límite" />
           </Field>
-          <Field label="Máximo">
+          <Field label={`Máximo en ${selAlm?.nombre}`} hint="Capacidad máxima del almacén">
             <input style={s.input} type="number" min="0" value={form.max}
               onChange={e => setForm(f => ({ ...f, max: e.target.value }))} placeholder="Sin límite" />
           </Field>
+        </div>
+        {/* Info banner destino + max */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--c-muted)', background: 'var(--c-bg-subtle)', borderRadius: 6, padding: '6px 10px', border: '1px solid var(--c-border-light)', flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 700, color: 'var(--c-primary)' }}>→ Almacén:</span>
+          <span style={{ fontWeight: 600, color: 'var(--c-text)' }}>{selAlm?.nombre}</span>
+          <span>·</span>
+          <span>Máx: <strong>{form.max !== '' ? form.max : 'Sin límite'}</strong></span>
+          <span>·</span>
+          <span>Mín: <strong>{form.min !== '' ? form.min : 'Sin límite'}</strong></span>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--c-text)', cursor: 'pointer' }}>
           <input type="checkbox" checked={form.activo} onChange={e => setForm(f => ({ ...f, activo: e.target.checked }))} />
           Disponible para venta
         </label>
-        <button style={s.saveBtn} onClick={guardarStock} disabled={saving}>
+        <button style={s.saveBtn} onClick={guardarStock} disabled={saving || loadingStock}>
           {saving ? 'Guardando...' : stock ? 'Actualizar stock' : 'Vincular al almacén'}
         </button>
       </div>
