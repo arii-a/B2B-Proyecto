@@ -16,6 +16,15 @@ const CAT_GRADIENTS = [
   ['#1e1b4b','#4338ca'],
 ]
 
+// Comprueba si un tramo aplica a la cantidad/costo dados
+function matchesTramo(t, cantidad, subtotal) {
+  const min = Number(t.cantidadMinima)
+  const max = t.cantidadMaxima != null ? Number(t.cantidadMaxima) : Infinity
+  return t.tipo === 'volumen'
+    ? cantidad >= min && cantidad <= max
+    : subtotal >= min && subtotal <= max
+}
+
 export default function Catalogo() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -24,7 +33,8 @@ export default function Catalogo() {
 
   const [productos,  setProductos]  = useState([])
   const [categorias, setCategorias] = useState([])
-  const [contrMap,   setContrMap]   = useState({})
+  const [contrMap,   setContrMap]   = useState({})  // { [proveedorId]: { contrato, tramos } }
+  const [stockMap,   setStockMap]   = useState({})  // { [productId]: totalStock }
   const [loading,    setLoading]    = useState(true)
   const [error,      setError]      = useState(null)
   const [modal,      setModal]      = useState(null)
@@ -58,13 +68,22 @@ export default function Catalogo() {
   const cargar = async () => {
     setLoading(true); setError(null)
     try {
-      const calls = [api.get('/api/v1/precios-base'), api.get('/api/v1/categorias')]
+      const calls = [api.get('/api/v1/precios-base'), api.get('/api/v1/categorias'), api.get('/api/v1/producto-almacen')]
       if (isEmpresa) {
         calls.push(api.get('/api/v1/contratos-tarifa'))
-        calls.push(api.get('/api/v1/contratos-detalle'))
         calls.push(api.get('/api/v1/tramos-tarifa'))
       }
-      const [preciosRes, catRes, contratosRes, detallesRes, tramosRes] = await Promise.all(calls)
+      const [preciosRes, catRes, stockRes, contratosRes, tramosRes] = await Promise.all(calls)
+
+      // Stock por producto (suma de todos los almacenes activos del proveedor)
+      const smap = {}
+      norm(stockRes).forEach(s => {
+        if (!s.activo) return
+        const pid = s.idProducto ?? s.producto?.id
+        if (!pid) return
+        smap[pid] = (smap[pid] ?? 0) + (s.stock ?? 0)
+      })
+      setStockMap(smap)
       const hoy = new Date()
       setCategorias(norm(catRes))
 
@@ -74,15 +93,15 @@ export default function Catalogo() {
           c.idEmpresa?.id === session?.id_empresa && c.activo &&
           new Date(c.vigenteDesde) <= hoy && (!c.vigenteHasta || new Date(c.vigenteHasta) >= hoy)
         )
-        const detalles = norm(detallesRes)
-        const tramos   = norm(tramosRes)
+        const tramos = norm(tramosRes)
         contratos.forEach(c => {
           const provId = c.idProveedor?.id; if (!provId) return
           if (!mapa[provId] || new Date(c.vigenteDesde) > new Date(mapa[provId].contrato.vigenteDesde)) {
             mapa[provId] = {
               contrato: c,
-              detalles: detalles.filter(d => d.idContrato?.id === c.id),
-              tramos:   tramos.filter(t => t.idContrato === c.id).sort((a, b) => Number(a.cantidadMinima) - Number(b.cantidadMinima)),
+              tramos: tramos
+                .filter(t => t.idContrato === c.id)
+                .sort((a, b) => Number(a.cantidadMinima) - Number(b.cantidadMinima)),
             }
           }
         })
@@ -114,27 +133,50 @@ export default function Catalogo() {
     setLoading(false)
   }
 
-  const getPrecioEfectivo = (productId, proveedorId, precioBase) => {
-    const cp = contrMap[proveedorId]; if (!cp) return null
-    const detalle = cp.detalles.find(d => d.idProducto?.id === productId)
-               ?? cp.detalles.find(d => !d.idProducto?.id && !d.idProducto)
-    if (!detalle) return { precio: Number(precioBase), descuento: 0, tramos: cp.tramos, contrato: cp.contrato }
-    const pct = Number(detalle.porcentajeDescuento)
-    return { precio: Number(precioBase) * (1 - pct / 100), descuento: pct, tramos: cp.tramos, contrato: cp.contrato }
+  /**
+   * Devuelve el precio unitario efectivo aplicando tramos del contrato
+   * según la cantidad comprada. Prioriza tramo específico del producto.
+   */
+  const getEfectivoPrecioUnit = (proveedorId, productId, precioBase, cantidad) => {
+    const cp = contrMap[proveedorId]
+    const base = Number(precioBase)
+    if (!cp || !cantidad || cantidad <= 0) return base
+
+    const subtotal = base * cantidad
+    // Tramo específico para el producto primero; si no, "todos"
+    const tramo =
+      cp.tramos.find(t => t.idProducto === productId   && matchesTramo(t, cantidad, subtotal)) ??
+      cp.tramos.find(t => !t.idProducto                && matchesTramo(t, cantidad, subtotal))
+
+    if (!tramo) return base
+    const td = tramo.tipoDescuento ?? 'porcentaje'
+    return td === 'fijo'
+      ? Math.max(0, base - Number(tramo.montoFijo ?? 0))
+      : base * (1 - Number(tramo.porcentajeDesc) / 100)
   }
 
+  // Para tarjetas y ordenamiento usamos qty=1 como referencia
   const getMejorPrecio = (p) => {
     let best = Infinity
     p.ofertas.forEach(o => {
-      const ef = getPrecioEfectivo(p.id, o.proveedor?.id, o.precio)
-      const pr = ef ? ef.precio : Number(o.precio)
+      const pr = getEfectivoPrecioUnit(o.proveedor?.id, p.id, o.precio, 1)
       if (pr < best) best = pr
     })
     return best === Infinity ? 0 : best
   }
 
+  // Un producto tiene precio negociado si existe algún contrato activo con tramos para ese proveedor
+  // (independiente de si el descuento ya aplica a qty=1)
   const tieneNegociado = (p) =>
-    p.ofertas.some(o => (getPrecioEfectivo(p.id, o.proveedor?.id, o.precio)?.descuento ?? 0) > 0)
+    p.ofertas.some(o => {
+      const cp = contrMap[o.proveedor?.id]
+      if (!cp) return false
+      return cp.tramos.some(t => !t.idProducto || t.idProducto === p.id)
+    })
+
+  // Precio efectivo de un item del carrito (dinámico según cantidad actual)
+  const getItemPrecioUnit = (item) =>
+    getEfectivoPrecioUnit(item.proveedorId, item.productId, item.precioBase, item.cantidad)
 
   const catNames   = useMemo(() => [...new Set(productos.map(p => p.categoria))].sort(), [productos])
   const proveedores = useMemo(() => {
@@ -174,7 +216,7 @@ export default function Catalogo() {
       if (sortBy === 'precio-desc') return getMejorPrecio(b) - getMejorPrecio(a)
       return a.nombre.localeCompare(b.nombre)
     }),
-    [productos, catFilters, provFilters, search, soloNegociados, precioMin, precioMax, sortBy]
+    [productos, catFilters, provFilters, search, soloNegociados, precioMin, precioMax, sortBy, contrMap]
   )
 
   // ── Cart helpers ──
@@ -183,15 +225,25 @@ export default function Catalogo() {
     setTimeout(() => setToast(null), 3000)
   }
 
+  const getStock = (productId) => stockMap[productId] ?? Infinity
+
   const addToCart = (item) => {
+    const stock = getStock(item.productId)
+    const existente = cart.find(x => x.key === item.key)
+    const enCarrito = existente?.cantidad ?? 0
+    const newQty = enCarrito + item.cantidad
+    if (newQty > stock) {
+      showToast(`Stock insuficiente. Disponible: ${stock} ${item.productUnidad || 'uds.'}`, false)
+      return
+    }
     setCart(prev => {
       const idx = prev.findIndex(x => x.key === item.key)
       if (idx >= 0) {
         const next = [...prev]
-        next[idx] = { ...next[idx], cantidad: next[idx].cantidad + item.cantidad }
+        next[idx] = { ...next[idx], cantidad: newQty }
         return next
       }
-      return [...prev, item]
+      return [...prev, { ...item, cantidad: newQty }]
     })
     showToast(`"${item.productNombre}" agregado al carrito`)
   }
@@ -199,13 +251,21 @@ export default function Catalogo() {
   const removeFromCart = (key) => setCart(prev => prev.filter(x => x.key !== key))
 
   const updateCantidad = (key, delta) => {
-    setCart(prev => prev
-      .map(x => x.key === key ? { ...x, cantidad: Math.max(1, x.cantidad + delta) } : x)
-    )
+    const item = cart.find(x => x.key === key)
+    if (!item) return
+    const stock = getStock(item.productId)
+    const next = Math.max(1, item.cantidad + delta)
+    if (next > stock) {
+      showToast(`Stock máximo disponible: ${stock} ${item.productUnidad || 'uds.'}`, false)
+      setCart(prev => prev.map(x => x.key === key ? { ...x, cantidad: stock } : x))
+      return
+    }
+    setCart(prev => prev.map(x => x.key === key ? { ...x, cantidad: next } : x))
   }
 
   const cartCount = cart.reduce((s, i) => s + i.cantidad, 0)
-  const cartTotal = cart.reduce((s, i) => s + i.precioEfectivo * i.cantidad, 0)
+  // Total calculado dinámicamente con tramo aplicado a cada item según su cantidad actual
+  const cartTotal = cart.reduce((s, i) => s + getItemPrecioUnit(i) * i.cantidad, 0)
 
   const confirmarPedido = async () => {
     if (!session?.id_empresa || !session?.id_sucursal) {
@@ -220,7 +280,9 @@ export default function Catalogo() {
         byProvider[item.proveedorId].push(item)
       })
       for (const [proveedorId, items] of Object.entries(byProvider)) {
-        const total = Math.round(items.reduce((s, i) => s + i.precioEfectivo * i.cantidad, 0) * 100) / 100
+        const total = Math.round(
+          items.reduce((s, i) => s + getItemPrecioUnit(i) * i.cantidad, 0) * 100
+        ) / 100
         const orden = await api.post('/api/v1/ordenes-compra', {
           total,
           fecha: new Date().toISOString(),
@@ -231,14 +293,18 @@ export default function Catalogo() {
           idSucursal: session.id_sucursal,
           idUsuario: session.id,
         })
-        await Promise.all(items.map(item => api.post('/api/v1/detalle-orden', {
-          cantidad: item.cantidad,
-          precioUnitario: item.precioEfectivo,
-          subtotal: Math.round(item.precioEfectivo * item.cantidad * 100) / 100,
-          idOrden: orden.id,
-          idProducto: item.productId,
-          idAlmacen: null,
-        })))
+        await Promise.all(items.map(item => {
+          const precioUnit = Math.round(getItemPrecioUnit(item) * 100) / 100
+          const subtotal   = Math.round(precioUnit * item.cantidad * 100) / 100
+          return api.post('/api/v1/detalle-orden', {
+            cantidad: item.cantidad,
+            precioUnitario: precioUnit,
+            subtotal,
+            idOrden: orden.id,
+            idProducto: item.productId,
+            idAlmacen: null,
+          })
+        }))
       }
       setCart([])
       setCartOpen(false)
@@ -279,7 +345,6 @@ export default function Catalogo() {
 
       {error && <div style={s.errorBanner}>{error}</div>}
 
-      {/* ── Toast (portal → fuera del árbol DOM del catálogo) ── */}
       {toast && createPortal(
         <div style={{ ...s.toast, background: toast.ok ? 'rgba(22,42,22,0.82)' : 'rgba(80,20,20,0.82)' }}>
           {toast.msg}
@@ -287,7 +352,6 @@ export default function Catalogo() {
         document.body
       )}
 
-      {/* ── Main layout ── */}
       <div style={s.layout}>
         {/* ── Sidebar filtros ── */}
         <aside style={s.sidebar}>
@@ -348,7 +412,6 @@ export default function Catalogo() {
 
         {/* ── Products area ── */}
         <div style={s.productsCol}>
-          {/* controles fijos */}
           <div style={s.productsHeader}>
             <div style={s.resultsBar}>
               <p style={s.resultsCount}>
@@ -378,7 +441,6 @@ export default function Catalogo() {
             </div>
           </div>
 
-          {/* grid scrolleable */}
           <div style={s.productsScroll}>
             {loading ? (
               <div style={s.loadWrap}>
@@ -395,17 +457,16 @@ export default function Catalogo() {
               <>
                 <div style={s.grid}>
                   {filtrados.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE).map(p => {
-                    const catIdx    = catNames.indexOf(p.categoria)
-                    const [g1, g2]  = CAT_GRADIENTS[catIdx % CAT_GRADIENTS.length]
-                    const negociado = isEmpresa && tieneNegociado(p)
-                    const precioEf  = getMejorPrecio(p)
+                    const catIdx     = catNames.indexOf(p.categoria)
+                    const [g1, g2]   = CAT_GRADIENTS[catIdx % CAT_GRADIENTS.length]
+                    const negociado  = isEmpresa && tieneNegociado(p)
+                    const precioEf   = getMejorPrecio(p)
                     const precioLista = Math.min(...p.ofertas.map(o => Number(o.precio)))
                     const bestOferta  = [...p.ofertas].sort((a, b) => {
-                      const ea = getPrecioEfectivo(p.id, a.proveedor?.id, a.precio)
-                      const eb = getPrecioEfectivo(p.id, b.proveedor?.id, b.precio)
-                      return (ea?.precio ?? Number(a.precio)) - (eb?.precio ?? Number(b.precio))
+                      const ea = getEfectivoPrecioUnit(a.proveedor?.id, p.id, a.precio, 1)
+                      const eb = getEfectivoPrecioUnit(b.proveedor?.id, p.id, b.precio, 1)
+                      return ea - eb
                     })[0]
-                    const bestEf   = bestOferta ? getPrecioEfectivo(p.id, bestOferta.proveedor?.id, bestOferta.precio) : null
                     const cartItem = cart.find(i => i.key === `${p.id}-${bestOferta?.proveedor?.id}`)
                     const cartQty  = cartItem?.cantidad ?? 0
 
@@ -444,8 +505,6 @@ export default function Catalogo() {
                                     proveedorId: bestOferta.proveedor?.id,
                                     proveedorNombre: bestOferta.proveedor?.idEmpresa?.nombre ?? 'Proveedor',
                                     precioBase: Number(bestOferta.precio),
-                                    precioEfectivo: bestEf?.precio ?? Number(bestOferta.precio),
-                                    descuento: bestEf?.descuento ?? 0,
                                     cantidad: 1,
                                   })
                                 }}>
@@ -459,7 +518,6 @@ export default function Catalogo() {
                   })}
                 </div>
 
-                {/* ── Paginación ── */}
                 {filtrados.length > ITEMS_PER_PAGE && (
                   <div style={s.pagination}>
                     <button style={s.pageBtn} disabled={currentPage === 0}
@@ -482,16 +540,17 @@ export default function Catalogo() {
         </div>
       </div>
 
-      {/* ── Product Modal ── */}
       {modal && (
         <ProductModal
           product={modal} onClose={() => setModal(null)}
-          catNames={catNames} getPrecioEfectivo={getPrecioEfectivo}
+          catNames={catNames}
           isEmpresa={isEmpresa} cart={cart} addToCart={addToCart}
+          contrMap={contrMap}
+          getEfectivoPrecioUnit={getEfectivoPrecioUnit}
+          getStock={getStock}
         />
       )}
 
-      {/* ── Floating cart button ── */}
       {isEmpresa && (
         <button style={s.cartFab} onClick={() => setCartOpen(true)}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -502,20 +561,20 @@ export default function Catalogo() {
         </button>
       )}
 
-      {/* ── Cart Drawer ── */}
       {cartOpen && (
         <CartDrawer
           cart={cart} removeFromCart={removeFromCart} updateCantidad={updateCantidad}
           cartTotal={cartTotal} onClose={() => setCartOpen(false)}
           confirmarPedido={confirmarPedido} confirmando={confirmando}
+          getItemPrecioUnit={getItemPrecioUnit}
         />
       )}
     </div>
   )
 }
 
-/* ─── Cart Popup ─────────────────────────────────────────────────────────── */
-function CartDrawer({ cart, removeFromCart, updateCantidad, cartTotal, onClose, confirmarPedido, confirmando }) {
+/* ─── Cart Drawer ─────────────────────────────────────────────────────────── */
+function CartDrawer({ cart, removeFromCart, updateCantidad, cartTotal, onClose, confirmarPedido, confirmando, getItemPrecioUnit }) {
   return (
     <div style={s.cartPopup}>
       <div style={s.cartDHead}>
@@ -528,20 +587,38 @@ function CartDrawer({ cart, removeFromCart, updateCantidad, cartTotal, onClose, 
       ) : (
         <>
           <div style={s.cartDItems}>
-            {cart.map(item => (
-              <div key={item.key} style={s.cartDItem}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={s.cartDItemNombre}>{item.productNombre}</p>
-                  <p style={s.cartDItemProv}>{item.proveedorNombre}</p>
+            {cart.map(item => {
+              const precioUnit = getItemPrecioUnit(item)
+              const tieneDesc  = precioUnit < item.precioBase
+              const pctDesc    = tieneDesc ? Math.round((1 - precioUnit / item.precioBase) * 100) : 0
+              const subtotal = precioUnit * item.cantidad
+              return (
+                <div key={item.key} style={s.cartDItem}>
+                  {/* Izquierda: nombre + proveedor + precio unitario */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={s.cartDItemNombre}>{item.productNombre}</p>
+                    <p style={s.cartDItemProv}>{item.proveedorNombre}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                      <span style={{ ...s.cartDItemPrice, color: tieneDesc ? '#15803d' : 'var(--c-primary)' }}>
+                        {fmtMoney(precioUnit)}
+                      </span>
+                      {tieneDesc && <span style={s.cartDDiscBadge}>−{pctDesc}%</span>}
+                    </div>
+                  </div>
+                  {/* Centro: stepper */}
+                  <div style={s.cartDStepper}>
+                    <button style={s.cartDStep} onClick={() => updateCantidad(item.key, -1)}>−</button>
+                    <span style={s.cartDQty}>{item.cantidad}</span>
+                    <button style={s.cartDStep} onClick={() => updateCantidad(item.key, +1)}>+</button>
+                  </div>
+                  {/* Derecha: subtotal + eliminar */}
+                  <div style={{ textAlign: 'right', minWidth: 56 }}>
+                    <p style={s.cartDSubtotal}>{fmtMoney(subtotal)}</p>
+                    <button style={s.cartDRemove} onClick={() => removeFromCart(item.key)}>✕</button>
+                  </div>
                 </div>
-                <div style={s.cartDStepper}>
-                  <button style={s.cartDStep} onClick={() => updateCantidad(item.key, -1)}>−</button>
-                  <span style={s.cartDQty}>{item.cantidad}</span>
-                  <button style={s.cartDStep} onClick={() => updateCantidad(item.key, +1)}>+</button>
-                </div>
-                <button style={s.cartDRemove} onClick={() => removeFromCart(item.key)}>✕</button>
-              </div>
-            ))}
+              )
+            })}
           </div>
           <div style={s.cartDFooter}>
             <span style={{ fontSize: 13, color: 'var(--c-muted)' }}>Total</span>
@@ -556,28 +633,26 @@ function CartDrawer({ cart, removeFromCart, updateCantidad, cartTotal, onClose, 
   )
 }
 
-/* ─── Product Modal ────────────────────────────────────────────────────────── */
-function ProductModal({ product, onClose, catNames, getPrecioEfectivo, isEmpresa, cart, addToCart }) {
+/* ─── Product Modal ─────────────────────────────────────────────────────────── */
+function ProductModal({ product, onClose, catNames, isEmpresa, cart, addToCart, contrMap, getEfectivoPrecioUnit, getStock }) {
   const catIdx       = catNames.indexOf(product.categoria)
   const [g1, g2]     = CAT_GRADIENTS[catIdx % CAT_GRADIENTS.length]
   const ofertasOrd   = [...product.ofertas].sort((a, b) => Number(a.precio) - Number(b.precio))
-  const ofertasEnrich = ofertasOrd
-    .map(o => ({ ...o, ef: getPrecioEfectivo(product.id, o.proveedor?.id, o.precio) }))
-    .sort((a, b) => (a.ef?.precio ?? Number(a.precio)) - (b.ef?.precio ?? Number(b.precio)))
+  const stock        = getStock(product.id)
+  const stockFinito  = stock !== Infinity
 
   const [qtys, setQtys] = useState(() => {
     const init = {}
-    ofertasEnrich.forEach(o => { init[o.id] = 1 })
+    ofertasOrd.forEach(o => { init[o.id] = 1 })
     return init
   })
 
   const inCartKeys = new Set(cart.map(i => i.key))
 
   const handleAdd = (o) => {
-    const ef  = o.ef
-    const key = `${product.id}-${o.proveedor?.id}`
+    const qty = qtys[o.id] ?? 1
     addToCart({
-      key,
+      key: `${product.id}-${o.proveedor?.id}`,
       productId:      product.id,
       productNombre:  product.nombre,
       productSku:     product.sku,
@@ -585,10 +660,9 @@ function ProductModal({ product, onClose, catNames, getPrecioEfectivo, isEmpresa
       proveedorId:    o.proveedor?.id,
       proveedorNombre: o.proveedor?.idEmpresa?.nombre ?? 'Proveedor',
       precioBase:      Number(o.precio),
-      precioEfectivo:  ef?.precio ?? Number(o.precio),
-      descuento:       ef?.descuento ?? 0,
-      cantidad:        qtys[o.id] ?? 1,
+      cantidad:        qty,
     })
+    onClose()
   }
 
   return (
@@ -606,18 +680,30 @@ function ProductModal({ product, onClose, catNames, getPrecioEfectivo, isEmpresa
 
         <div style={s.modalBody}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {ofertasEnrich.map((o, i) => {
-              const nombre      = o.proveedor?.idEmpresa?.nombre ?? 'Proveedor'
-              const ef          = o.ef
-              const hasContract = ef && ef.descuento > 0
-              const isFirst     = i === 0
-              const itemKey     = `${product.id}-${o.proveedor?.id}`
-              const inCart      = inCartKeys.has(itemKey)
+            {ofertasOrd.map((o, i) => {
+              const nombre   = o.proveedor?.idEmpresa?.nombre ?? 'Proveedor'
+              const qty      = qtys[o.id] ?? 1
+              const cp       = contrMap[o.proveedor?.id]
+              const tramos   = cp?.tramos ?? []
+              const tramosDelProducto = tramos.filter(t => !t.idProducto || t.idProducto === product.id)
+              const tieneContrato = tramosDelProducto.length > 0
+              const precioEf = getEfectivoPrecioUnit(o.proveedor?.id, product.id, o.precio, qty)
+              const hasDesc  = precioEf < Number(o.precio)
+              const isFirst  = i === 0
+              const itemKey  = `${product.id}-${o.proveedor?.id}`
+              const inCart   = inCartKeys.has(itemKey)
+
+              // Tramo actualmente aplicado
+              const base     = Number(o.precio)
+              const subtotal = base * qty
+              const tramoActivo =
+                tramos.find(t => t.idProducto === product.id && matchesTramo(t, qty, subtotal)) ??
+                tramos.find(t => !t.idProducto                && matchesTramo(t, qty, subtotal))
 
               return (
-                <div key={o.id} style={{ ...s.ofertaRow, ...(isFirst && !hasContract ? s.ofertaRowBest : {}), ...(hasContract ? s.ofertaRowContract : {}) }}>
-                  {isFirst && !hasContract && <span style={s.bestBadge}>Mejor precio</span>}
-                  {hasContract && <span style={s.contractBadge}>Tu precio negociado</span>}
+                <div key={o.id} style={{ ...s.ofertaRow, ...(isFirst && !tieneContrato ? s.ofertaRowBest : {}), ...(tieneContrato ? s.ofertaRowContract : {}) }}>
+                  {isFirst && !tieneContrato && <span style={s.bestBadge}>Mejor precio</span>}
+                  {tieneContrato && <span style={s.contractBadge}>{hasDesc ? 'Precio con contrato' : 'Contrato activo'}</span>}
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ ...s.provAvatar, background: g1 }}>{nombre.charAt(0)}</div>
@@ -631,11 +717,17 @@ function ProductModal({ product, onClose, catNames, getPrecioEfectivo, isEmpresa
                       )}
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      {hasContract ? (
+                      {hasDesc ? (
                         <>
                           <p style={s.precioTachado}>{fmtMoney(o.precio)}</p>
-                          <p style={s.precioContract}>{fmtMoney(ef.precio)}</p>
-                          <p style={s.descuentoBadge}>−{ef.descuento}% contrato</p>
+                          <p style={s.precioContract}>{fmtMoney(precioEf)}</p>
+                          <p style={s.descuentoBadge}>
+                            {tramoActivo
+                              ? `−${(tramoActivo.tipoDescuento ?? 'porcentaje') === 'fijo'
+                                  ? `Bs. ${tramoActivo.montoFijo}`
+                                  : `${tramoActivo.porcentajeDesc}%`} contrato`
+                              : `contrato`}
+                          </p>
                         </>
                       ) : (
                         <>
@@ -646,58 +738,78 @@ function ProductModal({ product, onClose, catNames, getPrecioEfectivo, isEmpresa
                     </div>
                   </div>
 
-                  {hasContract && (
-                    <div style={s.desglose}>
-                      <p style={s.desgloseTitle}>Desglose:</p>
-                      <div style={s.desgloseRow}><span>Precio lista</span><span>{fmtMoney(o.precio)}</span></div>
-                      <div style={s.desgloseRow}>
-                        <span>Descuento contractual (−{ef.descuento}%)</span>
-                        <span style={{ color: '#16a34a' }}>−{fmtMoney(Number(o.precio) * ef.descuento / 100)}</span>
-                      </div>
-                      <div style={{ ...s.desgloseRow, fontWeight: 700, borderTop: '1px solid #D1FAE5', paddingTop: 6, marginTop: 2 }}>
-                        <span>Tu precio / {product.unidad || 'unidad'}</span>
-                        <span style={{ color: '#065f46', fontSize: 15 }}>{fmtMoney(ef.precio)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {ef && ef.tramos.length > 0 && (
+                  {/* Tramos con visualización de "desbloqueo" */}
+                  {tramosDelProducto.length > 0 && (
                     <div style={s.tramosSection}>
-                      <p style={s.tramosSectionTitle}>Descuentos por volumen/costo del pedido:</p>
+                      <p style={s.tramosSectionTitle}>Descuentos por tramo:</p>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {ef.tramos.map((t, ti) => (
-                          <div key={ti} style={s.tramoMiniChip}>
-                            <span style={{ fontSize: 10, color: 'var(--c-muted)' }}>
-                              {t.tipo === 'volumen' ? '📦' : '💰'} {fmtNum(t.cantidadMinima)}–{fmtNum(t.cantidadMaxima)}{t.tipo === 'volumen' ? ' uds.' : ' Bs.'}
-                            </span>
-                            <span style={{ fontSize: 13, fontWeight: 800, color: '#065f46' }}>−{t.porcentajeDesc}%</span>
-                          </div>
-                        ))}
+                        {tramosDelProducto.map((t, ti) => {
+                            const minTramo = Number(t.cantidadMinima)
+                            const sub      = base * qty
+                            const unlocked = matchesTramo(t, qty, sub)
+                            const isActive = t === tramoActivo
+                            const label = (t.tipoDescuento ?? 'porcentaje') === 'fijo'
+                              ? `−Bs. ${Number(t.montoFijo ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2 })}`
+                              : `−${t.porcentajeDesc}%`
+                            return (
+                              <div key={ti} style={{
+                                ...s.tramoMiniChip,
+                                ...(unlocked ? s.tramoMiniChipUnlocked : {}),
+                                ...(isActive  ? s.tramoMiniChipActive  : {}),
+                              }}>
+                                {t.skuProducto && (
+                                  <span style={{ fontSize: 9, fontWeight: 700, color: unlocked ? '#15803d' : 'var(--c-muted)', fontFamily: 'monospace' }}>
+                                    {t.skuProducto}
+                                  </span>
+                                )}
+                                <span style={{ fontSize: 10, color: unlocked ? '#065f46' : 'var(--c-muted)', fontWeight: unlocked ? 600 : 400 }}>
+                                  {t.tipo === 'volumen' ? '📦' : '💰'} {fmtNum(t.cantidadMinima)}–{fmtNum(t.cantidadMaxima)}{t.tipo === 'volumen' ? ' uds.' : ' Bs.'}
+                                </span>
+                                <span style={{ fontSize: 14, fontWeight: 800, color: unlocked ? '#15803d' : '#aaa' }}>
+                                  {label}
+                                </span>
+                                {unlocked && <span style={s.tramoBadgeUnlocked}>✓ activo</span>}
+                                {!unlocked && (
+                                  <span style={{ fontSize: 9, color: '#bbb', fontStyle: 'italic' }}>
+                                    desde {fmtNum(minTramo)} {t.tipo === 'volumen' ? 'uds.' : 'Bs.'}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })}
                       </div>
                     </div>
                   )}
 
-                  {/* ── Cantidad + Agregar al carrito ── */}
+                  {/* Precio dinámico + Agregar al carrito */}
                   {isEmpresa ? (
                     <div style={s.addCartRow}>
-                      <div style={s.modalStepper}>
-                        <button style={s.modalStepBtn}
-                          onClick={() => setQtys(q => ({ ...q, [o.id]: Math.max(1, (q[o.id] ?? 1) - 1) }))}>−</button>
-                        <input
-                          type="number" min="1"
-                          style={s.modalQtyInput}
-                          value={qtys[o.id] ?? 1}
-                          onChange={e => setQtys(q => ({ ...q, [o.id]: Math.max(1, parseInt(e.target.value) || 1) }))}
-                        />
-                        <button style={s.modalStepBtn}
-                          onClick={() => setQtys(q => ({ ...q, [o.id]: (q[o.id] ?? 1) + 1 }))}>+</button>
-                        <span style={s.modalStepUnit}>{product.unidad || 'und'}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <div style={s.modalStepper}>
+                          <button style={s.modalStepBtn}
+                            onClick={() => setQtys(q => ({ ...q, [o.id]: Math.max(1, (q[o.id] ?? 1) - 1) }))}>−</button>
+                          <input
+                            type="number" min="1" max={stockFinito ? stock : undefined}
+                            style={s.modalQtyInput}
+                            value={qtys[o.id] ?? 1}
+                            onChange={e => setQtys(q => ({ ...q, [o.id]: Math.min(stock, Math.max(1, parseInt(e.target.value) || 1)) }))}
+                          />
+                          <button style={s.modalStepBtn}
+                            onClick={() => setQtys(q => ({ ...q, [o.id]: Math.min(stock, (q[o.id] ?? 1) + 1) }))}>+</button>
+                          <span style={s.modalStepUnit}>{product.unidad || 'und'}</span>
+                        </div>
+                        {stockFinito && (
+                          <p style={{ margin: 0, fontSize: 10, color: stock <= 5 ? '#dc2626' : 'var(--c-muted)', textAlign: 'center' }}>
+                            {stock === 0 ? 'Sin stock' : `${stock} disponibles`}
+                          </p>
+                        )}
                       </div>
                       <button
-                        style={{ ...s.addCartBtn, background: inCart ? '#15803d' : g1 }}
-                        onClick={() => handleAdd(o)}
+                        style={{ ...s.addCartBtn, background: stock === 0 ? '#9ca3af' : inCart ? '#15803d' : g1 }}
+                        onClick={() => stock > 0 && handleAdd(o)}
+                        disabled={stock === 0}
                       >
-                        {inCart ? '✓ Agregar más' : '+ Agregar al carrito'}
+                        {stock === 0 ? 'Sin stock' : inCart ? '✓ Agregar más' : '+ Agregar al carrito'}
                       </button>
                     </div>
                   ) : (
@@ -728,9 +840,7 @@ const s = {
   heroDot:       { width: 7, height: 7, borderRadius: '50%', background: '#4ade80', flexShrink: 0 },
 
   errorBanner:   { background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 12 },
-
   toast:         { position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', padding: '7px 18px', borderRadius: 20, fontSize: 12, fontWeight: 500, zIndex: 2000, color: '#fff', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', whiteSpace: 'nowrap', pointerEvents: 'none' },
-
   layout:        { display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1.25rem', alignItems: 'start' },
 
   sidebar:       { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 12, padding: '1rem', position: 'sticky', top: 16, maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto', boxShadow: '0 1px 4px rgba(6,23,93,0.06)' },
@@ -752,14 +862,12 @@ const s = {
   resultsCount:  { fontSize: 13, fontWeight: 600, color: 'var(--c-text)' },
   filteredLabel: { color: 'var(--c-muted)', fontWeight: 400 },
   sortSelect:    { border: '1.5px solid var(--c-border)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'var(--c-text)', outline: 'none', cursor: 'pointer', background: 'var(--c-bg)' },
-
   pillRow:       { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: '1rem' },
   pill:          { padding: '5px 12px', border: '1.5px solid var(--c-border)', borderRadius: 20, fontSize: 11, fontWeight: 600, color: 'var(--c-muted)', background: 'var(--c-bg)', cursor: 'pointer', whiteSpace: 'nowrap' },
   pillActive:    { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
   loadWrap:      { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' },
   skeleton:      { height: 180, background: 'linear-gradient(90deg, var(--c-bg-page) 25%, var(--c-border) 50%, var(--c-bg-page) 75%)', borderRadius: 12, animation: 'pulse 1.5s ease-in-out infinite' },
-
   emptyWrap:     { textAlign: 'center', padding: '4rem 2rem', background: 'var(--c-bg)', borderRadius: 14, border: '1px solid var(--c-border)' },
   emptyIcon:     { fontSize: 40, marginBottom: 12 },
   emptyTitle:    { fontSize: 16, fontWeight: 700, color: 'var(--c-text)', marginBottom: 6 },
@@ -788,12 +896,10 @@ const s = {
   pageBtn:       { minWidth: 30, height: 30, borderRadius: 8, border: '1px solid var(--c-border)', background: 'var(--c-bg)', color: 'var(--c-text)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   pageBtnActive: { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
-  // ── Cart FAB ──
   cartFab:       { position: 'fixed', bottom: 28, right: 28, width: 52, height: 52, borderRadius: '50%', background: 'var(--c-primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(6,23,93,0.3)', zIndex: 900 },
   cartFabBadge:  { position: 'absolute', top: -3, right: -3, minWidth: 18, height: 18, borderRadius: 9, background: '#ef4444', color: '#fff', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', border: '2px solid var(--c-bg)' },
 
-  // ── Cart Popup ──
-  cartPopup:     { position: 'fixed', bottom: 90, right: 28, width: 290, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, boxShadow: '0 8px 32px rgba(6,23,93,0.18)', zIndex: 960, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '60vh' },
+  cartPopup:     { position: 'fixed', bottom: 90, right: 28, width: 300, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, boxShadow: '0 8px 32px rgba(6,23,93,0.18)', zIndex: 960, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '60vh' },
   cartDHead:     { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   cartDTitle:    { margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--c-text)' },
   cartDClose:    { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 15, padding: 0, lineHeight: 1 },
@@ -801,7 +907,10 @@ const s = {
   cartDItem:     { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--c-border-light)' },
   cartDItemNombre:{ margin: 0, fontWeight: 600, fontSize: 12, color: 'var(--c-text)', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   cartDItemProv: { margin: 0, fontSize: 10, color: 'var(--c-muted)' },
-  cartDRemove:   { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1, flexShrink: 0 },
+  cartDItemPrice:{ fontSize: 12, fontWeight: 700, lineHeight: 1 },
+  cartDDiscBadge:{ background: '#dcfce7', color: '#15803d', fontSize: 9, fontWeight: 700, borderRadius: 10, padding: '1px 5px' },
+  cartDSubtotal: { margin: 0, fontSize: 13, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1, marginBottom: 3 },
+  cartDRemove:   { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 },
   cartDStepper:  { display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 },
   cartDStep:     { width: 22, height: 22, borderRadius: 6, border: '1px solid var(--c-border)', background: 'var(--c-bg-page)', color: 'var(--c-text)', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, padding: 0 },
   cartDQty:      { minWidth: 22, textAlign: 'center', fontWeight: 700, fontSize: 12, color: 'var(--c-text)' },
@@ -809,7 +918,6 @@ const s = {
   cartDTotalAmt: { fontWeight: 800, fontSize: 15, color: 'var(--c-primary)' },
   cartDConfirm:  { width: '100%', padding: '10px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
 
-  // ── Modal ──
   overlay:       { position: 'fixed', inset: 0, background: 'rgba(6,23,93,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' },
   modalBox:      { background: 'var(--c-bg)', borderRadius: 16, width: '100%', maxWidth: 580, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(6,23,93,0.3)' },
   modalHero:     { padding: '1.5rem', display: 'flex', gap: 12, flexShrink: 0 },
@@ -819,7 +927,6 @@ const s = {
   modalMeta:     { margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.5)' },
   modalCloseBtn: { background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 16, width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start' },
   modalBody:     { flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem' },
-  modalSection:  { margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .5 },
   ofertaRow:     { border: '1px solid var(--c-border)', borderRadius: 12, padding: '1rem', position: 'relative', display: 'flex', flexDirection: 'column', gap: 8 },
   ofertaRowBest: { border: '1.5px solid var(--c-primary)', background: '#F8F9FF' },
   ofertaRowContract: { border: '1.5px solid #86efac', background: '#f0fdf4' },
@@ -832,18 +939,19 @@ const s = {
   precioTachado: { margin: 0, fontSize: 12, color: 'var(--c-muted)', textDecoration: 'line-through', lineHeight: 1 },
   precioContract:{ margin: '2px 0 0', fontSize: 20, fontWeight: 800, color: '#15803d', lineHeight: 1 },
   descuentoBadge:{ margin: '2px 0 0', fontSize: 10, fontWeight: 700, color: '#15803d' },
-  desglose:      { background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 12px' },
-  desgloseTitle: { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#065f46', textTransform: 'uppercase', letterSpacing: .4 },
-  desgloseRow:   { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--c-text)', padding: '3px 0' },
-  tramosSection:     { paddingTop: 8, borderTop: '1px dashed #D1FAE5' },
-  tramosSectionTitle:{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#065f46' },
-  tramoMiniChip:     { display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '5px 10px', minWidth: 80 },
 
-  // ── Add to cart row (inside modal) ──
-  addCartRow:    { display: 'flex', gap: 8, alignItems: 'center', paddingTop: 4 },
+  tramosSection:          { paddingTop: 8, borderTop: '1px dashed #D1FAE5' },
+  tramosSectionTitle:     { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#065f46' },
+  tramoMiniChip:          { display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f5f5f5', border: '1.5px solid #e0e0e0', borderRadius: 8, padding: '5px 10px', minWidth: 80, gap: 2, transition: 'all .2s' },
+  tramoMiniChipUnlocked:  { background: '#f0fdf4', border: '1.5px solid #86efac' },
+  tramoMiniChipActive:    { background: '#dcfce7', border: '2px solid #16a34a', boxShadow: '0 0 0 2px #bbf7d0' },
+  tramoBadgeUnlocked:     { fontSize: 8, fontWeight: 700, color: '#15803d', background: '#dcfce7', borderRadius: 10, padding: '1px 5px' },
+
+  addCartRow:    { display: 'flex', gap: 8, alignItems: 'center', paddingTop: 4, flexWrap: 'wrap' },
   modalStepper:  { display: 'flex', alignItems: 'center', gap: 4, background: 'var(--c-bg-page)', border: '1.5px solid var(--c-border)', borderRadius: 8, padding: '3px 6px' },
   modalStepBtn:  { background: 'none', border: 'none', color: 'var(--c-text)', fontWeight: 700, fontSize: 18, cursor: 'pointer', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 },
   modalQtyInput: { width: 40, textAlign: 'center', border: 'none', background: 'transparent', fontWeight: 700, fontSize: 14, color: 'var(--c-text)', outline: 'none' },
   modalStepUnit: { fontSize: 11, color: 'var(--c-muted)', paddingLeft: 2 },
+  modalPrecioEf: { fontSize: 13, fontWeight: 700, color: '#15803d', whiteSpace: 'nowrap' },
   addCartBtn:    { flex: 1, padding: '9px 12px', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
 }

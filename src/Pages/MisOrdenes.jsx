@@ -8,6 +8,7 @@ import { useAuth } from '../AuthContext'
 const ESTADO_COLORS = {
   pendiente:  { bg: '#fef9c3', color: '#854d0e' },
   aprobado:   { bg: '#dcfce7', color: '#166534' },
+  pagado:     { bg: '#dbeafe', color: '#1e40af' },
   cancelado:  { bg: '#fee2e2', color: '#991b1b' },
   rechazado:  { bg: '#f1f5f9', color: '#475569' },
 }
@@ -105,7 +106,7 @@ export default function MisOrdenes() {
             stompClientRef.current = null
             setEsperandoWebhook(false)
             setQrModal({ open: false, qrBase64: null, ordenId: null, loading: false, amount: null })
-            cambiarEstado(ordenId, 'aprobado', 'Pago QR confirmado por Stereum. Trigger T3: factura generada.')
+            cambiarEstado(ordenId, 'pagado', 'Pago QR confirmado por Stereum. Factura generada automáticamente.')
           }
         })
         setEsperandoWebhook(true)
@@ -288,7 +289,7 @@ export default function MisOrdenes() {
   const pagoCompletado = async () => {
     const { ordenId } = qrModal
     cerrarQr()
-    await cambiarEstado(ordenId, 'aprobado', 'Pago QR completado. Trigger T3: factura generada.')
+    await cambiarEstado(ordenId, 'pagado', 'Pago QR completado. Factura generada automáticamente.')
   }
 
   const formatBOB = (val) => Number(val).toLocaleString('es-BO', { style: 'currency', currency: 'BOB' })
@@ -523,7 +524,7 @@ export default function MisOrdenes() {
                             onClick={() => cambiarEstado(o.id_orden, 'cancelado', o.estado_orden === 'aprobado' ? 'Factura anulada y stock devuelto.' : 'Stock revertido.')}
                             style={{ ...styles.actionBtn, background: '#fee2e2', color: '#991b1b' }}>Cancelar</button>
                         )}
-                        {(o.estado_orden === 'cancelado' || o.estado_orden === 'rechazado') && <span style={styles.noActions}>Sin acciones</span>}
+                        {(o.estado_orden === 'cancelado' || o.estado_orden === 'rechazado' || o.estado_orden === 'pagado') && <span style={styles.noActions}>Sin acciones</span>}
                         {session?.rol === 'proveedor' && o.estado_orden !== 'pendiente' && <span style={styles.noActions}>Sin acciones</span>}
                       </div>
                     </td>

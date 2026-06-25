@@ -8,7 +8,7 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-BO', { day: '2-dig
 const fmtMoney = (n) => `Bs. ${Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2 })}`
 const fmtNum = (n) => n == null ? '∞' : Number(n).toLocaleString('es-BO')
 
-const hoyISO = () => new Date().toISOString().split('T')[0]  // yyyy-MM-dd
+const hoyISO = () => new Date().toISOString().split('T')[0]
 
 function DateInput({ value, onChange, style, placeholder = 'dd/mm/aaaa' }) {
   const fmt = (iso) => {
@@ -34,6 +34,8 @@ function DateInput({ value, onChange, style, placeholder = 'dd/mm/aaaa' }) {
   return <input type="text" value={text} onChange={handle} placeholder={placeholder} maxLength={10} style={style} />
 }
 
+const TRAMO_VACIO = { tipo: 'volumen', idProducto: '', cantidadMinima: '', cantidadMaxima: '', tipoDescuento: 'porcentaje', valor: '' }
+
 export default function Contratos() {
   const { session } = useAuth()
 
@@ -55,60 +57,87 @@ export default function Contratos() {
     vigenteHasta: '',
   })
 
-  // Líneas de descuento por producto — con buscador multi-select
-  const [busquedaProducto, setBusquedaProducto] = useState('')
-  const [seleccionados,    setSeleccionados]    = useState(new Set())
-  const [tipoDescLinea,    setTipoDescLinea]    = useState('porcentaje') // para todas las líneas seleccionadas
-  const [valorDescLinea,   setValorDescLinea]   = useState('')
-  const [lineas,           setLineas]           = useState([])           // [{idProducto, nombre, sku, tipoDescuento, valor}]
-
-  const toggleSeleccion = (id) => setSeleccionados(s => {
-    const ns = new Set(s)
-    ns.has(id) ? ns.delete(id) : ns.add(id)
-    return ns
-  })
-
-  const agregarSeleccionados = () => {
-    if (!valorDescLinea) return
-    const val = Number(valorDescLinea)
-    const nuevas = [...seleccionados].map(id => {
-      const prod = productos.find(p => p.id === id)
-      return { idProducto: id, nombre: prod?.nombre ?? '—', sku: prod?.sku ?? '', tipoDescuento: tipoDescLinea, valor: val }
-    })
-    setLineas(prev => {
-      const existingIds = new Set(prev.map(l => l.idProducto))
-      return [...prev, ...nuevas.filter(n => !existingIds.has(n.idProducto))]
-    })
-    setSeleccionados(new Set())
-    setValorDescLinea('')
-  }
-
-  const removeLinea = (idProducto) => setLineas(prev => prev.filter(l => l.idProducto !== idProducto))
-
-  // Tramos de descuento por volumen/costo
-  const [tramos, setTramos] = useState([
-    { tipo: 'volumen', cantidadMinima: '', cantidadMaxima: '', tipoDescuento: 'porcentaje', valor: '' }
-  ])
+  // Tramos de descuento — ahora con producto opcional por tramo
+  const [tramos, setTramos] = useState([{ ...TRAMO_VACIO }])
   const setTramo    = (i, c, v) => setTramos(p => p.map((t, idx) => idx === i ? { ...t, [c]: v } : t))
-  const addTramo    = () => setTramos(p => [...p, { tipo: 'volumen', cantidadMinima: '', cantidadMaxima: '', tipoDescuento: 'porcentaje', valor: '' }])
+  const addTramo    = () => setTramos(p => [...p, { ...TRAMO_VACIO }])
   const removeTramo = (i) => { if (tramos.length > 1) setTramos(p => p.filter((_, idx) => idx !== i)) }
+
+  // Errores inline por índice de tramo
+  const tramosErrors = useMemo(() => {
+    const errors = {}
+
+    tramos.forEach((t, i) => {
+      if (t.cantidadMinima === '' && t.valor === '') return
+      if (t.cantidadMinima !== '' && Number(t.cantidadMinima) < 0) {
+        errors[i] = 'La cantidad mínima no puede ser negativa.'; return
+      }
+      if (t.cantidadMaxima !== '' && Number(t.cantidadMaxima) <= Number(t.cantidadMinima)) {
+        errors[i] = 'El máximo debe ser mayor al mínimo.'; return
+      }
+      if (t.tipoDescuento === 'porcentaje' && t.valor !== '') {
+        const pct = Number(t.valor)
+        if (pct < 0 || pct > 100) { errors[i] = 'El porcentaje debe estar entre 0 y 100.'; return }
+      }
+      if (t.tipoDescuento === 'fijo' && t.valor !== '' && Number(t.valor) < 0) {
+        errors[i] = 'El monto fijo no puede ser negativo.'; return
+      }
+    })
+
+    // Solapamiento agrupado por (tipo, idProducto)
+    const grupos = {}
+    tramos.forEach((t, i) => {
+      if (t.cantidadMinima === '') return
+      const key = `${t.tipo}__${t.idProducto || '__todos__'}`
+      if (!grupos[key]) grupos[key] = []
+      grupos[key].push({
+        _idx: i,
+        min: Number(t.cantidadMinima),
+        max: t.cantidadMaxima !== '' ? Number(t.cantidadMaxima) : Infinity,
+      })
+    })
+
+    Object.values(grupos).forEach(grupo => {
+      const sorted = [...grupo].sort((a, b) => a.min - b.min)
+
+      const infinitos = sorted.filter(t => t.max === Infinity)
+      if (infinitos.length > 1) {
+        infinitos.forEach(t => {
+          if (!errors[t._idx]) errors[t._idx] = 'Solo puede haber un tramo sin límite superior en este grupo.'
+        })
+      }
+
+      for (let j = 0; j < sorted.length - 1; j++) {
+        const curr = sorted[j]
+        const next = sorted[j + 1]
+        if (curr.max >= next.min) {
+          const currLabel = `${curr.min}–${curr.max === Infinity ? '∞' : curr.max}`
+          const nextLabel = `${next.min}–${next.max === Infinity ? '∞' : next.max}`
+          if (!errors[curr._idx]) errors[curr._idx] = `Se solapa con el tramo ${nextLabel}.`
+          if (!errors[next._idx]) errors[next._idx] = `Se solapa con el tramo ${currLabel}.`
+        }
+      }
+    })
+
+    return errors
+  }, [tramos])
+
+  const hayErroresTramos = Object.keys(tramosErrors).length > 0
 
   const cargar = async () => {
     setLoading(true); setMsg(null)
     try {
-      const [empRes, prodRes, provRes, contRes, detRes, tramosRes, preciosRes] = await Promise.all([
+      const [empRes, prodRes, provRes, contRes, tramosRes, preciosRes] = await Promise.all([
         api.get('/api/v1/empresas'),
         api.get('/api/v1/products'),
         api.get('/api/v1/proveedores'),
         api.get('/api/v1/contratos-tarifa'),
-        api.get('/api/v1/contratos-detalle'),
         api.get('/api/v1/tramos-tarifa'),
         api.get('/api/v1/precios-base'),
       ])
 
       const proveedoresList = norm(provRes)
       const contratosList   = norm(contRes)
-      const detallesList    = norm(detRes)
       const tramosList      = norm(tramosRes)
 
       const proveedor = proveedoresList.find(p => p.idEmpresa?.id === session?.id_empresa && p.activo)
@@ -125,7 +154,6 @@ export default function Contratos() {
 
       const enriched = misContratos.map(c => ({
         ...c,
-        detalles: detallesList.filter(d => d.idContrato?.id === c.id),
         tramos: tramosList
           .filter(t => t.idContrato === c.id)
           .sort((a, b) => Number(a.cantidadMinima) - Number(b.cantidadMinima)),
@@ -139,55 +167,14 @@ export default function Contratos() {
 
   useEffect(() => { cargar() }, [session])
 
-  /* ── Validar tramos — sin solapamiento dentro del mismo tipo ── */
-  const validarTramos = () => {
-    for (const t of tramos) {
-      if (!t.tipo || t.cantidadMinima === '' || t.valor === '')
-        return 'Completa tipo, cantidad mínima y descuento en todos los tramos.'
-      if (Number(t.cantidadMinima) < 0) return 'La cantidad mínima no puede ser negativa.'
-      if (t.cantidadMaxima !== '' && Number(t.cantidadMaxima) <= Number(t.cantidadMinima))
-        return 'La cantidad máxima debe ser mayor a la mínima.'
-      if (t.tipoDescuento === 'porcentaje') {
-        const pct = Number(t.valor)
-        if (pct < 0 || pct > 100) return 'El descuento por porcentaje debe estar entre 0 y 100.'
-      } else {
-        if (Number(t.valor) < 0) return 'El monto fijo no puede ser negativo.'
-      }
-    }
-
-    // Chequeo de solapamiento por tipo de rango (volumen / costo)
-    for (const tipo of ['volumen', 'costo']) {
-      const delTipo = tramos
-        .filter(t => t.tipo === tipo && t.cantidadMinima !== '')
-        .map(t => ({ min: Number(t.cantidadMinima), max: t.cantidadMaxima !== '' ? Number(t.cantidadMaxima) : Infinity }))
-        .sort((a, b) => a.min - b.min)
-
-      for (let i = 0; i < delTipo.length - 1; i++) {
-        if (delTipo[i].max >= delTipo[i + 1].min) {
-          return `Hay tramos de tipo "${tipo}" que se solapan. Revisa los rangos.`
-        }
-      }
-
-      const ilimitados = delTipo.filter(t => t.max === Infinity)
-      if (ilimitados.length > 1) {
-        return `Solo puede haber un tramo "${tipo}" sin límite superior.`
-      }
-      if (ilimitados.length === 1 && delTipo.indexOf(ilimitados[0]) < delTipo.length - 1) {
-        return `El tramo "${tipo}" sin límite debe ser el último del rango.`
-      }
-    }
-
-    return null
-  }
-
-  /* ── Crear contrato ── */
   const crearContrato = async () => {
     setMsg(null)
     if (!form.idEmpresaCompradora) { setMsg({ ok: false, text: 'Selecciona la empresa compradora.' }); return }
     if (!form.vigenteDesde)        { setMsg({ ok: false, text: 'Define la fecha de inicio.' }); return }
     if (!proveedorActual)          { setMsg({ ok: false, text: 'Tu empresa no tiene perfil de proveedor activo.' }); return }
-    const tramosErr = validarTramos()
-    if (tramosErr) { setMsg({ ok: false, text: tramosErr }); return }
+    if (hayErroresTramos)          { setMsg({ ok: false, text: 'Corrige los errores en los tramos antes de continuar.' }); return }
+    const tramosIncompletos = tramos.some(t => t.cantidadMinima === '' || t.valor === '')
+    if (tramosIncompletos)         { setMsg({ ok: false, text: 'Completa todos los campos de cada tramo.' }); return }
 
     setSaving(true)
     try {
@@ -199,31 +186,23 @@ export default function Contratos() {
         idProveedor: proveedorActual.id,
       })
 
-      await Promise.all([
-        ...lineas.map(l => api.post('/api/v1/contratos-detalle', {
-          porcentajeDescuento: l.tipoDescuento === 'porcentaje' ? Number(l.valor) : 0,
-          montoFijo:           l.tipoDescuento === 'fijo'       ? Number(l.valor) : null,
-          idProducto: l.idProducto || null,
-          idContrato: contrato.id,
-        })),
-        ...tramos.map(t => api.post('/api/v1/tramos-tarifa', {
+      await Promise.all(
+        tramos.map(t => api.post('/api/v1/tramos-tarifa', {
           tipo: t.tipo,
+          idProducto: t.idProducto || null,
           cantidadMinima: Number(t.cantidadMinima),
           cantidadMaxima: t.cantidadMaxima !== '' ? Number(t.cantidadMaxima) : null,
           tipoDescuento:  t.tipoDescuento,
           porcentajeDesc: t.tipoDescuento === 'porcentaje' ? Number(t.valor) : 0,
           montoFijo:      t.tipoDescuento === 'fijo'       ? Number(t.valor) : null,
           idContrato: contrato.id,
-        })),
-      ])
+        }))
+      )
 
       setMsg({ ok: true, text: 'Contrato creado correctamente.' })
       setMostrarForm(false); setVigenteDesdeManual(false)
       setForm({ idEmpresaCompradora: '', vigenteDesde: hoyISO(), vigenteHasta: '' })
-      setLineas([])
-      setTramos([{ tipo: 'volumen', cantidadMinima: '', cantidadMaxima: '', tipoDescuento: 'porcentaje', valor: '' }])
-      setBusquedaProducto('')
-      setSeleccionados(new Set())
+      setTramos([{ ...TRAMO_VACIO }])
       cargar()
     } catch (e) {
       setMsg({ ok: false, text: `Error creando contrato: ${e.message}` })
@@ -231,7 +210,6 @@ export default function Contratos() {
     setSaving(false)
   }
 
-  /* ── Toggle / eliminar ── */
   const toggleContrato = async (c) => {
     try {
       await api.put(`/api/v1/contratos-tarifa/${c.id}`, {
@@ -258,14 +236,7 @@ export default function Contratos() {
     }
   }
 
-  /* ── Productos del proveedor para el picker ── */
   const productosProveedor = productos.filter(p => p.idProveedor?.id === proveedorActual?.id)
-  const productosFiltrados = productosProveedor.filter(p =>
-    !busquedaProducto || p.nombre?.toLowerCase().includes(busquedaProducto.toLowerCase()) ||
-    p.sku?.toLowerCase().includes(busquedaProducto.toLowerCase())
-  )
-
-  /* ── Preview live de tramos al crear ── */
   const tramosValidos = tramos.filter(t => t.cantidadMinima !== '' && t.valor !== '')
 
   return (
@@ -282,12 +253,12 @@ export default function Contratos() {
 
       {msg && <div style={{ ...s.alert, ...(msg.ok ? s.alertOk : s.alertErr) }}>{msg.text}</div>}
 
-      {/* ── Formulario ── */}
+      {/* Formulario */}
       {mostrarForm && session?.rol === 'proveedor' && (
         <div style={s.formCard}>
           <h3 style={s.formTitle}>Nuevo contrato</h3>
           <p style={s.formSub}>
-            Define descuentos escalonados por volumen o costo, más descuentos específicos por producto.
+            Define tramos de descuento por volumen o costo. Cada tramo puede aplicar a todos los productos o a uno específico.
           </p>
 
           {/* Empresa + Vigencia */}
@@ -329,148 +300,103 @@ export default function Contratos() {
           <div style={s.seccionWrap}>
             <div style={s.seccionHead}>
               <div>
-                <p style={s.sectionLabel}>Tramos de descuento general</p>
+                <p style={s.sectionLabel}>Tramos de descuento</p>
                 <p style={s.sectionHint}>
-                  Aplican al total del pedido por volumen (uds.) o costo (Bs.). Cada tramo puede ser porcentaje o monto fijo.
-                  Los rangos del mismo tipo no pueden solaparse.
+                  Cada tramo aplica por volumen (uds.) o costo (Bs.), sobre todos los productos o sobre uno específico.
+                  Los rangos del mismo tipo y mismo producto no pueden solaparse.
                 </p>
               </div>
               <button style={s.addBtn} onClick={addTramo}>+ Tramo</button>
             </div>
 
-            <div style={s.tramoHeaderNew}>
-              <span>Tipo rango</span><span>Desde</span><span>Hasta</span><span>Descuento</span><span />
+            <div style={s.tramoHeader}>
+              <span>Producto</span>
+              <span>Tipo rango</span>
+              <span>Desde</span>
+              <span>Hasta</span>
+              <span>Descuento</span>
+              <span />
             </div>
+
             {tramos.map((t, i) => (
-              <div key={i} style={s.tramoRowNew}>
-                <select style={s.inputSm} value={t.tipo} onChange={e => setTramo(i, 'tipo', e.target.value)}>
-                  <option value="volumen">📦 Volumen (uds.)</option>
-                  <option value="costo">💰 Costo (Bs.)</option>
-                </select>
-                <input style={s.inputSm} type="number" min="0" value={t.cantidadMinima}
-                  onChange={e => setTramo(i, 'cantidadMinima', e.target.value)} placeholder="Ej: 1" />
-                <input style={s.inputSm} type="number" min="0" value={t.cantidadMaxima}
-                  onChange={e => setTramo(i, 'cantidadMaxima', e.target.value)} placeholder="Sin límite" />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <select style={{ ...s.inputSm, width: 80, padding: '8px 6px' }} value={t.tipoDescuento}
-                    onChange={e => setTramo(i, 'tipoDescuento', e.target.value)}>
-                    <option value="porcentaje">%</option>
-                    <option value="fijo">Bs.</option>
+              <div key={i}>
+                <div style={{ ...s.tramoRow, ...(tramosErrors[i] ? s.tramoRowError : {}) }}>
+                  {/* Producto */}
+                  <select style={s.inputSm} value={t.idProducto}
+                    onChange={e => setTramo(i, 'idProducto', e.target.value)}>
+                    <option value="">Todos los productos</option>
+                    {productosProveedor.map(p => (
+                      <option key={p.id} value={p.id}>{p.sku} — {p.nombre}</option>
+                    ))}
                   </select>
-                  <input style={{ ...s.inputSm, flex: 1 }} type="number" min="0"
-                    max={t.tipoDescuento === 'porcentaje' ? 100 : undefined}
-                    value={t.valor} onChange={e => setTramo(i, 'valor', e.target.value)}
-                    placeholder={t.tipoDescuento === 'porcentaje' ? '0–100' : 'Ej: 20'} />
+                  {/* Tipo rango */}
+                  <select style={s.inputSm} value={t.tipo} onChange={e => setTramo(i, 'tipo', e.target.value)}>
+                    <option value="volumen">📦 Volumen (uds.)</option>
+                    <option value="costo">💰 Costo (Bs.)</option>
+                  </select>
+                  {/* Desde */}
+                  <input style={s.inputSm} type="number" min="0" value={t.cantidadMinima}
+                    onChange={e => setTramo(i, 'cantidadMinima', e.target.value)} placeholder="Ej: 1" />
+                  {/* Hasta */}
+                  <input style={s.inputSm} type="number" min="0" value={t.cantidadMaxima}
+                    onChange={e => setTramo(i, 'cantidadMaxima', e.target.value)} placeholder="Sin límite" />
+                  {/* Descuento */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <select style={{ ...s.inputSm, width: 80, padding: '8px 6px' }} value={t.tipoDescuento}
+                      onChange={e => setTramo(i, 'tipoDescuento', e.target.value)}>
+                      <option value="porcentaje">%</option>
+                      <option value="fijo">Bs.</option>
+                    </select>
+                    <input style={{ ...s.inputSm, flex: 1 }} type="number" min="0"
+                      max={t.tipoDescuento === 'porcentaje' ? 100 : undefined}
+                      value={t.valor} onChange={e => setTramo(i, 'valor', e.target.value)}
+                      placeholder={t.tipoDescuento === 'porcentaje' ? '0–100' : 'Ej: 20'} />
+                  </div>
+                  {tramos.length > 1 && (
+                    <button style={s.removeBtn} onClick={() => removeTramo(i)}>✕</button>
+                  )}
                 </div>
-                {tramos.length > 1 && (
-                  <button style={s.removeBtn} onClick={() => removeTramo(i)}>✕</button>
+                {tramosErrors[i] && (
+                  <div style={s.tramoErrorMsg}>⚠ {tramosErrors[i]}</div>
                 )}
               </div>
             ))}
 
-            {tramosValidos.length > 0 && (
+            {tramosValidos.length > 0 && !hayErroresTramos && (
               <div style={s.previewBox}>
                 <p style={s.previewTitle}>Vista previa</p>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {[...tramosValidos]
                     .sort((a, b) => Number(a.cantidadMinima) - Number(b.cantidadMinima))
-                    .map((t, i) => (
-                      <div key={i} style={s.previewChip}>
-                        <span style={s.previewRange}>
-                          {t.tipo === 'volumen' ? '📦' : '💰'} {fmtNum(t.cantidadMinima)}–{fmtNum(t.cantidadMaxima || null)}
-                          {t.tipo === 'volumen' ? ' uds.' : ' Bs.'}
-                        </span>
-                        <span style={s.previewPct}>
-                          {t.tipoDescuento === 'fijo' ? `−Bs. ${t.valor}` : `−${t.valor}%`}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Descuentos por producto — buscador multi-select */}
-          <div style={s.seccionWrap}>
-            <div style={s.seccionHead}>
-              <div>
-                <p style={s.sectionLabel}>Descuentos por producto</p>
-                <p style={s.sectionHint}>
-                  Busca y selecciona productos. Elige tipo (% o Bs. fijo) y valor, luego agrega.
-                </p>
-              </div>
-            </div>
-
-            {/* Buscador */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input
-                style={{ ...s.inputSm, flex: 1 }}
-                placeholder="Buscar por nombre o SKU..."
-                value={busquedaProducto}
-                onChange={e => setBusquedaProducto(e.target.value)}
-              />
-              <select style={{ ...s.inputSm, width: 90 }} value={tipoDescLinea}
-                onChange={e => setTipoDescLinea(e.target.value)}>
-                <option value="porcentaje">%</option>
-                <option value="fijo">Bs.</option>
-              </select>
-              <input
-                style={{ ...s.inputSm, width: 100 }}
-                type="number" min="0"
-                max={tipoDescLinea === 'porcentaje' ? 100 : undefined}
-                placeholder={tipoDescLinea === 'porcentaje' ? '0–100' : 'Ej: 20'}
-                value={valorDescLinea}
-                onChange={e => setValorDescLinea(e.target.value)}
-              />
-              <button
-                style={{ ...s.addBtn, opacity: seleccionados.size === 0 || !valorDescLinea ? 0.5 : 1 }}
-                onClick={agregarSeleccionados}
-                disabled={seleccionados.size === 0 || !valorDescLinea}
-              >
-                + Agregar {seleccionados.size > 0 ? `(${seleccionados.size})` : ''}
-              </button>
-            </div>
-
-            {/* Lista de productos para seleccionar */}
-            {productosProveedor.length === 0 ? (
-              <p style={{ fontSize: 12, color: 'var(--c-muted)', margin: '6px 0' }}>
-                Tu empresa no tiene productos registrados.
-              </p>
-            ) : (
-              <div style={s.productPickerList}>
-                {productosFiltrados.length === 0 ? (
-                  <p style={{ fontSize: 12, color: 'var(--c-muted)', padding: 8 }}>Sin resultados.</p>
-                ) : productosFiltrados.slice(0, 20).map(p => {
-                  const yaAgregado = lineas.some(l => l.idProducto === p.id)
-                  const checked    = seleccionados.has(p.id)
-                  return (
-                    <label key={p.id} style={{ ...s.productPickerItem, opacity: yaAgregado ? 0.45 : 1, cursor: yaAgregado ? 'not-allowed' : 'pointer' }}>
-                      <input type="checkbox" checked={checked} disabled={yaAgregado}
-                        onChange={() => !yaAgregado && toggleSeleccion(p.id)}
-                        style={{ accentColor: 'var(--c-primary)', flexShrink: 0 }} />
-                      <span style={s.skuBadge}>{p.sku}</span>
-                      <span style={{ fontSize: 13, color: 'var(--c-text)' }}>{p.nombre}</span>
-                    </label>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Líneas ya agregadas */}
-            {lineas.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                <p style={{ ...s.sectionHint, marginBottom: 6 }}>Productos con descuento en este contrato:</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {lineas.map((l, i) => (
-                    <div key={i} style={s.lineaAgregada}>
-                      <span style={s.skuBadge}>{l.sku}</span>
-                      <span style={{ flex: 1, fontSize: 13, color: 'var(--c-text)' }}>{l.nombre}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#15803d' }}>
-                        {l.tipoDescuento === 'fijo' ? `−Bs. ${l.valor}` : `−${l.valor}%`}
-                      </span>
-                      <button style={s.removeBtnSm} onClick={() => removeLinea(l.idProducto)}>✕</button>
-                    </div>
-                  ))}
+                    .map((t, i) => {
+                      const prod = productosProveedor.find(p => p.id === t.idProducto)
+                      const pb   = prod
+                        ? preciosBase.find(p => p.idProducto?.id === prod.id && p.idProveedor?.id === proveedorActual?.id)
+                        : null
+                      const base = pb ? Number(pb.precioBase) : null
+                      const final = base !== null
+                        ? (t.tipoDescuento === 'fijo'
+                            ? Math.max(0, base - Number(t.valor))
+                            : base * (1 - Number(t.valor) / 100))
+                        : null
+                      return (
+                        <div key={i} style={s.previewChip}>
+                          {prod && <span style={s.previewProd}>{prod.sku}</span>}
+                          <span style={s.previewRange}>
+                            {t.tipo === 'volumen' ? '📦' : '💰'} {fmtNum(t.cantidadMinima)}–{fmtNum(t.cantidadMaxima || null)}
+                            {t.tipo === 'volumen' ? ' uds.' : ' Bs.'}
+                          </span>
+                          <span style={s.previewPct}>
+                            {t.tipoDescuento === 'fijo' ? `−Bs. ${t.valor}` : `−${t.valor}%`}
+                          </span>
+                          {prod && base !== null && (
+                            <span style={{ fontSize: 10, color: '#15803d', fontWeight: 600 }}>
+                              {fmtMoney(base)} → {fmtMoney(final)}
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
                 </div>
               </div>
             )}
@@ -478,14 +404,14 @@ export default function Contratos() {
 
           <div style={s.formActions}>
             <button style={s.cancelBtn} onClick={() => { setMostrarForm(false); setVigenteDesdeManual(false); setMsg(null) }}>Cancelar</button>
-            <button style={s.saveBtn} onClick={crearContrato} disabled={saving}>
+            <button style={s.saveBtn} onClick={crearContrato} disabled={saving || hayErroresTramos}>
               {saving ? 'Creando...' : 'Crear contrato'}
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Lista ── */}
+      {/* Lista */}
       {loading ? (
         <p style={{ color: 'var(--c-muted)', fontSize: 13 }}>Cargando contratos...</p>
       ) : contratos.length === 0 ? (
@@ -498,11 +424,10 @@ export default function Contratos() {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {contratos.map(c => (
             <ContratoCard
               key={c.id} contrato={c} rol={session?.rol}
-              productos={productos} preciosBase={preciosBase}
               onToggle={() => toggleContrato(c)}
               onDelete={() => eliminarContrato(c.id)}
             />
@@ -513,14 +438,11 @@ export default function Contratos() {
   )
 }
 
-/* ─── ContratoCard ───────────────────────────────────────────────────────────── */
-function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDelete }) {
-  const [open,    setOpen]    = useState(true)
-  const [simOpen, setSimOpen] = useState(false)
-  const [simProd, setSimProd] = useState('')
-  const [simCant, setSimCant] = useState('')
+/* ─── ContratoCard ─────────────────────────────────────────────────────────── */
+function ContratoCard({ contrato: c, rol, onToggle, onDelete }) {
+  const [open, setOpen] = useState(false)
 
-  const empresaNombre   = c.idEmpresa?.nombre            ?? '—'
+  const empresaNombre   = c.idEmpresa?.nombre             ?? '—'
   const proveedorNombre = c.idProveedor?.idEmpresa?.nombre ?? '—'
   const desde           = fmtDate(c.vigenteDesde)
   const hasta           = fmtDate(c.vigenteHasta)
@@ -530,61 +452,6 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
     : null
   const vencido     = diasRestantes !== null && diasRestantes < 0
   const vencePronto = diasRestantes !== null && diasRestantes >= 0 && diasRestantes <= 30
-
-  const ahora = new Date()
-
-  const prodsConPrecio = useMemo(() => {
-    const provId = c.idProveedor?.id
-    const ids = new Set(
-      preciosBase
-        .filter(p => p.idProveedor?.id === provId &&
-          new Date(p.vigenteDesde) <= ahora &&
-          (!p.vigenteHasta || new Date(p.vigenteHasta) >= ahora))
-        .map(p => p.idProducto?.id).filter(Boolean)
-    )
-    return productos.filter(p => ids.has(p.id))
-  }, [preciosBase, productos, c.idProveedor?.id])
-
-  const simResult = useMemo(() => {
-    if (!simProd || !simCant || Number(simCant) <= 0) return null
-    const cantidad = Number(simCant)
-    const provId   = c.idProveedor?.id
-
-    const precioVig = preciosBase.find(p =>
-      p.idProducto?.id === simProd && p.idProveedor?.id === provId &&
-      new Date(p.vigenteDesde) <= ahora && (!p.vigenteHasta || new Date(p.vigenteHasta) >= ahora)
-    )
-    if (!precioVig) return { error: 'Sin precio base vigente para este producto.' }
-
-    const base    = Number(precioVig.precioBase)
-    const detalle = c.detalles.find(d => d.idProducto?.id === simProd)
-    const pctDet  = detalle ? Number(detalle.porcentajeDescuento) : 0
-    const montoFijoDet = detalle?.montoFijo ? Number(detalle.montoFijo) : 0
-    const precioUnit = montoFijoDet > 0
-      ? Math.max(0, base - montoFijoDet)
-      : base * (1 - pctDet / 100)
-    const subtotal   = precioUnit * cantidad
-
-    const tramo = c.tramos.find(t => {
-      const min = Number(t.cantidadMinima)
-      const max = t.cantidadMaxima != null ? Number(t.cantidadMaxima) : Infinity
-      return t.tipo === 'volumen' ? cantidad >= min && cantidad <= max : subtotal >= min && subtotal <= max
-    })
-
-    let descuentoTramo = 0
-    if (tramo) {
-      const td = tramo.tipoDescuento ?? 'porcentaje'
-      if (td === 'fijo') {
-        descuentoTramo = Number(tramo.montoFijo ?? 0) * cantidad
-      } else {
-        descuentoTramo = subtotal * Number(tramo.porcentajeDesc) / 100
-      }
-    }
-    const total = subtotal - descuentoTramo
-    const prod  = productos.find(p => p.id === simProd)
-
-    return { base, pctDet, montoFijoDet, precioUnit, cantidad, subtotal, tramo, descuentoTramo, total, prod, detalle }
-  }, [simProd, simCant, c, preciosBase, productos])
 
   return (
     <div style={{ ...s.card, ...(c.activo ? {} : s.cardInactive) }}>
@@ -622,8 +489,8 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
           {/* Tramos */}
           <div style={s.section}>
             <p style={s.sectionTitle}>
-              Descuentos por volumen / costo
-              <span style={s.sectionNote}> (aplican al total del pedido)</span>
+              Tramos de descuento
+              <span style={s.sectionNote}> (por volumen o costo)</span>
             </p>
             {c.tramos.length === 0 ? (
               <p style={s.noData}>Sin tramos de descuento definidos.</p>
@@ -634,13 +501,26 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
                   const label = td === 'fijo'
                     ? `−Bs. ${Number(t.montoFijo ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2 })}`
                     : `−${t.porcentajeDesc}%`
+                  const prodNombre = t.nombreProducto ?? null
+                  const prodSku    = t.skuProducto    ?? null
                   return (
                     <div key={i} style={s.tramoChip}>
+                      {prodSku && (
+                        <span style={{ ...s.skuBadge, marginBottom: 2 }}>{prodSku}</span>
+                      )}
                       <span style={s.tramoChipLabel}>
                         {t.tipo === 'volumen' ? '📦' : '💰'}{' '}
                         {fmtNum(t.cantidadMinima)}–{fmtNum(t.cantidadMaxima)}
                         {t.tipo === 'volumen' ? ' uds.' : ' Bs.'}
                       </span>
+                      {prodNombre && (
+                        <span style={{ fontSize: 10, color: 'var(--c-muted)', marginTop: 1, maxWidth: 100, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {prodNombre}
+                        </span>
+                      )}
+                      {!prodNombre && (
+                        <span style={{ fontSize: 10, color: 'var(--c-muted)', marginTop: 1, fontStyle: 'italic' }}>Todos</span>
+                      )}
                       <span style={s.tramoChipPct}>{label}</span>
                     </div>
                   )
@@ -649,178 +529,6 @@ function ContratoCard({ contrato: c, rol, productos, preciosBase, onToggle, onDe
             )}
           </div>
 
-          {/* Descuentos por producto */}
-          <div style={s.section}>
-            <p style={s.sectionTitle}>
-              Descuentos por producto
-              <span style={s.sectionNote}> (fijos sobre el precio base)</span>
-            </p>
-            {c.detalles.length === 0 ? (
-              <p style={s.noData}>Sin descuentos por producto configurados.</p>
-            ) : (
-              <table style={s.table}>
-                <thead>
-                  <tr>
-                    <th style={s.th}>Producto</th>
-                    <th style={s.th}>Descuento</th>
-                    <th style={s.th}>Precio lista → tu precio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {c.detalles.map((d, i) => {
-                    const pct  = Number(d.porcentajeDescuento)
-                    const mf   = d.montoFijo ? Number(d.montoFijo) : 0
-                    const prod = d.idProducto?.nombre ?? d.nombreProducto
-                    const precioVig = preciosBase.find(p =>
-                      p.idProducto?.id === d.idProducto?.id &&
-                      p.idProveedor?.id === c.idProveedor?.id &&
-                      new Date(p.vigenteDesde) <= ahora &&
-                      (!p.vigenteHasta || new Date(p.vigenteHasta) >= ahora)
-                    )
-                    const base = precioVig ? Number(precioVig.precioBase) : null
-                    const precioFinal = base != null
-                      ? (mf > 0 ? Math.max(0, base - mf) : base * (1 - pct / 100))
-                      : null
-                    const descLabel = mf > 0 ? `−Bs. ${mf.toLocaleString('es-BO', { minimumFractionDigits: 2 })}` : `−${pct}%`
-                    return (
-                      <tr key={d.id ?? i} style={{ background: i % 2 === 1 ? 'var(--c-bg-subtle)' : 'var(--c-bg)' }}>
-                        <td style={s.td}>
-                          {prod
-                            ? <><span style={s.skuBadge}>{d.idProducto?.sku ?? ''}</span>{prod}</>
-                            : <span style={s.allProd}>Todos los productos</span>}
-                        </td>
-                        <td style={{ ...s.td, fontWeight: 700, color: '#16a34a' }}>{descLabel}</td>
-                        <td style={s.td}>
-                          {base != null
-                            ? <span style={s.precioRow}>
-                                <span style={s.baseStrike}>{fmtMoney(base)}</span>
-                                <span style={s.arrow}>→</span>
-                                <span style={s.precioFinal}>{fmtMoney(precioFinal)}</span>
-                              </span>
-                            : <span style={{ fontSize: 12, color: 'var(--c-muted)', fontStyle: 'italic' }}>Sin precio base</span>}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Simulador */}
-          <div style={s.section}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <p style={s.sectionTitle}>
-                Simulador de precio
-                <span style={s.sectionNote}> (¿cuánto pagaría la empresa por X unidades?)</span>
-              </p>
-              <button style={s.simToggleBtn} onClick={() => setSimOpen(o => !o)}>
-                {simOpen ? 'Ocultar' : 'Simular'}
-              </button>
-            </div>
-
-            {simOpen && (
-              <div style={s.simBox}>
-                {prodsConPrecio.length === 0 ? (
-                  <p style={{ fontSize: 13, color: 'var(--c-muted)', margin: 0 }}>
-                    No hay productos con precio base vigente para simular.
-                  </p>
-                ) : (
-                  <>
-                    <div style={s.simInputRow}>
-                      <div style={{ flex: 2 }}>
-                        <label style={s.label}>Producto</label>
-                        <select style={s.input} value={simProd}
-                          onChange={e => { setSimProd(e.target.value); setSimCant('') }}>
-                          <option value="">Selecciona un producto...</option>
-                          {prodsConPrecio.map(p => (
-                            <option key={p.id} value={p.id}>{p.sku} — {p.nombre}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <label style={s.label}>Cantidad</label>
-                        <input style={s.input} type="number" min="1" value={simCant}
-                          onChange={e => setSimCant(e.target.value)} placeholder="Ej: 50" />
-                      </div>
-                    </div>
-
-                    {simResult?.error && (
-                      <p style={{ color: '#dc2626', fontSize: 13, margin: '8px 0 0' }}>{simResult.error}</p>
-                    )}
-
-                    {simResult && !simResult.error && (
-                      <div style={s.simResult}>
-                        <p style={s.simResultTitle}>
-                          {simResult.prod?.nombre} · {fmtNum(simResult.cantidad)} unidades
-                        </p>
-                        <div style={s.simSteps}>
-                          <div style={s.simStep}>
-                            <span style={s.simLabel}>Precio de lista</span>
-                            <span style={s.simValue}>{fmtMoney(simResult.base)}</span>
-                          </div>
-                          {(simResult.pctDet > 0 || simResult.montoFijoDet > 0) && (
-                            <div style={s.simStep}>
-                              <span style={s.simLabel}>
-                                − Descuento por producto
-                                {simResult.montoFijoDet > 0
-                                  ? ` (Bs. ${simResult.montoFijoDet} fijo)`
-                                  : ` (${simResult.pctDet}%)`}
-                              </span>
-                              <span style={{ ...s.simValue, color: '#16a34a' }}>
-                                − {fmtMoney(simResult.base - simResult.precioUnit)}
-                              </span>
-                            </div>
-                          )}
-                          <div style={s.simStepTotal}>
-                            <span style={s.simLabel}>Tu precio por unidad</span>
-                            <span style={{ ...s.simValue, fontWeight: 800 }}>{fmtMoney(simResult.precioUnit)}</span>
-                          </div>
-                          <div style={s.simStep}>
-                            <span style={s.simLabel}>× {fmtNum(simResult.cantidad)} unidades</span>
-                            <span style={s.simValue}>{fmtMoney(simResult.subtotal)}</span>
-                          </div>
-                          {simResult.tramo ? (
-                            <div style={s.simStep}>
-                              <span style={s.simLabel}>
-                                − Tramo {simResult.tramo.tipo === 'volumen' ? '📦 volumen' : '💰 costo'}{' '}
-                                {(simResult.tramo.tipoDescuento ?? 'porcentaje') === 'fijo'
-                                  ? `(Bs. ${simResult.tramo.montoFijo} × ${simResult.cantidad} uds.)`
-                                  : `(${simResult.tramo.porcentajeDesc}%)`}
-                              </span>
-                              <span style={{ ...s.simValue, color: '#16a34a' }}>
-                                − {fmtMoney(simResult.descuentoTramo)}
-                              </span>
-                            </div>
-                          ) : c.tramos.length > 0 && (
-                            <div style={s.simStep}>
-                              <span style={{ ...s.simLabel, fontStyle: 'italic' }}>
-                                Sin tramo aplicable en este rango
-                              </span>
-                              <span style={s.simValue}>—</span>
-                            </div>
-                          )}
-                          <div style={s.simStepFinal}>
-                            <span style={s.simFinalLabel}>Total a pagar</span>
-                            <span style={s.simFinalValue}>{fmtMoney(simResult.total)}</span>
-                          </div>
-                          {(simResult.pctDet > 0 || simResult.montoFijoDet > 0 || simResult.descuentoTramo > 0) && (
-                            <div style={s.simSavings}>
-                              Ahorro total:{' '}
-                              <strong>
-                                {fmtMoney(simResult.base * simResult.cantidad - simResult.total)}
-                                {' '}({((1 - simResult.total / (simResult.base * simResult.cantidad)) * 100).toFixed(1)}% menos)
-                              </strong>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       )}
     </div>
@@ -853,21 +561,18 @@ const s = {
   sectionHint:  { margin: '2px 0 0', fontSize: 11, color: 'var(--c-muted)', lineHeight: 1.5 },
   addBtn:       { background: 'var(--c-bg)', border: '1.5px solid var(--c-primary)', color: 'var(--c-primary)', borderRadius: 8, padding: '7px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 },
 
-  tramoHeaderNew: { display: 'grid', gridTemplateColumns: '160px 90px 100px 1fr 32px', gap: 8, fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', padding: '0 0 6px', borderBottom: '1px solid var(--c-border)', marginBottom: 8 },
-  tramoRowNew:    { display: 'grid', gridTemplateColumns: '160px 90px 100px 1fr 32px', gap: 8, marginBottom: 8, alignItems: 'center' },
-  inputSm:     { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box', background: 'var(--c-input-bg)' },
+  tramoHeader:  { display: 'grid', gridTemplateColumns: '1fr 140px 80px 90px 1fr 32px', gap: 8, fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', padding: '0 0 6px', borderBottom: '1px solid var(--c-border)', marginBottom: 8 },
+  tramoRow:     { display: 'grid', gridTemplateColumns: '1fr 140px 80px 90px 1fr 32px', gap: 8, marginBottom: 4, alignItems: 'center' },
+  tramoRowError:{ background: '#fff5f5', borderRadius: 8, padding: '4px 6px', outline: '1.5px solid #fca5a5' },
+  tramoErrorMsg:{ fontSize: 11, color: '#dc2626', padding: '2px 6px 6px', display: 'flex', alignItems: 'center', gap: 4 },
+  inputSm:      { width: '100%', padding: '8px 10px', border: '1.5px solid var(--c-border)', borderRadius: 7, fontSize: 13, color: 'var(--c-text)', outline: 'none', boxSizing: 'border-box', background: 'var(--c-input-bg)' },
 
   previewBox:   { marginTop: 10, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '10px 12px' },
   previewTitle: { margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4 },
   previewChip:  { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--c-bg-page)', borderRadius: 8, padding: '6px 12px', minWidth: 90 },
+  previewProd:  { fontSize: 10, fontWeight: 700, color: 'var(--c-primary)', background: 'var(--c-primary-light)', borderRadius: 4, padding: '1px 6px', marginBottom: 2, fontFamily: 'monospace' },
   previewRange: { fontSize: 11, color: 'var(--c-muted)', marginBottom: 4, textAlign: 'center' },
   previewPct:   { fontSize: 14, fontWeight: 800, color: 'var(--c-primary)' },
-
-  productPickerList: { border: '1.5px solid var(--c-border)', borderRadius: 8, background: 'var(--c-bg)', maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column' },
-  productPickerItem: { display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderBottom: '1px solid var(--c-border-light)' },
-  lineaAgregada:     { display: 'flex', alignItems: 'center', gap: 8, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 7, padding: '6px 10px' },
-  removeBtnSm:       { background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '4px 8px', fontSize: 11, cursor: 'pointer', fontWeight: 700, flexShrink: 0 },
-  removeBtn:         { background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 7, padding: '8px', fontSize: 12, cursor: 'pointer', fontWeight: 700 },
 
   formActions: { display: 'flex', justifyContent: 'flex-end', gap: 8 },
   cancelBtn:   { padding: '9px 16px', background: 'var(--c-bg)', border: '1.5px solid var(--c-border)', borderRadius: 8, cursor: 'pointer', color: 'var(--c-muted)', fontSize: 13 },
@@ -877,51 +582,42 @@ const s = {
   emptyTitle:{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--c-text)' },
   emptySub:  { margin: 0, fontSize: 13, color: 'var(--c-muted)' },
 
-  card:        { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--c-shadow-sm)' },
+  card:        { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden', boxShadow: 'var(--c-shadow-sm)' },
   cardInactive:{ opacity: .7 },
-  cardHead:    { display: 'flex', alignItems: 'center', gap: 8, padding: '1rem 1.25rem' },
-  partes:      { display: 'flex', alignItems: 'center', gap: 8 },
-  empresa:     { fontWeight: 800, fontSize: 14, color: 'var(--c-text)' },
-  partesArrow: { fontSize: 11, color: 'var(--c-muted)' },
-  vigencia:    { fontSize: 12, color: 'var(--c-muted)' },
-  badge:       { fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, flexShrink: 0 },
+  cardHead:    { display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 1rem' },
+  partes:      { display: 'flex', alignItems: 'center', gap: 6 },
+  empresa:     { fontWeight: 700, fontSize: 13, color: 'var(--c-text)' },
+  partesArrow: { fontSize: 10, color: 'var(--c-muted)' },
+  vigencia:    { fontSize: 11, color: 'var(--c-muted)' },
+  badge:       { fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20, flexShrink: 0 },
   badgeOk:     { background: '#dcfce7', color: '#15803d' },
   badgeOff:    { background: '#fee2e2', color: '#991b1b' },
-  toggleBtn:   { padding: '5px 12px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  deleteBtn:   { padding: '5px 12px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  toggleBtn:   { padding: '4px 10px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  deleteBtn:   { padding: '4px 10px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
 
-  cardBody:    { padding: '0 1.25rem 1.25rem' },
-  section:     { marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--c-border-light)' },
-  sectionTitle:{ margin: '0 0 0', fontSize: 13, color: 'var(--c-text)' },
-  sectionNote: { fontWeight: 400, color: 'var(--c-muted)', fontSize: 12 },
-  noData:      { margin: '6px 0 0', fontSize: 12, color: 'var(--c-muted)' },
+  cardBody:    { padding: '0 1rem 0.75rem' },
+  section:     { marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--c-border-light)' },
+  sectionTitle:{ margin: '0 0 0', fontSize: 12, color: 'var(--c-text)' },
+  sectionNote: { fontWeight: 400, color: 'var(--c-muted)', fontSize: 11 },
+  noData:      { margin: '4px 0 0', fontSize: 11, color: 'var(--c-muted)' },
 
-  tramoChip:      { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--c-bg-page)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '6px 12px', minWidth: 90 },
-  tramoChipLabel: { fontSize: 11, color: 'var(--c-muted)', textAlign: 'center', marginBottom: 2 },
-  tramoChipPct:   { fontSize: 15, fontWeight: 800, color: 'var(--c-primary)' },
+  tramoChip:      { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--c-bg-page)', border: '1px solid var(--c-border)', borderRadius: 7, padding: '4px 10px', minWidth: 76 },
+  tramoChipLabel: { fontSize: 10, color: 'var(--c-muted)', textAlign: 'center', marginBottom: 1 },
+  tramoChipPct:   { fontSize: 13, fontWeight: 800, color: 'var(--c-primary)' },
 
-  table:    { width: '100%', borderCollapse: 'collapse', marginTop: '0.75rem', fontSize: 13 },
-  th:       { padding: '7px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: .4, borderBottom: '1px solid var(--c-border)' },
-  td:       { padding: '8px 12px', color: 'var(--c-text)', verticalAlign: 'middle' },
   skuBadge: { fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: 'var(--c-bg-page)', color: 'var(--c-muted)', fontFamily: 'monospace', marginRight: 6 },
-  allProd:  { fontSize: 12, color: 'var(--c-muted)', fontStyle: 'italic' },
-  precioRow:  { display: 'inline-flex', alignItems: 'center', gap: 6 },
-  baseStrike: { textDecoration: 'line-through', color: 'var(--c-muted)', fontSize: 12 },
-  arrow:      { color: 'var(--c-muted)', fontSize: 11 },
-  precioFinal:{ fontWeight: 700, color: '#16a34a', fontSize: 13 },
 
-  simToggleBtn: { padding: '5px 12px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  simBox:       { marginTop: 12, background: 'var(--c-bg-subtle)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem' },
-  simInputRow:  { display: 'flex', gap: 12, marginBottom: 12 },
-  simResult:    { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden', marginTop: 4 },
+  simToggleBtn:  { padding: '5px 12px', background: 'var(--c-primary-light)', color: 'var(--c-primary)', border: 'none', borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  simBox:        { marginTop: 12, background: 'var(--c-bg-subtle)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '1rem' },
+  simInputRow:   { display: 'flex', gap: 12, marginBottom: 12 },
+  simResult:     { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden', marginTop: 4 },
   simResultTitle:{ margin: 0, padding: '10px 14px', fontWeight: 800, fontSize: 13, color: 'var(--c-text)', background: 'var(--c-primary-light)', borderBottom: '1px solid var(--c-border)' },
-  simSteps:     { padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 },
-  simStep:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: 'var(--c-text)' },
-  simStepTotal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: 'var(--c-text)', borderTop: '1px solid var(--c-border)', paddingTop: 6, marginTop: 2 },
-  simStepFinal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 15, fontWeight: 800, color: 'var(--c-primary)', borderTop: '2px solid var(--c-border)', paddingTop: 8, marginTop: 4 },
-  simLabel:     { color: 'var(--c-muted)', fontSize: 12 },
-  simValue:     { fontFamily: 'monospace', fontSize: 13 },
-  simFinalLabel:{ color: 'var(--c-primary)', fontWeight: 700 },
-  simFinalValue:{ fontFamily: 'monospace', fontSize: 15, fontWeight: 800, color: 'var(--c-primary)' },
-  simSavings:   { fontSize: 12, color: '#15803d', background: '#f0fdf4', borderRadius: 6, padding: '6px 10px', marginTop: 4 },
+  simSteps:      { padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 },
+  simStep:       { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, color: 'var(--c-text)' },
+  simStepFinal:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 15, fontWeight: 800, color: 'var(--c-primary)', borderTop: '2px solid var(--c-border)', paddingTop: 8, marginTop: 4 },
+  simLabel:      { color: 'var(--c-muted)', fontSize: 12 },
+  simValue:      { fontFamily: 'monospace', fontSize: 13 },
+  simFinalLabel: { color: 'var(--c-primary)', fontWeight: 700 },
+  simFinalValue: { fontFamily: 'monospace', fontSize: 15, fontWeight: 800, color: 'var(--c-primary)' },
+  simSavings:    { fontSize: 12, color: '#15803d', background: '#f0fdf4', borderRadius: 6, padding: '6px 10px', marginTop: 4 },
 }
