@@ -57,6 +57,8 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/reset-password").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/password-reset/request").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/password-reset/confirm").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/v2/*").denyAll()
                                         .requestMatchers(HttpMethod.GET, "/api/v2/*").denyAll()
                                         .requestMatchers(HttpMethod.PUT, "/api/v2/*").denyAll()

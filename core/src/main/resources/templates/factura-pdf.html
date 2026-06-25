@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #1a1a2e; background: #ffffff; }
+
+    .header { background: #1e3a5f; color: #ffffff; padding: 28px 36px; display: block; }
+    .header-row { display: block; overflow: hidden; }
+    .header-left { float: left; }
+    .header-right { float: right; text-align: right; }
+    .brand { font-size: 22px; font-weight: bold; letter-spacing: 1px; color: #ffffff; }
+    .brand-sub { font-size: 11px; color: #a8c4e0; margin-top: 2px; }
+    .factura-title { font-size: 28px; font-weight: bold; color: #ffffff; }
+    .factura-num { font-size: 11px; color: #a8c4e0; margin-top: 4px; }
+    .clearfix { clear: both; }
+
+    .meta-bar { background: #f0f4f8; padding: 14px 36px; border-bottom: 2px solid #1e3a5f; display: block; overflow: hidden; }
+    .meta-item { float: left; margin-right: 40px; }
+    .meta-label { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+    .meta-value { font-size: 13px; font-weight: bold; color: #1e3a5f; margin-top: 2px; }
+
+    .parties { padding: 24px 36px; display: block; overflow: hidden; }
+    .party-box { float: left; width: 45%; }
+    .party-box-right { float: right; width: 45%; }
+    .party-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.8px; color: #1e3a5f; font-weight: bold; border-bottom: 2px solid #1e3a5f; padding-bottom: 4px; margin-bottom: 10px; }
+    .party-name { font-size: 14px; font-weight: bold; color: #1a1a2e; }
+    .party-detail { font-size: 11px; color: #555; margin-top: 4px; }
+
+    .items-section { padding: 0 36px 24px; }
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th { background: #1e3a5f; color: #ffffff; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .items-table th.right { text-align: right; }
+    .items-table td { padding: 10px 12px; border-bottom: 1px solid #e8edf2; font-size: 12px; }
+    .items-table td.right { text-align: right; }
+    .items-table tr:nth-child(even) td { background: #f8fafc; }
+    .items-table .product-name { font-weight: bold; color: #1a1a2e; }
+
+    .total-section { padding: 0 36px 24px; display: block; overflow: hidden; }
+    .total-box { float: right; width: 260px; }
+    .total-row { display: block; overflow: hidden; padding: 6px 0; border-bottom: 1px solid #e8edf2; }
+    .total-row-final { display: block; overflow: hidden; padding: 10px 0; background: #1e3a5f; margin-top: 4px; border-radius: 4px; padding: 10px 14px; }
+    .total-label { float: left; font-size: 12px; color: #555; }
+    .total-value { float: right; font-size: 12px; font-weight: bold; color: #1a1a2e; }
+    .total-label-final { float: left; font-size: 14px; font-weight: bold; color: #ffffff; }
+    .total-value-final { float: right; font-size: 16px; font-weight: bold; color: #ffffff; }
+
+    .footer { background: #f0f4f8; padding: 16px 36px; margin-top: 30px; border-top: 2px solid #1e3a5f; display: block; overflow: hidden; }
+    .footer-left { float: left; font-size: 10px; color: #666; }
+    .footer-right { float: right; font-size: 10px; color: #666; text-align: right; }
+    .estado-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; background: #d1fae5; color: #065f46; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-row">
+      <div class="header-left">
+        <div class="brand">MARKETPLACE B2B</div>
+        <div class="brand-sub">Plataforma de comercio entre empresas</div>
+      </div>
+      <div class="header-right">
+        <div class="factura-title">FACTURA</div>
+        <div class="factura-num" th:text="'N° ' + ${facturaId}">N° 0000</div>
+      </div>
+      <div class="clearfix"></div>
+    </div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="meta-item">
+      <div class="meta-label">Fecha de emisión</div>
+      <div class="meta-value" th:text="${fecha}">01/01/2025</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Estado</div>
+      <div class="meta-value"><span class="estado-badge" th:text="${estado}">pagado</span></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">N° Orden</div>
+      <div class="meta-value" th:text="${ordenId}">---</div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="parties">
+    <div class="party-box">
+      <div class="party-label">Proveedor</div>
+      <div class="party-name" th:text="${proveedorNombre}">Empresa Proveedor S.A.</div>
+      <div class="party-detail" th:text="'NIT: ' + ${proveedorNit}">NIT: 000000</div>
+    </div>
+    <div class="party-box-right">
+      <div class="party-label">Empresa Compradora</div>
+      <div class="party-name" th:text="${compradoraNombre}">Empresa Compradora S.A.</div>
+      <div class="party-detail" th:text="'NIT: ' + ${compradoraNit}">NIT: 000000</div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="items-section">
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width:40%">Producto</th>
+          <th class="right" style="width:15%">Cantidad</th>
+          <th class="right" style="width:20%">Precio Unit.</th>
+          <th class="right" style="width:25%">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${items}">
+          <td class="product-name" th:text="${item.producto}">Producto</td>
+          <td class="right" th:text="${item.cantidad}">0</td>
+          <td class="right" th:text="'Bs. ' + ${item.precioUnitario}">Bs. 0.00</td>
+          <td class="right" th:text="'Bs. ' + ${item.subtotal}">Bs. 0.00</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="total-section">
+    <div class="total-box">
+      <div class="total-row-final">
+        <span class="total-label-final">TOTAL</span>
+        <span class="total-value-final" th:text="'Bs. ' + ${total}">Bs. 0.00</span>
+        <div class="clearfix"></div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">
+      Este documento es una factura válida generada automáticamente por Marketplace B2B.<br/>
+      Conserve este documento para sus registros contables.
+    </div>
+    <div class="footer-right">
+      Marketplace B2B &#169; 2025<br/>
+      Plataforma de comercio B2B
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+</body>
+</html>

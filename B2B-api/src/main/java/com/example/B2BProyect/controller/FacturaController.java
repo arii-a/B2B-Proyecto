@@ -7,7 +7,10 @@ import org.springframework.data.domain.Page;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
@@ -63,6 +66,22 @@ public class FacturaController {
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             log.error("Error actualizando factura: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> getPdf(@PathVariable UUID id) {
+        try {
+            byte[] pdf = facturaService.generatePdf(id);
+            if (pdf.length == 0) return ResponseEntity.notFound().build();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(ContentDisposition.inline()
+                    .filename("factura-" + id.toString().substring(0, 8).toUpperCase() + ".pdf").build());
+            return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error generando PDF factura {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

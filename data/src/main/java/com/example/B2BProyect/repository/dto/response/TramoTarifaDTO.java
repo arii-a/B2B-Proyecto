@@ -18,6 +18,9 @@ public class TramoTarifaDTO {
     private String tipoDescuento;
     private BigDecimal montoFijo;
     private UUID idContrato;
+    private UUID idProducto;
+    private String nombreProducto;
+    private String skuProducto;
 
     public TramoTarifaDTO(TramoTarifa tramo) {
         this.id = tramo.getId();
@@ -28,5 +31,10 @@ public class TramoTarifaDTO {
         this.tipoDescuento = tramo.getTipoDescuento() != null ? tramo.getTipoDescuento() : "porcentaje";
         this.montoFijo = tramo.getMontoFijo();
         this.idContrato = tramo.getIdContrato() != null ? tramo.getIdContrato().getId() : null;
+        if (tramo.getIdProducto() != null) {
+            this.idProducto = tramo.getIdProducto().getId();
+            this.nombreProducto = tramo.getIdProducto().getNombre();
+            this.skuProducto = tramo.getIdProducto().getSku();
+        }
     }
 }
