@@ -34,7 +34,7 @@ public class TotpConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("productos", "categorias", "unidades");
+        return new ConcurrentMapCacheManager("productos", "categorias", "unidades", "usuarios");
     }
 
     @Bean
