@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,14 +39,43 @@ public class FacturaService {
         Factura saved = facturaRepository.save(factura);
         try {
             if (saved.getIdOrden() != null && saved.getIdOrden().getIdEmpresaCompradora() != null) {
-                UUID empresaId = saved.getIdOrden().getIdEmpresaCompradora().getId();
-                usuarioRepository.findByIdEmpresaId(empresaId).stream()
+                UUID empresaCompradoraId = saved.getIdOrden().getIdEmpresaCompradora().getId();
+                usuarioRepository.findByIdEmpresaId(empresaCompradoraId).stream()
                         .findFirst()
                         .ifPresent(u -> emailService.sendFactura(u.getEmail(), saved));
             }
         } catch (Exception e) {
-            log.warn("No se pudo enviar correo de factura: {}", e.getMessage());
+            log.warn("No se pudo enviar correo de factura a empresa compradora: {}", e.getMessage());
         }
+        try {
+            if (saved.getIdOrden() != null
+                    && saved.getIdOrden().getIdProveedor() != null
+                    && saved.getIdOrden().getIdProveedor().getIdEmpresa() != null) {
+                UUID empresaProveedorId = saved.getIdOrden().getIdProveedor().getIdEmpresa().getId();
+                usuarioRepository.findByIdEmpresaId(empresaProveedorId).stream()
+                        .findFirst()
+                        .ifPresent(u -> emailService.sendFactura(u.getEmail(), saved));
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo enviar correo de factura a proveedor: {}", e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void saveFromPayment(UUID ordenId) {
+        if (facturaRepository.existsByIdOrdenId(ordenId)) {
+            log.info("[FACTURA] Ya existe factura para orden {}, omitiendo duplicado", ordenId);
+            return;
+        }
+        ordenCompraService.findById(ordenId).ifPresent(orden -> {
+            FacturaRequest req = new FacturaRequest();
+            req.setFecha(Instant.now());
+            req.setTotal(orden.getTotal());
+            req.setIdEstado("pagado");
+            req.setIdOrden(ordenId);
+            save(req);
+            log.info("[FACTURA] Factura generada automáticamente para orden {}", ordenId);
+        });
     }
 
     @Transactional(readOnly = true)
