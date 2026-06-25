@@ -49,6 +49,7 @@ public class StereumController {
             req.put("currency", "BOB");
             req.put("network", "CSL");
             req.put("charge_reason", "COMPRA A: "); //  + ordenCompra.getIdProveedor().getIdEmpresa().getNombre())
+//            req.put("charge_reason", "COMPRA A: " + ordenCompra.getIdProveedor().getIdEmpresa().getNombre());
             req.put("idempotency_key", ordenCompra.getId().toString());
             req.put("reservation_validity_time", "10");
             req.put("customer", customer);
