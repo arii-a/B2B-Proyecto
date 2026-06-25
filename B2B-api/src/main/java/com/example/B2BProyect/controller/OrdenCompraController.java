@@ -38,6 +38,26 @@ public class OrdenCompraController {
         }
     }
 
+    @GetMapping("/empresa/{idEmpresa}")
+    public ResponseEntity<List<OrdenCompraDTO>> findByEmpresaCompradora(@PathVariable UUID idEmpresa) {
+        try {
+            return ResponseEntity.ok(ordenCompraService.findByEmpresaCompradora(idEmpresa));
+        } catch (Exception e) {
+            log.error("Error listando ordenes por empresa: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/proveedor/{idEmpresa}")
+    public ResponseEntity<List<OrdenCompraDTO>> findByProveedorEmpresa(@PathVariable UUID idEmpresa) {
+        try {
+            return ResponseEntity.ok(ordenCompraService.findByProveedorEmpresa(idEmpresa));
+        } catch (Exception e) {
+            log.error("Error listando ordenes por proveedor: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping("/paged")
     public ResponseEntity<Page<OrdenCompraDTO>> findAllPaged(
             @RequestParam(defaultValue = "0") int page,

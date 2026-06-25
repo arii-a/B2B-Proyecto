@@ -40,6 +40,16 @@ public class ContratoEmpresaTarifaService {
     }
 
     @Transactional(readOnly = true)
+    public List<ContratoEmpresaTarifasDTO> findByEmpresa(UUID idEmpresa) {
+        return contratoEmpresaTarifaRepository.findByEmpresa(idEmpresa).stream().map(ContratoEmpresaTarifasDTO::new).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContratoEmpresaTarifasDTO> findByProveedorEmpresa(UUID idEmpresa) {
+        return contratoEmpresaTarifaRepository.findByProveedorEmpresa(idEmpresa).stream().map(ContratoEmpresaTarifasDTO::new).toList();
+    }
+
+    @Transactional(readOnly = true)
     public Optional<ContratoEmpresaTarifa> findById(UUID id) {
         return contratoEmpresaTarifaRepository.findById(id);
     }

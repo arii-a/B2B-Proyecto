@@ -36,6 +36,26 @@ public class ContratoEmpresaTarifaController {
         }
     }
 
+    @GetMapping("/empresa/{idEmpresa}")
+    public ResponseEntity<List<ContratoEmpresaTarifasDTO>> findByEmpresa(@PathVariable UUID idEmpresa) {
+        try {
+            return ResponseEntity.ok(contratoEmpresaTarifaService.findByEmpresa(idEmpresa));
+        } catch (Exception e) {
+            log.error("Error listando contratos por empresa: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
+        }
+    }
+
+    @GetMapping("/proveedor/{idEmpresa}")
+    public ResponseEntity<List<ContratoEmpresaTarifasDTO>> findByProveedorEmpresa(@PathVariable UUID idEmpresa) {
+        try {
+            return ResponseEntity.ok(contratoEmpresaTarifaService.findByProveedorEmpresa(idEmpresa));
+        } catch (Exception e) {
+            log.error("Error listando contratos por proveedor: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico");
+        }
+    }
+
     @GetMapping("/paged")
     public ResponseEntity<Page<ContratoEmpresaTarifasDTO>> findAllPaged(
             @RequestParam(defaultValue = "0") int page,

@@ -58,6 +58,16 @@ public class OrdenCompraService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrdenCompraDTO> findByEmpresaCompradora(UUID idEmpresa) {
+        return ordenCompraRepository.findByEmpresaCompradora(idEmpresa).stream().map(OrdenCompraDTO::new).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrdenCompraDTO> findByProveedorEmpresa(UUID idEmpresa) {
+        return ordenCompraRepository.findByProveedorEmpresa(idEmpresa).stream().map(OrdenCompraDTO::new).toList();
+    }
+
+    @Transactional(readOnly = true)
     public Optional<OrdenCompra> findById(UUID id) {
         return ordenCompraRepository.findById(id);
     }

@@ -47,6 +47,12 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, UUID> 
             " FROM OrdenCompra o WHERE o.id = :pId")
     Optional<OrdenCompraDTO> findByIdDTO(@Param("pId") UUID pId);
 
+    @Query("SELECT o FROM OrdenCompra o WHERE o.idEmpresaCompradora.id = :idEmpresa")
+    List<OrdenCompra> findByEmpresaCompradora(@Param("idEmpresa") UUID idEmpresa);
+
+    @Query("SELECT o FROM OrdenCompra o WHERE o.idProveedor.idEmpresa.id = :idEmpresa")
+    List<OrdenCompra> findByProveedorEmpresa(@Param("idEmpresa") UUID idEmpresa);
+
     // proyección para listar resumen de órdenes
     @Query("SELECT o.id AS id, o.fecha AS fecha, o.idEstado AS idEstado, o.total AS total FROM OrdenCompra o")
     List<OrdenCompraProjection> findResumenOrdenes();
