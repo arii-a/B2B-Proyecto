@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { api } from '../api/client'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
@@ -33,6 +34,9 @@ export default function Catalogo() {
   const [cartOpen,    setCartOpen]    = useState(false)
   const [confirmando, setConfirmando] = useState(false)
   const [toast,       setToast]       = useState(null)
+
+  const [currentPage, setCurrentPage] = useState(0)
+  const ITEMS_PER_PAGE = 30
 
   // ── Filtros ──
   const [search,         setSearch]         = useState('')
@@ -151,6 +155,8 @@ export default function Catalogo() {
     setSoloNegociados(false); setSearch('')
   }
   const hayFiltros = catFilters.size > 0 || provFilters.size > 0 || precioMin || precioMax || soloNegociados || search
+
+  useEffect(() => setCurrentPage(0), [catFilters, provFilters, search, soloNegociados, precioMin, precioMax, sortBy])
 
   const filtrados = useMemo(() => productos
     .filter(p => catFilters.size === 0 || catFilters.has(p.categoria))
@@ -273,11 +279,12 @@ export default function Catalogo() {
 
       {error && <div style={s.errorBanner}>{error}</div>}
 
-      {/* ── Toast ── */}
-      {toast && (
-        <div style={{ ...s.toast, ...(toast.ok ? s.toastOk : s.toastErr) }}>
-          {toast.ok ? '✓' : '✕'} {toast.msg}
-        </div>
+      {/* ── Toast (portal → fuera del árbol DOM del catálogo) ── */}
+      {toast && createPortal(
+        <div style={{ ...s.toast, background: toast.ok ? 'rgba(22,42,22,0.82)' : 'rgba(80,20,20,0.82)' }}>
+          {toast.msg}
+        </div>,
+        document.body
       )}
 
       {/* ── Main layout ── */}
@@ -319,7 +326,7 @@ export default function Catalogo() {
                 <input type="checkbox" style={s.check}
                   checked={soloNegociados}
                   onChange={e => setSoloNegociados(e.target.checked)} />
-                <span style={{ ...s.checkText, color: '#15803d', fontWeight: 700 }}>Solo precio negociado</span>
+                <span style={{ ...s.checkText, color: '#15803d', fontWeight: 700 }}>Solo negociado</span>
               </label>
             </div>
           )}
@@ -340,95 +347,138 @@ export default function Catalogo() {
         </aside>
 
         {/* ── Products area ── */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={s.resultsBar}>
-            <p style={s.resultsCount}>
-              {loading ? 'Cargando...' : `${filtrados.length} producto${filtrados.length !== 1 ? 's' : ''}`}
-              {hayFiltros && !loading && <span style={s.filteredLabel}> · filtrado</span>}
-            </p>
-            <select style={s.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-              <option value="nombre">Nombre A-Z</option>
-              <option value="precio-asc">Precio: menor a mayor</option>
-              <option value="precio-desc">Precio: mayor a menor</option>
-            </select>
-          </div>
-
-          <div style={s.pillRow}>
-            <button style={{ ...s.pill, ...(catFilters.size === 0 ? s.pillActive : {}) }}
-              onClick={() => setCatFilters(new Set())}>Todos</button>
-            {catNames.map((c, i) => {
-              const [c1] = CAT_GRADIENTS[i % CAT_GRADIENTS.length]
-              const active = catFilters.has(c)
-              return (
-                <button key={c}
-                  style={{ ...s.pill, ...(active ? { background: c1, color: '#fff', borderColor: c1 } : {}) }}
-                  onClick={() => { setCatFilters(new Set(active ? [] : [c])) }}>
-                  {c}
-                </button>
-              )
-            })}
-          </div>
-
-          {loading ? (
-            <div style={s.loadWrap}>
-              {[...Array(8)].map((_, i) => <div key={i} style={s.skeleton} />)}
+        <div style={s.productsCol}>
+          {/* controles fijos */}
+          <div style={s.productsHeader}>
+            <div style={s.resultsBar}>
+              <p style={s.resultsCount}>
+                {loading ? 'Cargando...' : `${filtrados.length} producto${filtrados.length !== 1 ? 's' : ''}`}
+                {hayFiltros && !loading && <span style={s.filteredLabel}> · filtrado</span>}
+              </p>
+              <select style={s.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                <option value="nombre">Nombre A-Z</option>
+                <option value="precio-asc">Precio: menor a mayor</option>
+                <option value="precio-desc">Precio: mayor a menor</option>
+              </select>
             </div>
-          ) : filtrados.length === 0 ? (
-            <div style={s.emptyWrap}>
-              <div style={s.emptyIcon}>🔍</div>
-              <p style={s.emptyTitle}>Sin resultados</p>
-              <p style={s.emptySub}>Prueba con otros términos o ajusta los filtros.</p>
-              {hayFiltros && <button style={s.emptyBtn} onClick={limpiarFiltros}>Limpiar filtros</button>}
-            </div>
-          ) : (
-            <div style={s.grid}>
-              {filtrados.map(p => {
-                const catIdx  = catNames.indexOf(p.categoria)
-                const [g1, g2] = CAT_GRADIENTS[catIdx % CAT_GRADIENTS.length]
-                const negociado = isEmpresa && tieneNegociado(p)
-                const precioEf  = getMejorPrecio(p)
-                const precioLista = Math.min(...p.ofertas.map(o => Number(o.precio)))
-
+            <div style={s.pillRow}>
+              <button style={{ ...s.pill, ...(catFilters.size === 0 ? s.pillActive : {}) }}
+                onClick={() => setCatFilters(new Set())}>Todos</button>
+              {catNames.map((c, i) => {
+                const [c1] = CAT_GRADIENTS[i % CAT_GRADIENTS.length]
+                const active = catFilters.has(c)
                 return (
-                  <div key={p.id} style={{ ...s.card, ...(negociado ? s.cardNeg : {}) }}
-                    onClick={() => setModal(p)}>
-                    <div style={{ ...s.imgArea, background: `linear-gradient(135deg, ${g1}, ${g2})` }}>
-                      <span style={s.imgLetter}>{p.nombre.charAt(0).toUpperCase()}</span>
-                      {negociado && <span style={s.negBadge}>✓ Negociado</span>}
-                      {p.sku && <span style={s.skuFloat}>{p.sku}</span>}
-                    </div>
-
-                    <div style={s.cardBody}>
-                      <span style={{ ...s.catPill, background: g1 + '18', color: g1 }}>{p.categoria}</span>
-                      <p style={s.cardNombre}>{p.nombre}</p>
-                      {p.descripcion && <p style={s.cardDesc}>{p.descripcion}</p>}
-
-                      <div style={s.priceRow}>
-                        <div>
-                          {negociado && precioEf < precioLista && (
-                            <p style={s.strikePrice}>{fmtMoney(precioLista)}</p>
-                          )}
-                          <p style={{ ...s.mainPrice, ...(negociado ? s.mainPriceNeg : {}) }}>
-                            {fmtMoney(precioEf)}
-                          </p>
-                          <p style={s.perUnit}>/ {p.unidad || 'unidad'}</p>
-                        </div>
-                        <div style={s.provBadge}>
-                          <span style={s.provCount}>{p.ofertas.length}</span>
-                          <span style={s.provLabel}>prov.</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button style={{ ...s.ctaBtn, ...(negociado ? s.ctaBtnNeg : {}) }}
-                      onClick={e => { e.stopPropagation(); setModal(p) }}>
-                      {negociado ? 'Ver precio negociado' : 'Ver proveedores'}
-                    </button>
-                  </div>
+                  <button key={c}
+                    style={{ ...s.pill, ...(active ? { background: c1, color: '#fff', borderColor: c1 } : {}) }}
+                    onClick={() => setCatFilters(new Set(active ? [] : [c]))}>
+                    {c}
+                  </button>
                 )
               })}
             </div>
-          )}
+          </div>
+
+          {/* grid scrolleable */}
+          <div style={s.productsScroll}>
+            {loading ? (
+              <div style={s.loadWrap}>
+                {[...Array(8)].map((_, i) => <div key={i} style={s.skeleton} />)}
+              </div>
+            ) : filtrados.length === 0 ? (
+              <div style={s.emptyWrap}>
+                <div style={s.emptyIcon}>🔍</div>
+                <p style={s.emptyTitle}>Sin resultados</p>
+                <p style={s.emptySub}>Prueba con otros términos o ajusta los filtros.</p>
+                {hayFiltros && <button style={s.emptyBtn} onClick={limpiarFiltros}>Limpiar filtros</button>}
+              </div>
+            ) : (
+              <>
+                <div style={s.grid}>
+                  {filtrados.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE).map(p => {
+                    const catIdx    = catNames.indexOf(p.categoria)
+                    const [g1, g2]  = CAT_GRADIENTS[catIdx % CAT_GRADIENTS.length]
+                    const negociado = isEmpresa && tieneNegociado(p)
+                    const precioEf  = getMejorPrecio(p)
+                    const precioLista = Math.min(...p.ofertas.map(o => Number(o.precio)))
+                    const bestOferta  = [...p.ofertas].sort((a, b) => {
+                      const ea = getPrecioEfectivo(p.id, a.proveedor?.id, a.precio)
+                      const eb = getPrecioEfectivo(p.id, b.proveedor?.id, b.precio)
+                      return (ea?.precio ?? Number(a.precio)) - (eb?.precio ?? Number(b.precio))
+                    })[0]
+                    const bestEf   = bestOferta ? getPrecioEfectivo(p.id, bestOferta.proveedor?.id, bestOferta.precio) : null
+                    const cartItem = cart.find(i => i.key === `${p.id}-${bestOferta?.proveedor?.id}`)
+                    const cartQty  = cartItem?.cantidad ?? 0
+
+                    return (
+                      <div key={p.id} style={{ ...s.card, ...(negociado ? s.cardNeg : {}) }}>
+                        <div style={{ ...s.imgArea, background: `linear-gradient(135deg, ${g1}, ${g2})` }}
+                          onClick={() => setModal(p)}>
+                          <span style={s.imgLetter}>{p.nombre.charAt(0).toUpperCase()}</span>
+                          {negociado && <span style={s.negBadge}>✓ Neg.</span>}
+                        </div>
+
+                        <div style={s.cardBody} onClick={() => setModal(p)}>
+                          <span style={{ ...s.catPill, background: g1 + '18', color: g1 }}>{p.categoria}</span>
+                          <p style={s.cardNombre}>{p.nombre}</p>
+
+                          <div style={s.priceRow}>
+                            <div>
+                              {negociado && precioEf < precioLista && (
+                                <p style={s.strikePrice}>{fmtMoney(precioLista)}</p>
+                              )}
+                              <p style={{ ...s.mainPrice, ...(negociado ? s.mainPriceNeg : {}) }}>
+                                {fmtMoney(precioEf)}
+                              </p>
+                              <p style={s.perUnit}>/ {p.unidad || 'unidad'}</p>
+                            </div>
+
+                            {isEmpresa && bestOferta && (
+                              <button
+                                style={{ ...s.ctaBtn, ...(negociado ? s.ctaBtnNeg : {}), ...(cartQty > 0 ? s.ctaBtnActive : {}) }}
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  addToCart({
+                                    key: `${p.id}-${bestOferta.proveedor?.id}`,
+                                    productId: p.id, productNombre: p.nombre,
+                                    productSku: p.sku, productUnidad: p.unidad,
+                                    proveedorId: bestOferta.proveedor?.id,
+                                    proveedorNombre: bestOferta.proveedor?.idEmpresa?.nombre ?? 'Proveedor',
+                                    precioBase: Number(bestOferta.precio),
+                                    precioEfectivo: bestEf?.precio ?? Number(bestOferta.precio),
+                                    descuento: bestEf?.descuento ?? 0,
+                                    cantidad: 1,
+                                  })
+                                }}>
+                                {cartQty > 0 ? cartQty : '+'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* ── Paginación ── */}
+                {filtrados.length > ITEMS_PER_PAGE && (
+                  <div style={s.pagination}>
+                    <button style={s.pageBtn} disabled={currentPage === 0}
+                      onClick={() => setCurrentPage(p => p - 1)}>‹</button>
+                    {Array.from({ length: Math.ceil(filtrados.length / ITEMS_PER_PAGE) }, (_, i) => (
+                      <button key={i}
+                        style={{ ...s.pageBtn, ...(i === currentPage ? s.pageBtnActive : {}) }}
+                        onClick={() => setCurrentPage(i)}>
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button style={s.pageBtn}
+                      disabled={currentPage >= Math.ceil(filtrados.length / ITEMS_PER_PAGE) - 1}
+                      onClick={() => setCurrentPage(p => p + 1)}>›</button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -464,78 +514,45 @@ export default function Catalogo() {
   )
 }
 
-/* ─── Cart Drawer ─────────────────────────────────────────────────────────── */
+/* ─── Cart Popup ─────────────────────────────────────────────────────────── */
 function CartDrawer({ cart, removeFromCart, updateCantidad, cartTotal, onClose, confirmarPedido, confirmando }) {
-  const provCount = Object.keys(cart.reduce((m, i) => ({ ...m, [i.proveedorId]: 1 }), {})).length
-
   return (
-    <>
-      <div style={s.cartOverlay} onClick={onClose} />
-      <div style={s.cartDrawer}>
-        <div style={s.cartDHead}>
-          <div>
-            <p style={s.cartDTitle}>Carrito de compras</p>
-            <p style={s.cartDSub}>{cart.length} producto{cart.length !== 1 ? 's' : ''} · {provCount} proveedor{provCount !== 1 ? 'es' : ''}</p>
-          </div>
-          <button style={s.cartDClose} onClick={onClose}>✕</button>
-        </div>
-
-        {cart.length === 0 ? (
-          <div style={s.cartDEmpty}>
-            <p style={{ fontSize: 44, margin: '0 0 12px' }}>🛒</p>
-            <p style={{ margin: '0 0 6px', fontWeight: 700, fontSize: 15, color: 'var(--c-text)' }}>Tu carrito está vacío</p>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--c-muted)' }}>Agrega productos desde el catálogo</p>
-          </div>
-        ) : (
-          <>
-            <div style={s.cartDItems}>
-              {cart.map(item => (
-                <div key={item.key} style={s.cartDItem}>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <div style={s.cartDAvatar}>{item.productNombre.charAt(0).toUpperCase()}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={s.cartDItemNombre}>{item.productNombre}</p>
-                      <p style={s.cartDItemProv}>{item.proveedorNombre}</p>
-                      {item.descuento > 0 && (
-                        <span style={s.cartDDiscount}>−{item.descuento}% negociado</span>
-                      )}
-                    </div>
-                    <button style={s.cartDRemove} onClick={() => removeFromCart(item.key)} title="Quitar">✕</button>
-                  </div>
-                  <div style={s.cartDItemFoot}>
-                    <div style={s.cartDStepper}>
-                      <button style={s.cartDStep} onClick={() => updateCantidad(item.key, -1)}>−</button>
-                      <span style={s.cartDQty}>{item.cantidad}</span>
-                      <button style={s.cartDStep} onClick={() => updateCantidad(item.key, +1)}>+</button>
-                      <span style={s.cartDUnit}>{item.productUnidad || 'und'}</span>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={s.cartDSubtotal}>{fmtMoney(item.precioEfectivo * item.cantidad)}</p>
-                      <p style={{ margin: 0, fontSize: 10, color: 'var(--c-muted)' }}>{fmtMoney(item.precioEfectivo)} × {item.cantidad}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={s.cartDFooter}>
-              <div style={s.cartDTotalRow}>
-                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--c-text)' }}>Total estimado</span>
-                <span style={s.cartDTotalAmt}>{fmtMoney(cartTotal)}</span>
-              </div>
-              {provCount > 1 && (
-                <p style={{ margin: '6px 0 12px', fontSize: 11, color: 'var(--c-muted)', textAlign: 'center' }}>
-                  Se generarán {provCount} órdenes (una por proveedor)
-                </p>
-              )}
-              <button style={s.cartDConfirm} onClick={confirmarPedido} disabled={confirmando}>
-                {confirmando ? 'Creando pedido...' : 'Confirmar pedido →'}
-              </button>
-            </div>
-          </>
-        )}
+    <div style={s.cartPopup}>
+      <div style={s.cartDHead}>
+        <span style={s.cartDTitle}>Carrito</span>
+        <button style={s.cartDClose} onClick={onClose}>✕</button>
       </div>
-    </>
+
+      {cart.length === 0 ? (
+        <p style={{ margin: '16px 0', fontSize: 13, color: 'var(--c-muted)', textAlign: 'center' }}>Vacío</p>
+      ) : (
+        <>
+          <div style={s.cartDItems}>
+            {cart.map(item => (
+              <div key={item.key} style={s.cartDItem}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={s.cartDItemNombre}>{item.productNombre}</p>
+                  <p style={s.cartDItemProv}>{item.proveedorNombre}</p>
+                </div>
+                <div style={s.cartDStepper}>
+                  <button style={s.cartDStep} onClick={() => updateCantidad(item.key, -1)}>−</button>
+                  <span style={s.cartDQty}>{item.cantidad}</span>
+                  <button style={s.cartDStep} onClick={() => updateCantidad(item.key, +1)}>+</button>
+                </div>
+                <button style={s.cartDRemove} onClick={() => removeFromCart(item.key)}>✕</button>
+              </div>
+            ))}
+          </div>
+          <div style={s.cartDFooter}>
+            <span style={{ fontSize: 13, color: 'var(--c-muted)' }}>Total</span>
+            <span style={s.cartDTotalAmt}>{fmtMoney(cartTotal)}</span>
+          </div>
+          <button style={s.cartDConfirm} onClick={confirmarPedido} disabled={confirmando}>
+            {confirmando ? 'Creando...' : 'Confirmar pedido →'}
+          </button>
+        </>
+      )}
+    </div>
   )
 }
 
@@ -588,7 +605,6 @@ function ProductModal({ product, onClose, catNames, getPrecioEfectivo, isEmpresa
         </div>
 
         <div style={s.modalBody}>
-          <p style={s.modalSection}>{ofertasEnrich.length} opción{ofertasEnrich.length !== 1 ? 'es' : ''} disponibles</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {ofertasEnrich.map((o, i) => {
               const nombre      = o.proveedor?.idEmpresa?.nombre ?? 'Proveedor'
@@ -713,13 +729,14 @@ const s = {
 
   errorBanner:   { background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 12 },
 
-  toast:         { position: 'fixed', bottom: 96, right: 24, padding: '12px 18px', borderRadius: 10, fontSize: 13, fontWeight: 600, zIndex: 2000, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', maxWidth: 340 },
-  toastOk:       { background: '#15803d', color: '#fff' },
-  toastErr:      { background: '#dc2626', color: '#fff' },
+  toast:         { position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', padding: '7px 18px', borderRadius: 20, fontSize: 12, fontWeight: 500, zIndex: 2000, color: '#fff', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', whiteSpace: 'nowrap', pointerEvents: 'none' },
 
-  layout:        { display: 'grid', gridTemplateColumns: '220px 1fr', gap: '1.5rem' },
+  layout:        { display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1.25rem', alignItems: 'start' },
 
-  sidebar:       { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, padding: '1.1rem', height: 'fit-content', position: 'sticky', top: 24, boxShadow: 'var(--c-shadow-sm)' },
+  sidebar:       { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 12, padding: '1rem', position: 'sticky', top: 16, maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto', boxShadow: '0 1px 4px rgba(6,23,93,0.06)' },
+  productsCol:   { display: 'flex', flexDirection: 'column', minWidth: 0 },
+  productsHeader:{ position: 'sticky', top: 0, background: 'var(--c-bg-page)', zIndex: 10, paddingBottom: 8 },
+  productsScroll:{ flex: 1 },
   sideHead:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
   sideTitle:     { fontSize: 14, fontWeight: 800, color: 'var(--c-text)' },
   clearFiltersBtn:{ background: 'none', border: 'none', color: 'var(--c-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 },
@@ -740,8 +757,8 @@ const s = {
   pill:          { padding: '5px 12px', border: '1.5px solid var(--c-border)', borderRadius: 20, fontSize: 11, fontWeight: 600, color: 'var(--c-muted)', background: 'var(--c-bg)', cursor: 'pointer', whiteSpace: 'nowrap' },
   pillActive:    { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
-  loadWrap:      { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' },
-  skeleton:      { height: 280, background: 'linear-gradient(90deg, var(--c-bg-page) 25%, var(--c-border) 50%, var(--c-bg-page) 75%)', borderRadius: 14, animation: 'pulse 1.5s ease-in-out infinite' },
+  loadWrap:      { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' },
+  skeleton:      { height: 180, background: 'linear-gradient(90deg, var(--c-bg-page) 25%, var(--c-border) 50%, var(--c-bg-page) 75%)', borderRadius: 12, animation: 'pulse 1.5s ease-in-out infinite' },
 
   emptyWrap:     { textAlign: 'center', padding: '4rem 2rem', background: 'var(--c-bg)', borderRadius: 14, border: '1px solid var(--c-border)' },
   emptyIcon:     { fontSize: 40, marginBottom: 12 },
@@ -749,57 +766,48 @@ const s = {
   emptySub:      { fontSize: 13, color: 'var(--c-muted)', marginBottom: 16 },
   emptyBtn:      { padding: '8px 20px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
 
-  grid:          { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' },
-  card:          { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform .15s, box-shadow .15s', boxShadow: '0 2px 8px rgba(6,23,93,0.05)' },
-  cardNeg:       { border: '1.5px solid #86efac', boxShadow: '0 4px 16px rgba(22,163,74,0.12)' },
-  imgArea:       { height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 },
-  imgLetter:     { fontSize: 48, fontWeight: 800, color: 'rgba(255,255,255,0.35)', userSelect: 'none' },
-  negBadge:      { position: 'absolute', top: 8, left: 8, background: '#16a34a', color: '#fff', fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 20 },
-  skuFloat:      { position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.35)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 20, fontFamily: 'monospace' },
-  cardBody:      { padding: '0.85rem', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 },
-  catPill:       { fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20, display: 'inline-block', textTransform: 'uppercase', letterSpacing: .4, alignSelf: 'flex-start' },
-  cardNombre:    { margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--c-text)', lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
-  cardDesc:      { margin: 0, fontSize: 11, color: 'var(--c-muted)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
-  priceRow:      { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' },
-  strikePrice:   { margin: 0, fontSize: 10, color: 'var(--c-muted)', textDecoration: 'line-through', lineHeight: 1 },
-  mainPrice:     { margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1 },
+  grid:          { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' },
+  card:          { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow .15s', boxShadow: '0 1px 4px rgba(6,23,93,0.06)' },
+  cardNeg:       { border: '1px solid #86efac' },
+  imgArea:       { height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 },
+  imgLetter:     { fontSize: 32, fontWeight: 800, color: 'rgba(255,255,255,0.3)', userSelect: 'none' },
+  negBadge:      { position: 'absolute', top: 6, left: 6, background: '#16a34a', color: '#fff', fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 20 },
+  cardBody:      { padding: '0.65rem 0.75rem', flex: 1, display: 'flex', flexDirection: 'column', gap: 4 },
+  catPill:       { fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 20, display: 'inline-block', textTransform: 'uppercase', letterSpacing: .3, alignSelf: 'flex-start' },
+  cardNombre:    { margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--c-text)', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  priceRow:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: 4 },
+  strikePrice:   { margin: 0, fontSize: 9, color: 'var(--c-muted)', textDecoration: 'line-through', lineHeight: 1 },
+  mainPrice:     { margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--c-primary)', lineHeight: 1 },
   mainPriceNeg:  { color: '#15803d' },
-  perUnit:       { margin: 0, fontSize: 10, color: 'var(--c-muted)' },
-  provBadge:     { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--c-primary-light)', borderRadius: 8, padding: '4px 8px', flexShrink: 0 },
-  provCount:     { fontSize: 14, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1 },
-  provLabel:     { fontSize: 9, color: 'var(--c-muted)', fontWeight: 600 },
-  ctaBtn:        { margin: '0 0.85rem 0.85rem', padding: '8px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'center' },
+  perUnit:       { margin: 0, fontSize: 9, color: 'var(--c-muted)' },
+  ctaBtn:        { minWidth: 24, height: 24, borderRadius: 12, background: 'var(--c-primary)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, lineHeight: 1, padding: '0 6px' },
   ctaBtnNeg:     { background: '#15803d' },
+  ctaBtnActive:  { background: '#1e40af', minWidth: 28 },
+
+  pagination:    { display: 'flex', justifyContent: 'center', gap: 4, marginTop: '1.25rem', paddingBottom: '0.5rem' },
+  pageBtn:       { minWidth: 30, height: 30, borderRadius: 8, border: '1px solid var(--c-border)', background: 'var(--c-bg)', color: 'var(--c-text)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  pageBtnActive: { background: 'var(--c-primary)', color: '#fff', borderColor: 'var(--c-primary)' },
 
   // ── Cart FAB ──
-  cartFab:       { position: 'fixed', bottom: 28, right: 28, width: 56, height: 56, borderRadius: '50%', background: 'var(--c-primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(6,23,93,0.35)', zIndex: 900 },
-  cartFabBadge:  { position: 'absolute', top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', border: '2px solid var(--c-bg)' },
+  cartFab:       { position: 'fixed', bottom: 28, right: 28, width: 52, height: 52, borderRadius: '50%', background: 'var(--c-primary)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(6,23,93,0.3)', zIndex: 900 },
+  cartFabBadge:  { position: 'absolute', top: -3, right: -3, minWidth: 18, height: 18, borderRadius: 9, background: '#ef4444', color: '#fff', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', border: '2px solid var(--c-bg)' },
 
-  // ── Cart Drawer ──
-  cartOverlay:   { position: 'fixed', inset: 0, background: 'rgba(6,23,93,0.35)', zIndex: 950 },
-  cartDrawer:    { position: 'fixed', top: 0, right: 0, bottom: 0, width: 380, maxWidth: '90vw', background: 'var(--c-bg)', zIndex: 960, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 32px rgba(6,23,93,0.2)' },
-  cartDHead:     { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '1.25rem 1.25rem 1rem', borderBottom: '1px solid var(--c-border)' },
-  cartDTitle:    { margin: '0 0 2px', fontWeight: 800, fontSize: 16, color: 'var(--c-text)' },
-  cartDSub:      { margin: 0, fontSize: 12, color: 'var(--c-muted)' },
-  cartDClose:    { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 18, padding: '0 0 0 8px', lineHeight: 1 },
-  cartDEmpty:    { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' },
-  cartDItems:    { flex: 1, overflowY: 'auto', padding: '0.75rem 1rem' },
-  cartDItem:     { background: 'var(--c-bg-page)', border: '1px solid var(--c-border)', borderRadius: 12, padding: '0.85rem', marginBottom: '0.75rem', display: 'flex', flexDirection: 'column', gap: 10 },
-  cartDAvatar:   { width: 38, height: 38, borderRadius: 10, background: 'var(--c-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, flexShrink: 0 },
-  cartDItemNombre:{ margin: '0 0 2px', fontWeight: 700, fontSize: 13, color: 'var(--c-text)', lineHeight: 1.3 },
-  cartDItemProv: { margin: 0, fontSize: 11, color: 'var(--c-muted)' },
-  cartDDiscount: { fontSize: 10, fontWeight: 700, color: '#15803d', background: '#dcfce7', borderRadius: 20, padding: '2px 8px', display: 'inline-block', marginTop: 3 },
-  cartDRemove:   { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 13, padding: 2, lineHeight: 1, flexShrink: 0 },
-  cartDItemFoot: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  cartDStepper:  { display: 'flex', alignItems: 'center', gap: 6 },
-  cartDStep:     { width: 28, height: 28, borderRadius: 8, border: '1.5px solid var(--c-border)', background: 'var(--c-bg)', color: 'var(--c-text)', fontWeight: 700, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 },
-  cartDQty:      { minWidth: 28, textAlign: 'center', fontWeight: 700, fontSize: 14, color: 'var(--c-text)' },
-  cartDUnit:     { fontSize: 11, color: 'var(--c-muted)' },
-  cartDSubtotal: { margin: 0, fontWeight: 800, fontSize: 14, color: 'var(--c-primary)' },
-  cartDFooter:   { borderTop: '1px solid var(--c-border)', padding: '1rem 1.25rem', background: 'var(--c-bg)' },
-  cartDTotalRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cartDTotalAmt: { fontWeight: 800, fontSize: 20, color: 'var(--c-primary)' },
-  cartDConfirm:  { width: '100%', padding: '13px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer' },
+  // ── Cart Popup ──
+  cartPopup:     { position: 'fixed', bottom: 90, right: 28, width: 290, background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 14, boxShadow: '0 8px 32px rgba(6,23,93,0.18)', zIndex: 960, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '60vh' },
+  cartDHead:     { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  cartDTitle:    { margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--c-text)' },
+  cartDClose:    { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 15, padding: 0, lineHeight: 1 },
+  cartDItems:    { overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 },
+  cartDItem:     { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--c-border-light)' },
+  cartDItemNombre:{ margin: 0, fontWeight: 600, fontSize: 12, color: 'var(--c-text)', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  cartDItemProv: { margin: 0, fontSize: 10, color: 'var(--c-muted)' },
+  cartDRemove:   { background: 'none', border: 'none', color: 'var(--c-muted)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1, flexShrink: 0 },
+  cartDStepper:  { display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 },
+  cartDStep:     { width: 22, height: 22, borderRadius: 6, border: '1px solid var(--c-border)', background: 'var(--c-bg-page)', color: 'var(--c-text)', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, padding: 0 },
+  cartDQty:      { minWidth: 22, textAlign: 'center', fontWeight: 700, fontSize: 12, color: 'var(--c-text)' },
+  cartDFooter:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTop: '1px solid var(--c-border)' },
+  cartDTotalAmt: { fontWeight: 800, fontSize: 15, color: 'var(--c-primary)' },
+  cartDConfirm:  { width: '100%', padding: '10px', background: 'var(--c-primary)', color: '#fff', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
 
   // ── Modal ──
   overlay:       { position: 'fixed', inset: 0, background: 'rgba(6,23,93,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' },
