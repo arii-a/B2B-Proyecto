@@ -150,6 +150,23 @@ public class EmailService {
     }
 
     @Async("taskLog")
+    public void sendPedidoCancelado(String to) {
+        try {
+            MimeMessagePreparator messagePreparator = mimeMessage -> {
+                MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+                messageHelper.setTo(to);
+                messageHelper.setFrom(new InternetAddress(mailFrom));
+                messageHelper.setSubject("Pregunta 6-A");
+                messageHelper.setText("Pedido Cancelado", false);
+            };
+            javaMailSender.send(messagePreparator);
+            log.info("[EMAIL] Notificación de pedido cancelado enviada a {}", to);
+        } catch (Exception e) {
+            log.error("[EMAIL] Error al enviar notificación de cancelación a {}: {}", to, e.getMessage(), e);
+        }
+    }
+
+    @Async("taskLog")
     public void sendSolicitudProveedor(String adminEmail, String empresaNombre, String logoUrl, String nit) {
         try {
             log.info("[EMAIL] Enviando notificación de solicitud proveedor a {} para empresa {}", adminEmail, empresaNombre);

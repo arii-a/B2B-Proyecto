@@ -1,0 +1,1869 @@
+{
+  "v": 2,
+  "name": "B2B Proyecto",
+  "folders": [
+    {
+      "v": 2,
+      "name": "Auth",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "Login",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/auth/login",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"email\": \"user@example.com\",\n  \"passwordHash\": \"secret\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Register",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/auth/register",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"empresa\": {\n    \"nombre\": \"Acme Corp\",\n    \"razonSocial\": \"Acme Corp S.A.\",\n    \"nit\": \"123456789\",\n    \"dominio\": \"acme.com\",\n    \"logoUrl\": \"\"\n  },\n  \"contacto\": {\n    \"nombres\": \"Juan\",\n    \"apellidos\": \"Pérez\"\n  },\n  \"sucursal\": {\n    \"nombre\": \"Central\",\n    \"direccion\": \"Av. Principal 123\"\n  },\n  \"usuario\": {\n    \"nombre\": \"Juan Pérez\",\n    \"email\": \"juan@acme.com\",\n    \"password\": \"secret\"\n  }\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Password Reset – Request",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/auth/password-reset/request",
+          "headers": [],
+          "params": [{ "key": "email", "value": "user@example.com", "active": true }],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Password Reset – Confirm",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/auth/password-reset/confirm",
+          "headers": [],
+          "params": [
+            { "key": "email", "value": "user@example.com", "active": true },
+            { "key": "code", "value": "123456", "active": true },
+            { "key": "newPassword", "value": "newSecret", "active": true }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Usuarios",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Usuarios (paged)",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/usuarios",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [
+            { "key": "page", "value": "0", "active": true },
+            { "key": "size", "value": "10", "active": true },
+            { "key": "sortBy", "value": "createdDate", "active": true },
+            { "key": "sortDir", "value": "DESC", "active": true },
+            { "key": "from", "value": "2024-01-01", "active": false },
+            { "key": "to", "value": "2024-12-31", "active": false }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Usuario",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/usuarios",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"secret\",\n  \"activo\": true,\n  \"avatarUrl\": \"\",\n  \"idEmpresa\": \"<<uuid>>\",\n  \"idSucursal\": \"<<uuid>>\",\n  \"idRol\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Usuario",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/usuarios/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"secret\",\n  \"activo\": true,\n  \"avatarUrl\": \"\",\n  \"idEmpresa\": \"<<uuid>>\",\n  \"idSucursal\": \"<<uuid>>\",\n  \"idRol\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Password Recovery Info",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/usuarios/password-recovery",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Empresas",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Empresas (paged)",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/empresas",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [
+            { "key": "page", "value": "0", "active": true },
+            { "key": "size", "value": "10", "active": true },
+            { "key": "sortBy", "value": "nombre", "active": true }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Empresa",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/empresas",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Acme Corp\",\n  \"dominio\": \"acme.com\",\n  \"activo\": true,\n  \"nit\": \"123456789\",\n  \"razonSocial\": \"Acme Corp S.A.\",\n  \"logoUrl\": \"\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Empresa",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/empresas/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Acme Corp\",\n  \"dominio\": \"acme.com\",\n  \"activo\": true,\n  \"nit\": \"123456789\",\n  \"razonSocial\": \"Acme Corp S.A.\",\n  \"logoUrl\": \"\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Empresa",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/empresas/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Examen (POST)",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/empresas/examen",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "\"payload\""
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Sucursales de Empresa",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Sucursales",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/sucursales-empresa",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Sucursal",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/sucursales-empresa",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Sucursal Central\",\n  \"direccion\": \"Av. Principal 123\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idEmpresa\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Sucursal",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/sucursales-empresa/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Sucursal Central\",\n  \"direccion\": \"Av. Principal 123\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idEmpresa\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Sucursal",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/sucursales-empresa/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Proveedores",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Proveedores",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/proveedores",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Proveedor",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/proveedores/<<id_empresa>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"activo\": true,\n  \"urlMatricula\": \"\",\n  \"urlCiFrontal\": \"\",\n  \"urlCiReverso\": \"\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Proveedor",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/proveedores/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"activo\": true,\n  \"urlMatricula\": \"\",\n  \"urlCiFrontal\": \"\",\n  \"urlCiReverso\": \"\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Proveedor",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/proveedores/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Categorías de Proveedor",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Categorías Proveedor",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/categorias-proveedor",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Categoría Proveedor",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/categorias-proveedor",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"idCategoria\": \"<<uuid>>\",\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Productos",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Productos",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/products",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "List Productos (paged)",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/products/paged",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [
+            { "key": "page", "value": "0", "active": true },
+            { "key": "size", "value": "10", "active": true }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "List Productos by Proveedor",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/products/proveedor/<<idProveedor>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Producto",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/products",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"sku\": \"PROD-001\",\n  \"nombre\": \"Producto Ejemplo\",\n  \"descripcion\": \"Descripción del producto\",\n  \"idUnidadMedida\": \"<<uuid>>\",\n  \"activo\": true,\n  \"idCategoria\": \"<<uuid>>\",\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Producto",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/products/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"sku\": \"PROD-001\",\n  \"nombre\": \"Producto Ejemplo\",\n  \"descripcion\": \"Descripción del producto\",\n  \"idUnidadMedida\": \"<<uuid>>\",\n  \"activo\": true,\n  \"idCategoria\": \"<<uuid>>\",\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Producto",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/products/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Categorías",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Categorías",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/categorias",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Categoría",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/categorias",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Electrónica\",\n  \"descripcion\": \"Productos electrónicos\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Categoría",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/categorias/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Electrónica\",\n  \"descripcion\": \"Productos electrónicos\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Categoría",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/categorias/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Unidades de Medida",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Unidades",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/unidades-medida",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "List Unidades Activas",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/unidades-medida/activas",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Unidad",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/unidades-medida",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Kilogramo\",\n  \"abreviatura\": \"kg\",\n  \"activo\": true\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Unidad",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/unidades-medida/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Kilogramo\",\n  \"abreviatura\": \"kg\",\n  \"activo\": true\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Unidad",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/unidades-medida/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Almacenes",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Almacenes",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/almacenes",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Almacen",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/almacenes",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Almacén Norte\",\n  \"direccion\": \"Calle Norte 456\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Almacen",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/almacenes/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Almacén Norte\",\n  \"direccion\": \"Calle Norte 456\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Almacen",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/almacenes/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Producto–Almacén",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Producto-Almacen",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/producto-almacen",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "List by Almacen",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/producto-almacen/almacen/<<idAlmacen>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Producto-Almacen",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/producto-almacen",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"idAlmacen\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\",\n  \"stock\": 100,\n  \"max\": 500.00,\n  \"min\": 10.00,\n  \"activo\": true\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Producto-Almacen",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/producto-almacen/<<idAlmacen>>/<<idProducto>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"idAlmacen\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\",\n  \"stock\": 100,\n  \"max\": 500.00,\n  \"min\": 10.00,\n  \"activo\": true\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Producto-Almacen",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/producto-almacen/<<idAlmacen>>/<<idProducto>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Precios Base",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Precios Base",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/precios-base",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Precio Base",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/precios-base",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"precioBase\": 99.99,\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Precio Base",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/precios-base/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"precioBase\": 99.99,\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Precio Base",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/precios-base/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Contratos – Tarifa",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Contratos Tarifa",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-tarifa",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "List Contratos Tarifa (paged)",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-tarifa/paged",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [
+            { "key": "page", "value": "0", "active": true },
+            { "key": "size", "value": "10", "active": true }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Contrato Tarifa",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-tarifa",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"activo\": true,\n  \"idEmpresa\": \"<<uuid>>\",\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Contrato Tarifa",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-tarifa/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"activo\": true,\n  \"idEmpresa\": \"<<uuid>>\",\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Contrato Tarifa",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-tarifa/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Contratos – Detalle",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Contratos Detalle",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-detalle",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Contrato Detalle",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-detalle",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"porcentajeDescuento\": 10.00,\n  \"montoFijo\": 0.00,\n  \"idProducto\": \"<<uuid>>\",\n  \"idContrato\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Contrato Detalle",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-detalle/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"porcentajeDescuento\": 10.00,\n  \"montoFijo\": 0.00,\n  \"idProducto\": \"<<uuid>>\",\n  \"idContrato\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Contrato Detalle",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/contratos-detalle/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Tramos de Tarifa",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Tramos Tarifa",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/tramos-tarifa",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Tramo Tarifa",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/tramos-tarifa",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"tipo\": \"VOLUMEN\",\n  \"cantidadMinima\": 1.00,\n  \"cantidadMaxima\": 100.00,\n  \"porcentajeDesc\": 5.00,\n  \"tipoDescuento\": \"PORCENTAJE\",\n  \"montoFijo\": 0.00,\n  \"idContrato\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Tramo Tarifa",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/tramos-tarifa/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"tipo\": \"VOLUMEN\",\n  \"cantidadMinima\": 1.00,\n  \"cantidadMaxima\": 100.00,\n  \"porcentajeDesc\": 5.00,\n  \"tipoDescuento\": \"PORCENTAJE\",\n  \"montoFijo\": 0.00,\n  \"idContrato\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Tramo Tarifa",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/tramos-tarifa/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Comisiones",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Comisiones",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/comisiones",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Comision",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/comisiones",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"montoComision\": 50.00,\n  \"montoProveedor\": 450.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"idDetalleOrden\": \"<<uuid>>\",\n  \"idProveedor\": \"<<uuid>>\",\n  \"idReglaComision\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Comision",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/comisiones/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"montoComision\": 50.00,\n  \"montoProveedor\": 450.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"idDetalleOrden\": \"<<uuid>>\",\n  \"idProveedor\": \"<<uuid>>\",\n  \"idReglaComision\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Comision",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/comisiones/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Reglas de Comisión",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Reglas Comision",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/reglas-comision",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Regla Comision",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/reglas-comision",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Comisión estándar\",\n  \"idTipo\": \"PORCENTAJE\",\n  \"valor\": 10.00,\n  \"activa\": true,\n  \"fechaInicio\": \"2024-01-01T00:00:00Z\",\n  \"fechaFinal\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Regla Comision",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/reglas-comision/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Comisión estándar\",\n  \"idTipo\": \"PORCENTAJE\",\n  \"valor\": 10.00,\n  \"activa\": true,\n  \"fechaInicio\": \"2024-01-01T00:00:00Z\",\n  \"fechaFinal\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Regla Comision",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/reglas-comision/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Roles de Usuario",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Roles",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/roles",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Rol",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/roles",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"ADMIN\",\n  \"descripcion\": \"Administrador del sistema\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Rol",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/roles/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"ADMIN\",\n  \"descripcion\": \"Administrador del sistema\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Rol",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/roles/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Cargos de Empresa",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Cargos",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/cargos-empresa",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Cargo",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/cargos-empresa",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Gerente de Compras\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Cargo",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/cargos-empresa/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Gerente de Compras\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Cargo",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/cargos-empresa/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Contactos de Empresa",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Contactos",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/contactos-empresa",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Contacto",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/contactos-empresa",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombres\": \"María\",\n  \"apellidos\": \"García\",\n  \"telefono\": \"+591 70000000\",\n  \"idCargoEmpresa\": \"<<uuid>>\",\n  \"idEmpresa\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Contacto",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/contactos-empresa/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombres\": \"María\",\n  \"apellidos\": \"García\",\n  \"telefono\": \"+591 70000000\",\n  \"idCargoEmpresa\": \"<<uuid>>\",\n  \"idEmpresa\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Contacto",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/contactos-empresa/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Órdenes de Compra",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Órdenes",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/ordenes-compra",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "List Órdenes (paged)",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/ordenes-compra/paged",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [
+            { "key": "page", "value": "0", "active": true },
+            { "key": "size", "value": "10", "active": true }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Orden",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/ordenes-compra",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"total\": 1500.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"fechaOrden\": \"2024-06-01\",\n  \"idEstado\": \"PENDIENTE\",\n  \"idProveedor\": \"<<uuid>>\",\n  \"idEmpresaCompradora\": \"<<uuid>>\",\n  \"idSucursal\": \"<<uuid>>\",\n  \"idUsuario\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Orden",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/ordenes-compra/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"total\": 1500.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"fechaOrden\": \"2024-06-01\",\n  \"idEstado\": \"PENDIENTE\",\n  \"idProveedor\": \"<<uuid>>\",\n  \"idEmpresaCompradora\": \"<<uuid>>\",\n  \"idSucursal\": \"<<uuid>>\",\n  \"idUsuario\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Orden",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/ordenes-compra/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Detalle de Orden",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Detalles Orden",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-orden",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Detalle Orden",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-orden",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idOrden\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\",\n  \"idAlmacen\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Detalle Orden",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-orden/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idOrden\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\",\n  \"idAlmacen\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Detalle Orden",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-orden/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Facturas",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Facturas",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/facturas",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "List Facturas (paged)",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/facturas/paged",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [
+            { "key": "page", "value": "0", "active": true },
+            { "key": "size", "value": "10", "active": true }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Factura",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/facturas",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"total\": 1500.00,\n  \"idEstado\": \"EMITIDA\",\n  \"idOrden\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Factura",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/facturas/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"total\": 1500.00,\n  \"idEstado\": \"EMITIDA\",\n  \"idOrden\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Factura",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/facturas/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Detalle de Factura",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Detalles Factura",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-factura",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create Detalle Factura",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-factura",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idFactura\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Update Detalle Factura",
+          "method": "PUT",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-factura/<<id>>",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idFactura\": \"<<uuid>>\",\n  \"idProducto\": \"<<uuid>>\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete Detalle Factura",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/detalle-factura/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Pagos – Stereum",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "Crear Cobro (Stereum)",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/stereum/charge",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"amount\": 1500.00,\n  \"currency\": \"BOB\",\n  \"description\": \"Orden de compra #001\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Outbound Webhook (Stereum)",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/stereum/outbound",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json", "active": true },
+            { "key": "X-Signature", "value": "<<signature>>", "active": true },
+            { "key": "X-Timestamp", "value": "<<timestamp>>", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "\"webhook-payload\""
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Crear Cobro (legacy)",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/pagos/crear-cobro",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"amount\": 1500.00,\n  \"currency\": \"BOB\",\n  \"description\": \"Cobro de prueba\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "API Keys",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List API Keys",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/api-keys",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Create API Key",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/api-keys",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"nombre\": \"Mi API Key\",\n  \"expiresAt\": \"2025-12-31T23:59:59\"\n}"
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        },
+        {
+          "v": "1",
+          "name": "Delete API Key",
+          "method": "DELETE",
+          "endpoint": "<<baseUrl>>/api/v1/api-keys/<<id>>",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Logs",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "List Logs (paged)",
+          "method": "GET",
+          "endpoint": "<<baseUrl>>/api/v1/logs",
+          "headers": [{ "key": "Authorization", "value": "Bearer <<token>>", "active": true }],
+          "params": [
+            { "key": "page", "value": "0", "active": true },
+            { "key": "size", "value": "10", "active": true },
+            { "key": "sortBy", "value": "createdDate", "active": true },
+            { "key": "sortDir", "value": "DESC", "active": true },
+            { "key": "from", "value": "2024-01-01", "active": false },
+            { "key": "to", "value": "2024-12-31", "active": false }
+          ],
+          "body": { "contentType": null, "body": null },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    },
+    {
+      "v": 2,
+      "name": "Upload",
+      "folders": [],
+      "requests": [
+        {
+          "v": "1",
+          "name": "Upload File",
+          "method": "POST",
+          "endpoint": "<<baseUrl>>/api/v1/upload",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <<token>>", "active": true }
+          ],
+          "params": [],
+          "body": {
+            "contentType": "multipart/form-data",
+            "body": [{ "key": "file", "value": "", "active": true }]
+          },
+          "auth": { "authType": "none" },
+          "preRequestScript": "",
+          "testScript": ""
+        }
+      ]
+    }
+  ],
+  "requests": []
+}

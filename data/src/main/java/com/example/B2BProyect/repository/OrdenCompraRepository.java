@@ -66,4 +66,14 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, UUID> 
             @Param("pInit") LocalDateTime pInit,
             @Param("pEnd") LocalDateTime pEnd,
             Pageable pageable);
+
+    @Query("SELECT o FROM OrdenCompra o WHERE o.idEstado <> 'pagado' AND o.idEstado <> 'cancelado' AND o.createdDate < (CURRENT_TIMESTAMP - 1 minute)")
+    List<OrdenCompra> findUnpaidOrders();
 }
+
+// You know what I've noticed.
+// My back kinda starts hurting during tests like these.
+// I should get that checked out
+// I believe It's got something to do with my back and neck muscles.
+// I'll ask chadgpt after the test
+//

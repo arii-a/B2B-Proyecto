@@ -1,0 +1,1146 @@
+{
+  "info": {
+    "name": "B2B Proyecto",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "token",   "value": "",                      "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"passwordHash\": \"secret\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"empresa\": {\n    \"nombre\": \"Acme Corp\",\n    \"razonSocial\": \"Acme Corp S.A.\",\n    \"nit\": \"123456789\",\n    \"dominio\": \"acme.com\",\n    \"logoUrl\": \"\"\n  },\n  \"contacto\": {\n    \"nombres\": \"Juan\",\n    \"apellidos\": \"Pérez\"\n  },\n  \"sucursal\": {\n    \"nombre\": \"Central\",\n    \"direccion\": \"Av. Principal 123\"\n  },\n  \"usuario\": {\n    \"nombre\": \"Juan Pérez\",\n    \"email\": \"juan@acme.com\",\n    \"password\": \"secret\"\n  }\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Password Reset – Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/password-reset/request?email=user@example.com",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","auth","password-reset","request"],
+              "query": [{ "key": "email", "value": "user@example.com" }]
+            }
+          }
+        },
+        {
+          "name": "Password Reset – Confirm",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/password-reset/confirm?email=user@example.com&code=123456&newPassword=newSecret",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","auth","password-reset","confirm"],
+              "query": [
+                { "key": "email",       "value": "user@example.com" },
+                { "key": "code",        "value": "123456" },
+                { "key": "newPassword", "value": "newSecret" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "List Usuarios (paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios?page=0&size=10&sortBy=createdDate&sortDir=DESC",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","usuarios"],
+              "query": [
+                { "key": "page",    "value": "0" },
+                { "key": "size",    "value": "10" },
+                { "key": "sortBy",  "value": "createdDate" },
+                { "key": "sortDir", "value": "DESC" },
+                { "key": "from",    "value": "2024-01-01", "disabled": true },
+                { "key": "to",      "value": "2024-12-31", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/usuarios", "host": ["{{baseUrl}}"], "path": ["api","v1","usuarios"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"secret\",\n  \"activo\": true,\n  \"avatarUrl\": \"\",\n  \"idEmpresa\": \"{{uuid}}\",\n  \"idSucursal\": \"{{uuid}}\",\n  \"idRol\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/usuarios/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","usuarios",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"secret\",\n  \"activo\": true,\n  \"avatarUrl\": \"\",\n  \"idEmpresa\": \"{{uuid}}\",\n  \"idSucursal\": \"{{uuid}}\",\n  \"idRol\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Password Recovery Info",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/usuarios/password-recovery", "host": ["{{baseUrl}}"], "path": ["api","v1","usuarios","password-recovery"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Empresas",
+      "item": [
+        {
+          "name": "List Empresas (paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empresas?page=0&size=10&sortBy=nombre",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","empresas"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }, { "key": "sortBy", "value": "nombre" }]
+            }
+          }
+        },
+        {
+          "name": "Create Empresa",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/empresas", "host": ["{{baseUrl}}"], "path": ["api","v1","empresas"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Acme Corp\",\n  \"dominio\": \"acme.com\",\n  \"activo\": true,\n  \"nit\": \"123456789\",\n  \"razonSocial\": \"Acme Corp S.A.\",\n  \"logoUrl\": \"\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Empresa",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/empresas/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","empresas",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Acme Corp\",\n  \"dominio\": \"acme.com\",\n  \"activo\": true,\n  \"nit\": \"123456789\",\n  \"razonSocial\": \"Acme Corp S.A.\",\n  \"logoUrl\": \"\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Empresa",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/empresas/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","empresas",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "Examen (POST)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/empresas/examen", "host": ["{{baseUrl}}"], "path": ["api","v1","empresas","examen"] },
+            "body": { "mode": "raw", "raw": "\"payload\"", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sucursales de Empresa",
+      "item": [
+        {
+          "name": "List Sucursales",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/sucursales-empresa", "host": ["{{baseUrl}}"], "path": ["api","v1","sucursales-empresa"] }
+          }
+        },
+        {
+          "name": "Create Sucursal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/sucursales-empresa", "host": ["{{baseUrl}}"], "path": ["api","v1","sucursales-empresa"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sucursal Central\",\n  \"direccion\": \"Av. Principal 123\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idEmpresa\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Sucursal",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/sucursales-empresa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","sucursales-empresa",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sucursal Central\",\n  \"direccion\": \"Av. Principal 123\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idEmpresa\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Sucursal",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/sucursales-empresa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","sucursales-empresa",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Proveedores",
+      "item": [
+        {
+          "name": "List Proveedores",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/proveedores", "host": ["{{baseUrl}}"], "path": ["api","v1","proveedores"] }
+          }
+        },
+        {
+          "name": "Create Proveedor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/proveedores/:id_empresa", "host": ["{{baseUrl}}"], "path": ["api","v1","proveedores",":id_empresa"], "variable": [{ "key": "id_empresa", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"activo\": true,\n  \"urlMatricula\": \"\",\n  \"urlCiFrontal\": \"\",\n  \"urlCiReverso\": \"\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Proveedor",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/proveedores/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","proveedores",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"activo\": true,\n  \"urlMatricula\": \"\",\n  \"urlCiFrontal\": \"\",\n  \"urlCiReverso\": \"\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Proveedor",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/proveedores/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","proveedores",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorías de Proveedor",
+      "item": [
+        {
+          "name": "List Categorías Proveedor",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categorias-proveedor", "host": ["{{baseUrl}}"], "path": ["api","v1","categorias-proveedor"] }
+          }
+        },
+        {
+          "name": "Create Categoría Proveedor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categorias-proveedor", "host": ["{{baseUrl}}"], "path": ["api","v1","categorias-proveedor"] },
+            "body": { "mode": "raw", "raw": "{\n  \"idCategoria\": \"{{uuid}}\",\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "List Productos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/products", "host": ["{{baseUrl}}"], "path": ["api","v1","products"] }
+          }
+        },
+        {
+          "name": "List Productos (paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/paged?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","products","paged"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "List Productos by Proveedor",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/products/proveedor/:idProveedor", "host": ["{{baseUrl}}"], "path": ["api","v1","products","proveedor",":idProveedor"], "variable": [{ "key": "idProveedor", "value": "" }] }
+          }
+        },
+        {
+          "name": "Create Producto",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/products", "host": ["{{baseUrl}}"], "path": ["api","v1","products"] },
+            "body": { "mode": "raw", "raw": "{\n  \"sku\": \"PROD-001\",\n  \"nombre\": \"Producto Ejemplo\",\n  \"descripcion\": \"Descripción del producto\",\n  \"idUnidadMedida\": \"{{uuid}}\",\n  \"activo\": true,\n  \"idCategoria\": \"{{uuid}}\",\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Producto",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/products/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","products",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"sku\": \"PROD-001\",\n  \"nombre\": \"Producto Ejemplo\",\n  \"descripcion\": \"Descripción del producto\",\n  \"idUnidadMedida\": \"{{uuid}}\",\n  \"activo\": true,\n  \"idCategoria\": \"{{uuid}}\",\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Producto",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/products/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","products",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorías",
+      "item": [
+        {
+          "name": "List Categorías",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categorias", "host": ["{{baseUrl}}"], "path": ["api","v1","categorias"] }
+          }
+        },
+        {
+          "name": "Create Categoría",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categorias", "host": ["{{baseUrl}}"], "path": ["api","v1","categorias"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Electrónica\",\n  \"descripcion\": \"Productos electrónicos\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Categoría",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categorias/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","categorias",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Electrónica\",\n  \"descripcion\": \"Productos electrónicos\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Categoría",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categorias/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","categorias",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unidades de Medida",
+      "item": [
+        {
+          "name": "List Unidades",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/unidades-medida", "host": ["{{baseUrl}}"], "path": ["api","v1","unidades-medida"] }
+          }
+        },
+        {
+          "name": "List Unidades Activas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/unidades-medida/activas", "host": ["{{baseUrl}}"], "path": ["api","v1","unidades-medida","activas"] }
+          }
+        },
+        {
+          "name": "Create Unidad",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/unidades-medida", "host": ["{{baseUrl}}"], "path": ["api","v1","unidades-medida"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Kilogramo\",\n  \"abreviatura\": \"kg\",\n  \"activo\": true\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Unidad",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/unidades-medida/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","unidades-medida",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Kilogramo\",\n  \"abreviatura\": \"kg\",\n  \"activo\": true\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Unidad",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/unidades-medida/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","unidades-medida",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Almacenes",
+      "item": [
+        {
+          "name": "List Almacenes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/almacenes", "host": ["{{baseUrl}}"], "path": ["api","v1","almacenes"] }
+          }
+        },
+        {
+          "name": "Create Almacen",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/almacenes", "host": ["{{baseUrl}}"], "path": ["api","v1","almacenes"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Almacén Norte\",\n  \"direccion\": \"Calle Norte 456\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Almacen",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/almacenes/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","almacenes",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Almacén Norte\",\n  \"direccion\": \"Calle Norte 456\",\n  \"coordenadas\": \"-17.3895, -66.1568\",\n  \"activo\": true,\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Almacen",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/almacenes/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","almacenes",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Producto–Almacén",
+      "item": [
+        {
+          "name": "List Producto-Almacen",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/producto-almacen", "host": ["{{baseUrl}}"], "path": ["api","v1","producto-almacen"] }
+          }
+        },
+        {
+          "name": "List by Almacen",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/producto-almacen/almacen/:idAlmacen", "host": ["{{baseUrl}}"], "path": ["api","v1","producto-almacen","almacen",":idAlmacen"], "variable": [{ "key": "idAlmacen", "value": "" }] }
+          }
+        },
+        {
+          "name": "Create Producto-Almacen",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}>/api/v1/producto-almacen", "host": ["{{baseUrl}}"], "path": ["api","v1","producto-almacen"] },
+            "body": { "mode": "raw", "raw": "{\n  \"idAlmacen\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\",\n  \"stock\": 100,\n  \"max\": 500.00,\n  \"min\": 10.00,\n  \"activo\": true\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Producto-Almacen",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/producto-almacen/:idAlmacen/:idProducto", "host": ["{{baseUrl}}"], "path": ["api","v1","producto-almacen",":idAlmacen",":idProducto"], "variable": [{ "key": "idAlmacen", "value": "" }, { "key": "idProducto", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"idAlmacen\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\",\n  \"stock\": 100,\n  \"max\": 500.00,\n  \"min\": 10.00,\n  \"activo\": true\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Producto-Almacen",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/producto-almacen/:idAlmacen/:idProducto", "host": ["{{baseUrl}}"], "path": ["api","v1","producto-almacen",":idAlmacen",":idProducto"], "variable": [{ "key": "idAlmacen", "value": "" }, { "key": "idProducto", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Precios Base",
+      "item": [
+        {
+          "name": "List Precios Base",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/precios-base", "host": ["{{baseUrl}}"], "path": ["api","v1","precios-base"] }
+          }
+        },
+        {
+          "name": "Create Precio Base",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/precios-base", "host": ["{{baseUrl}}"], "path": ["api","v1","precios-base"] },
+            "body": { "mode": "raw", "raw": "{\n  \"precioBase\": 99.99,\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Precio Base",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/precios-base/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","precios-base",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"precioBase\": 99.99,\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Precio Base",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/precios-base/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","precios-base",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contratos – Tarifa",
+      "item": [
+        {
+          "name": "List Contratos Tarifa",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-tarifa", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-tarifa"] }
+          }
+        },
+        {
+          "name": "List Contratos Tarifa (paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contratos-tarifa/paged?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-tarifa","paged"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Create Contrato Tarifa",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-tarifa", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-tarifa"] },
+            "body": { "mode": "raw", "raw": "{\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"activo\": true,\n  \"idEmpresa\": \"{{uuid}}\",\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Contrato Tarifa",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-tarifa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-tarifa",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"vigenteDesde\": \"2024-01-01T00:00:00Z\",\n  \"vigenteHasta\": \"2024-12-31T23:59:59Z\",\n  \"activo\": true,\n  \"idEmpresa\": \"{{uuid}}\",\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Contrato Tarifa",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-tarifa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-tarifa",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contratos – Detalle",
+      "item": [
+        {
+          "name": "List Contratos Detalle",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-detalle", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-detalle"] }
+          }
+        },
+        {
+          "name": "Create Contrato Detalle",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-detalle", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-detalle"] },
+            "body": { "mode": "raw", "raw": "{\n  \"porcentajeDescuento\": 10.00,\n  \"montoFijo\": 0.00,\n  \"idProducto\": \"{{uuid}}\",\n  \"idContrato\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Contrato Detalle",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-detalle/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-detalle",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"porcentajeDescuento\": 10.00,\n  \"montoFijo\": 0.00,\n  \"idProducto\": \"{{uuid}}\",\n  \"idContrato\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Contrato Detalle",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contratos-detalle/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","contratos-detalle",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tramos de Tarifa",
+      "item": [
+        {
+          "name": "List Tramos Tarifa",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/tramos-tarifa", "host": ["{{baseUrl}}"], "path": ["api","v1","tramos-tarifa"] }
+          }
+        },
+        {
+          "name": "Create Tramo Tarifa",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/tramos-tarifa", "host": ["{{baseUrl}}"], "path": ["api","v1","tramos-tarifa"] },
+            "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"VOLUMEN\",\n  \"cantidadMinima\": 1.00,\n  \"cantidadMaxima\": 100.00,\n  \"porcentajeDesc\": 5.00,\n  \"tipoDescuento\": \"PORCENTAJE\",\n  \"montoFijo\": 0.00,\n  \"idContrato\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Tramo Tarifa",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/tramos-tarifa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","tramos-tarifa",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"VOLUMEN\",\n  \"cantidadMinima\": 1.00,\n  \"cantidadMaxima\": 100.00,\n  \"porcentajeDesc\": 5.00,\n  \"tipoDescuento\": \"PORCENTAJE\",\n  \"montoFijo\": 0.00,\n  \"idContrato\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Tramo Tarifa",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/tramos-tarifa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","tramos-tarifa",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comisiones",
+      "item": [
+        {
+          "name": "List Comisiones",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/comisiones", "host": ["{{baseUrl}}"], "path": ["api","v1","comisiones"] }
+          }
+        },
+        {
+          "name": "Create Comision",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/comisiones", "host": ["{{baseUrl}}"], "path": ["api","v1","comisiones"] },
+            "body": { "mode": "raw", "raw": "{\n  \"montoComision\": 50.00,\n  \"montoProveedor\": 450.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"idDetalleOrden\": \"{{uuid}}\",\n  \"idProveedor\": \"{{uuid}}\",\n  \"idReglaComision\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Comision",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/comisiones/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","comisiones",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"montoComision\": 50.00,\n  \"montoProveedor\": 450.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"idDetalleOrden\": \"{{uuid}}\",\n  \"idProveedor\": \"{{uuid}}\",\n  \"idReglaComision\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Comision",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/comisiones/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","comisiones",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reglas de Comisión",
+      "item": [
+        {
+          "name": "List Reglas Comision",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/reglas-comision", "host": ["{{baseUrl}}"], "path": ["api","v1","reglas-comision"] }
+          }
+        },
+        {
+          "name": "Create Regla Comision",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/reglas-comision", "host": ["{{baseUrl}}"], "path": ["api","v1","reglas-comision"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Comisión estándar\",\n  \"idTipo\": \"PORCENTAJE\",\n  \"valor\": 10.00,\n  \"activa\": true,\n  \"fechaInicio\": \"2024-01-01T00:00:00Z\",\n  \"fechaFinal\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Regla Comision",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/reglas-comision/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","reglas-comision",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Comisión estándar\",\n  \"idTipo\": \"PORCENTAJE\",\n  \"valor\": 10.00,\n  \"activa\": true,\n  \"fechaInicio\": \"2024-01-01T00:00:00Z\",\n  \"fechaFinal\": \"2024-12-31T23:59:59Z\",\n  \"idProveedor\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Regla Comision",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/reglas-comision/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","reglas-comision",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles de Usuario",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/roles", "host": ["{{baseUrl}}"], "path": ["api","v1","roles"] }
+          }
+        },
+        {
+          "name": "Create Rol",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/roles", "host": ["{{baseUrl}}"], "path": ["api","v1","roles"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"ADMIN\",\n  \"descripcion\": \"Administrador del sistema\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Rol",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/roles/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","roles",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"ADMIN\",\n  \"descripcion\": \"Administrador del sistema\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Rol",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/roles/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","roles",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cargos de Empresa",
+      "item": [
+        {
+          "name": "List Cargos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/cargos-empresa", "host": ["{{baseUrl}}"], "path": ["api","v1","cargos-empresa"] }
+          }
+        },
+        {
+          "name": "Create Cargo",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/cargos-empresa", "host": ["{{baseUrl}}"], "path": ["api","v1","cargos-empresa"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Gerente de Compras\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Cargo",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/cargos-empresa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","cargos-empresa",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Gerente de Compras\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Cargo",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/cargos-empresa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","cargos-empresa",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contactos de Empresa",
+      "item": [
+        {
+          "name": "List Contactos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contactos-empresa", "host": ["{{baseUrl}}"], "path": ["api","v1","contactos-empresa"] }
+          }
+        },
+        {
+          "name": "Create Contacto",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contactos-empresa", "host": ["{{baseUrl}}"], "path": ["api","v1","contactos-empresa"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombres\": \"María\",\n  \"apellidos\": \"García\",\n  \"telefono\": \"+591 70000000\",\n  \"idCargoEmpresa\": \"{{uuid}}\",\n  \"idEmpresa\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Contacto",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contactos-empresa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","contactos-empresa",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombres\": \"María\",\n  \"apellidos\": \"García\",\n  \"telefono\": \"+591 70000000\",\n  \"idCargoEmpresa\": \"{{uuid}}\",\n  \"idEmpresa\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Contacto",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/contactos-empresa/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","contactos-empresa",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Órdenes de Compra",
+      "item": [
+        {
+          "name": "List Órdenes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/ordenes-compra", "host": ["{{baseUrl}}"], "path": ["api","v1","ordenes-compra"] }
+          }
+        },
+        {
+          "name": "List Órdenes (paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ordenes-compra/paged?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","ordenes-compra","paged"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Create Orden",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/ordenes-compra", "host": ["{{baseUrl}}"], "path": ["api","v1","ordenes-compra"] },
+            "body": { "mode": "raw", "raw": "{\n  \"total\": 1500.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"fechaOrden\": \"2024-06-01\",\n  \"idEstado\": \"PENDIENTE\",\n  \"idProveedor\": \"{{uuid}}\",\n  \"idEmpresaCompradora\": \"{{uuid}}\",\n  \"idSucursal\": \"{{uuid}}\",\n  \"idUsuario\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Orden",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/ordenes-compra/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","ordenes-compra",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"total\": 1500.00,\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"fechaOrden\": \"2024-06-01\",\n  \"idEstado\": \"PENDIENTE\",\n  \"idProveedor\": \"{{uuid}}\",\n  \"idEmpresaCompradora\": \"{{uuid}}\",\n  \"idSucursal\": \"{{uuid}}\",\n  \"idUsuario\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Orden",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/ordenes-compra/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","ordenes-compra",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Detalle de Orden",
+      "item": [
+        {
+          "name": "List Detalles Orden",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-orden", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-orden"] }
+          }
+        },
+        {
+          "name": "Create Detalle Orden",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-orden", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-orden"] },
+            "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idOrden\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\",\n  \"idAlmacen\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Detalle Orden",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-orden/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-orden",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idOrden\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\",\n  \"idAlmacen\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Detalle Orden",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-orden/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-orden",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Facturas",
+      "item": [
+        {
+          "name": "List Facturas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/facturas", "host": ["{{baseUrl}}"], "path": ["api","v1","facturas"] }
+          }
+        },
+        {
+          "name": "List Facturas (paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/facturas/paged?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","facturas","paged"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Create Factura",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/facturas", "host": ["{{baseUrl}}"], "path": ["api","v1","facturas"] },
+            "body": { "mode": "raw", "raw": "{\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"total\": 1500.00,\n  \"idEstado\": \"EMITIDA\",\n  \"idOrden\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Factura",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/facturas/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","facturas",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"fecha\": \"2024-06-01T00:00:00Z\",\n  \"total\": 1500.00,\n  \"idEstado\": \"EMITIDA\",\n  \"idOrden\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Factura",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/facturas/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","facturas",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Detalle de Factura",
+      "item": [
+        {
+          "name": "List Detalles Factura",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-factura", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-factura"] }
+          }
+        },
+        {
+          "name": "Create Detalle Factura",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-factura", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-factura"] },
+            "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idFactura\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Update Detalle Factura",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-factura/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-factura",":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 5,\n  \"precioUnitario\": 100.00,\n  \"subtotal\": 500.00,\n  \"idFactura\": \"{{uuid}}\",\n  \"idProducto\": \"{{uuid}}\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete Detalle Factura",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/detalle-factura/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","detalle-factura",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pagos – Stereum",
+      "item": [
+        {
+          "name": "Crear Cobro (Stereum)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/stereum/charge", "host": ["{{baseUrl}}"], "path": ["api","v1","stereum","charge"] },
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 1500.00,\n  \"currency\": \"BOB\",\n  \"description\": \"Orden de compra #001\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Outbound Webhook (Stereum)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "X-Signature",   "value": "{{signature}}" },
+              { "key": "X-Timestamp",   "value": "{{timestamp}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/stereum/outbound", "host": ["{{baseUrl}}"], "path": ["api","v1","stereum","outbound"] },
+            "body": { "mode": "raw", "raw": "\"webhook-payload\"", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Crear Cobro (legacy)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/pagos/crear-cobro", "host": ["{{baseUrl}}"], "path": ["api","pagos","crear-cobro"] },
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 1500.00,\n  \"currency\": \"BOB\",\n  \"description\": \"Cobro de prueba\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Keys",
+      "item": [
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/api-keys", "host": ["{{baseUrl}}"], "path": ["api","v1","api-keys"] }
+          }
+        },
+        {
+          "name": "Create API Key",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/api-keys", "host": ["{{baseUrl}}"], "path": ["api","v1","api-keys"] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mi API Key\",\n  \"expiresAt\": \"2025-12-31T23:59:59\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Delete API Key",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/api-keys/:id", "host": ["{{baseUrl}}"], "path": ["api","v1","api-keys",":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Logs",
+      "item": [
+        {
+          "name": "List Logs (paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/logs?page=0&size=10&sortBy=createdDate&sortDir=DESC",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","logs"],
+              "query": [
+                { "key": "page",    "value": "0" },
+                { "key": "size",    "value": "10" },
+                { "key": "sortBy",  "value": "createdDate" },
+                { "key": "sortDir", "value": "DESC" },
+                { "key": "from",    "value": "2024-01-01", "disabled": true },
+                { "key": "to",      "value": "2024-12-31", "disabled": true }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/upload", "host": ["{{baseUrl}}"], "path": ["api","v1","upload"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

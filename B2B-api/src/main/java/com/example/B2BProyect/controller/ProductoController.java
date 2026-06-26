@@ -39,9 +39,10 @@ public class ProductoController {
     @GetMapping("/paged")
     public ResponseEntity<Page<ProductoDTO>> findAllPaged(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String nombre) {
         try {
-            return ResponseEntity.ok(productoService.findAllPaged(page, size));
+            return ResponseEntity.ok(productoService.findAllPaged(page, size, nombre));
         } catch (Exception e) {
             log.error("Error al listar productos paginados: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

@@ -58,6 +58,18 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID> {
             countQuery = "SELECT COUNT(p) FROM Producto p")
     Page<ProductoDTO> findAllPaged(Pageable pageable);
 
+    @Query(value = "SELECT new com.example.B2BProyect.repository.dto.response.ProductoDTO(" +
+            "p.id, p.sku, p.nombre, p.descripcion, p.activo, " +
+            "c.nombre, e.nombre, u.nombre) " +
+            "FROM Producto p " +
+            "LEFT JOIN p.idCategoria c " +
+            "LEFT JOIN p.idProveedor pr LEFT JOIN pr.idEmpresa e " +
+            "LEFT JOIN p.idUnidadMedida u " +
+            "WHERE LOWER(p.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) " +
+            "ORDER BY p.id DESC",
+            countQuery = "SELECT COUNT(p) FROM Producto p WHERE LOWER(p.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))")
+    Page<ProductoDTO> findAllPagedByNombre(@Param("nombre") String nombre, Pageable pageable);
+
     List<Producto> findByIdProveedorId(UUID idProveedor);
 
 }

@@ -17,7 +17,8 @@
       "Bash(xargs head -1)",
       "Bash(ssh *)",
       "Bash(scp *)",
-      "Bash(grep -v \"import\\\\|//\")"
+      "Bash(grep -v \"import\\\\|//\")",
+      "PowerShell(psql *)"
     ]
   }
 }

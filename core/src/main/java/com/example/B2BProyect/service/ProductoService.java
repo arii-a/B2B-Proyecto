@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +49,11 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductoDTO> findAllPaged(int page, int size) {
-        return productoRepository.findAllPaged(PageRequest.of(page, size));
+    public Page<ProductoDTO> findAllPaged(int page, int size, String nombre) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (nombre != null && !nombre.isBlank())
+            return productoRepository.findAllPagedByNombre(nombre, pageable);
+        return productoRepository.findAllPaged(pageable);
     }
 
     @Transactional(readOnly = true)
