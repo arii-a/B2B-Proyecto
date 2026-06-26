@@ -1,6 +1,8 @@
 package com.example.B2BProyect.repository;
 
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
+import com.example.B2BProyect.repository.dto.response.OrdenCompraResumenDTO;
+import com.example.B2BProyect.repository.dto.response.ProductoDTO;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
 import com.example.B2BProyect.repository.proyecciones.OrdenCompraProjection;
 import org.springframework.data.domain.Page;
@@ -52,8 +54,7 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, UUID> 
 
     @Query("SELECT o FROM OrdenCompra o WHERE o.idProveedor.idEmpresa.id = :idEmpresa")
     List<OrdenCompra> findByProveedorEmpresa(@Param("idEmpresa") UUID idEmpresa);
-
-    // proyección para listar resumen de órdenes
+// proyección para listar resumen de órdenes
     @Query("SELECT o.id AS id, o.fecha AS fecha, o.idEstado AS idEstado, o.total AS total FROM OrdenCompra o")
     List<OrdenCompraProjection> findResumenOrdenes();
 
@@ -66,4 +67,34 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, UUID> 
             @Param("pInit") LocalDateTime pInit,
             @Param("pEnd") LocalDateTime pEnd,
             Pageable pageable);
+
+
+
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.OrdenCompraDTO(" +
+            "o.id, o.total, o.fecha, o.fechaOrden, o.idEstado, " +
+            "o.idProveedor.idEmpresa.nombre, o.idEmpresaCompradora.nombre, " +
+            "o.idSucursal.nombre, o.idUsuario.nombre) " +
+            "FROM OrdenCompra o")
+    Page<OrdenCompraDTO> findAllPaged(Pageable pageable);
+
+
+
+
+    @Query("SELECT o FROM OrdenCompra o WHERE o.idEstado = 'pendiente' AND o.createdDate <= :limite")
+    List<OrdenCompra> findPendientesVencidas(@Param("limite") LocalDateTime limite);
+
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.OrdenCompraResumenDTO(" +
+            "o.id, o.fecha, o.fechaOrden, o.total, o.idEstado, " +
+            "o.idProveedor.idEmpresa.nombre, o.idEmpresaCompradora.nombre, o.idUsuario.nombre, " +
+            "o.idProveedor.id, o.idEmpresaCompradora.id, o.idSucursal.id, o.idUsuario.id) " +
+            "FROM OrdenCompra o WHERE o.idEmpresaCompradora.id = :idEmpresa")
+    Page<OrdenCompraResumenDTO> findByEmpresaCompradoraPaged(@Param("idEmpresa") UUID idEmpresa, Pageable pageable);
+
+    @Query("SELECT new com.example.B2BProyect.repository.dto.response.OrdenCompraResumenDTO(" +
+            "o.id, o.fecha, o.fechaOrden, o.total, o.idEstado, " +
+            "o.idProveedor.idEmpresa.nombre, o.idEmpresaCompradora.nombre, o.idUsuario.nombre, " +
+            "o.idProveedor.id, o.idEmpresaCompradora.id, o.idSucursal.id, o.idUsuario.id) " +
+            "FROM OrdenCompra o WHERE o.idProveedor.idEmpresa.id = :idEmpresa")
+    Page<OrdenCompraResumenDTO> findByProveedorEmpresaPaged(@Param("idEmpresa") UUID idEmpresa, Pageable pageable);
+
 }

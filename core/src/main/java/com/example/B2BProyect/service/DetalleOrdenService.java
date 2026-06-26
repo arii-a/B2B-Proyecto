@@ -19,7 +19,6 @@ public class DetalleOrdenService {
     private final OrdenCompraService ordenCompraService;
     private final ProductoService productoService;
     private final AlmacenService almacenService;
-    private final ProductoAlmacenService productoAlmacenService;
 
     @Transactional
     public void save(DetalleOrdenRequest request) {
@@ -34,9 +33,6 @@ public class DetalleOrdenService {
         if (request.getIdAlmacen() != null)
             almacenService.findById(request.getIdAlmacen()).ifPresent(detalle::setAlmacen);
         detalleOrdenRepository.save(detalle);
-
-        if (request.getIdProducto() != null && request.getCantidad() != null && request.getCantidad() > 0)
-            productoAlmacenService.decrementarStock(request.getIdProducto(), request.getCantidad());
     }
 
     @Transactional(readOnly = true)

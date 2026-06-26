@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -148,6 +149,29 @@ public class EmailService {
             log.error("[EMAIL] Fallo al enviar alerta de stock a {}: {}", to, e.getMessage(), e);
         }
     }
+
+    public void sendOrdenCancelada(String to) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setFrom(mailFrom);
+            message.setSubject("Pregunta 6-A");
+            message.setText("Pedido Cancelado");
+            javaMailSender.send(message);
+            log.info("[EMAIL] orden cancelada  {}", to);
+        } catch (Exception e) {
+            log.error("[EMAIL] error enviando noti a {}: {}", to, e.getMessage());
+        }
+    }
+
+
+
+
+
+
+
+
+
 
     @Async("taskLog")
     public void sendSolicitudProveedor(String adminEmail, String empresaNombre, String logoUrl, String nit) {

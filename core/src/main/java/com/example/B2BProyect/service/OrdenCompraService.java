@@ -5,6 +5,7 @@ import com.example.B2BProyect.repository.OrdenCompraRepository;
 import com.example.B2BProyect.repository.ProductoAlmacenRepository;
 import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
+import com.example.B2BProyect.repository.dto.response.OrdenCompraResumenDTO;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
 import com.example.B2BProyect.repository.entity.ProductoAlmacenId;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public class OrdenCompraService {
     private final UsuarioService usuarioService;
     private final DetalleOrdenRepository detalleOrdenRepository;
     private final ProductoAlmacenRepository productoAlmacenRepository;
+    private final EmailService emailService;
 
     @Transactional
     public OrdenCompraDTO save(OrdenCompraRequest request, UUID idempotency) {
@@ -137,6 +139,20 @@ public class OrdenCompraService {
     }
 
     @Transactional
+    public int cancelarOrdenesPendientesVencidas(int minutosLimite) {
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(minutosLimite);
+        List<OrdenCompra> vencidas = ordenCompraRepository.findPendientesVencidas(limite);
+        vencidas.forEach(o -> o.setIdEstado("cancelado"));
+        ordenCompraRepository.saveAll(vencidas);
+        vencidas.forEach(o -> emailService.sendOrdenCancelada("rllayus@gmail.com"));
+        if (!vencidas.isEmpty())
+            log.info("[ORDEN-CANCEL] {} órdenes pendientes canceladas (límite: {} min)", vencidas.size(), minutosLimite);
+        return vencidas.size();
+    }
+
+
+
+    @Transactional
     public boolean delete(UUID id) {
         if (!ordenCompraRepository.existsById(id)) return false;
         ordenCompraRepository.deleteById(id);
@@ -148,8 +164,7 @@ public class OrdenCompraService {
         return ordenCompraRepository.findAll(PageRequest.of(page, size)).map(OrdenCompraDTO::new);
     }
 
-    @Transactional(readOnly = true)
-    public Page<OrdenCompraDTO> findAllByOrderByDateDesc(LocalDateTime pInit, LocalDateTime pEnd, Pageable pageable) {
-        return ordenCompraRepository.findAllByOrderByDateDesc(pInit, pEnd, pageable);
-    }
+
+
+
 }
