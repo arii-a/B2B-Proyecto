@@ -37,7 +37,7 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, UUID> 
             " o.idProveedor.idEmpresa.nombre, o.idEmpresaCompradora.nombre," +
             " o.idSucursal.nombre, o.idUsuario.nombre)" +
             " FROM OrdenCompra o")
-    List<OrdenCompraDTO> findAllDTO();
+    Page<OrdenCompraDTO> findAllDTO(Pageable pageable);
 
     @Query("SELECT new " +
             "com.example.B2BProyect.repository.dto.response.OrdenCompraDTO(" +

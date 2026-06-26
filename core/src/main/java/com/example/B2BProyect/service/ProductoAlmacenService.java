@@ -3,11 +3,15 @@ package com.example.B2BProyect.service;
 import com.example.B2BProyect.repository.ProductoAlmacenRepository;
 import com.example.B2BProyect.repository.UsuarioRepository;
 import com.example.B2BProyect.repository.dto.request.ProductoAlmacenRequest;
+import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.dto.response.ProductoAlmacenDTO;
 import com.example.B2BProyect.repository.entity.ProductoAlmacen;
 import com.example.B2BProyect.repository.entity.ProductoAlmacenId;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +49,11 @@ public class ProductoAlmacenService {
     @Transactional(readOnly = true)
     public List<ProductoAlmacenDTO> findAll() {
         return productoAlmacenRepository.findAll().stream().map(ProductoAlmacenDTO::new).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductoAlmacenDTO> findAllPageble(Integer page, Integer size, String sortBy) {
+        return productoAlmacenRepository.findAllPageble(PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
     @Transactional(readOnly = true)

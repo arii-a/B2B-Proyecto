@@ -7,6 +7,7 @@ import com.example.B2BProyect.repository.entity.ProductoAlmacenId;
 import com.example.B2BProyect.service.ProductoAlmacenService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,9 +25,12 @@ public class ProductoAlmacenController {
     private final ProductoAlmacenService productoAlmacenService;
 
     @GetMapping
-    public ResponseEntity<List<ProductoAlmacenDTO>> findAll() {
+    public ResponseEntity<Page<ProductoAlmacenDTO>> findAll(
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "idProducto") String sortBy) {
         try {
-            return ResponseEntity.ok(productoAlmacenService.findAll());
+            return ResponseEntity.ok(productoAlmacenService.findAllPageble(page, size, sortBy));
         } catch (OperationException e) {
             log.error("OperationException: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

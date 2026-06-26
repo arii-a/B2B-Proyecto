@@ -3,11 +3,10 @@ package com.example.B2BProyect.controller;
 import com.example.B2BProyect.integracion.*;
 import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
-import com.example.B2BProyect.repository.entity.Empresa;
-import com.example.B2BProyect.repository.entity.Proveedor;
 import com.example.B2BProyect.repository.entity.Usuario;
 import com.example.B2BProyect.service.*;
-import org.springframework.data.domain.Page;
+import com.example.B2BProyect.service.exception.OperationException;
+import org.springframework.data.domain.*;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,13 +29,28 @@ import java.util.UUID;
 public class OrdenCompraController {
     private final OrdenCompraService ordenCompraService;
 
-    @GetMapping
+    /*@GetMapping
     public ResponseEntity<List<OrdenCompraDTO>> findAll() {
         try {
             return ResponseEntity.ok(ordenCompraService.findAll());
         } catch (Exception e) {
             log.error("Error listando orden compra: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
+        }
+    }*/
+
+    @GetMapping
+    public ResponseEntity<Page<OrdenCompraDTO>> findAll(@RequestParam(value = "page", defaultValue = "0") Integer page, @RequestParam(value = "size", defaultValue = "10") Integer size, @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+        Usuario user = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info(user.getIdRol().getNombre());
+        try {
+            return ResponseEntity.ok(ordenCompraService.findAllDTO(page,size,sortBy));
+        } catch (OperationException e) {
+            log.error("Error llamando a las ordenes: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error llamando a las ordenes", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Se generó un error genérico al listar ordenes");
         }
     }
 
@@ -93,4 +109,23 @@ public class OrdenCompraController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @GetMapping("/idOrden")
+    public ResponseEntity<PageImpl<OrdenCompraDTO>> findById(
+            @RequestParam UUID idOrden,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+        try {
+            return ordenCompraService.findByIdDTO(idOrden)
+                    .map(dto -> new PageImpl<>(List.of(dto), PageRequest.of(page, size, Sort.by(sortBy)), 1))
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("Error buscando orden compra: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al buscar la orden");
+        }
+    }
+
+
 }

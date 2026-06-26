@@ -19,16 +19,14 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="examen-api" target="21" />
+      <module name="B2BProyect (1)" target="1.5" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="B2B-api" options="-parameters" />
-      <module name="B2BProyect" options="" />
       <module name="core" options="-parameters" />
       <module name="data" options="-parameters" />
-      <module name="examen-api" options="-parameters" />
     </option>
   </component>
 </project>

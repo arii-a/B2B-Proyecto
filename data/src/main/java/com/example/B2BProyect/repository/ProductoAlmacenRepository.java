@@ -3,6 +3,8 @@ package com.example.B2BProyect.repository;
 import com.example.B2BProyect.repository.dto.response.ProductoAlmacenDTO;
 import com.example.B2BProyect.repository.entity.ProductoAlmacen;
 import com.example.B2BProyect.repository.entity.ProductoAlmacenId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,6 +47,15 @@ public interface ProductoAlmacenRepository extends JpaRepository<ProductoAlmacen
             " pa.almacen.nombre, pa.producto.nombre)" +
             " FROM ProductoAlmacen pa")
     List<ProductoAlmacenDTO> findAllDTO();
+
+    @Query("SELECT new" +
+            " com.example.B2BProyect.repository.dto.response.ProductoAlmacenDTO(" +
+            "pa.id.idAlmacen, pa.producto.id, pa.stock, pa.max, pa.min, pa.activo," +
+            " pa.almacen.nombre, pa.producto.nombre)" +
+            " FROM ProductoAlmacen pa")
+    Page<ProductoAlmacenDTO> findAllPageble(Pageable pageable);
+
+
 
     void deleteById_IdProducto(UUID idProducto);
 }

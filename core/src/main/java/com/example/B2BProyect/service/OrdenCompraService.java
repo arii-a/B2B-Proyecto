@@ -2,15 +2,14 @@ package com.example.B2BProyect.service;
 
 import com.example.B2BProyect.repository.OrdenCompraRepository;
 import com.example.B2BProyect.repository.dto.request.OrdenCompraRequest;
+import com.example.B2BProyect.repository.dto.response.EmpresaDTO;
 import com.example.B2BProyect.repository.dto.response.OrdenCompraDTO;
 import com.example.B2BProyect.repository.entity.Empresa;
 import com.example.B2BProyect.repository.entity.OrdenCompra;
 import com.example.B2BProyect.service.exception.EmpresasException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,9 +50,14 @@ public class OrdenCompraService {
         return new OrdenCompraDTO(ordenCompraRepository.save(orden));
     }
 
-    @Transactional(readOnly = true)
+    /*@Transactional(readOnly = true)
     public List<OrdenCompraDTO> findAll() {
         return ordenCompraRepository.findAll().stream().map(OrdenCompraDTO::new).toList();
+    }*/
+
+    @Transactional(readOnly = true)
+    public Page<OrdenCompraDTO> findAllDTO(Integer page, Integer size, String sortBy) {
+        return ordenCompraRepository.findAllDTO(PageRequest.of(page, size, Sort.by(sortBy)));
     }
 
     @Transactional(readOnly = true)
@@ -95,5 +99,10 @@ public class OrdenCompraService {
     @Transactional(readOnly = true)
     public Page<OrdenCompraDTO> findAllByOrderByDateDesc(LocalDateTime pInit, LocalDateTime pEnd, Pageable pageable) {
         return ordenCompraRepository.findAllByOrderByDateDesc(pInit, pEnd, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<OrdenCompraDTO> findByIdDTO(UUID id) {
+        return ordenCompraRepository.findByIdDTO(id);
     }
 }
